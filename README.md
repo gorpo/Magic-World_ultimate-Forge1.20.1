@@ -1193,6 +1193,35 @@ Categorias ja cobertas pelo all-in-one:
 - **Controle/gamepad:** Controllable.
 - **Worldgen e compatibilidade:** Lithostitched.
 
+### Como Usar Os Mods Built In
+
+Os mods abaixo estao embutidos no `.jar` all-in-one. Eles continuam sendo mods reais, com menus e atalhos proprios, mas o jogador nao precisa instalar cada `.jar` separado.
+
+| Mod embutido | Como abrir/usar | Para que serve |
+| --- | --- | --- |
+| **JourneyMap** | Aperte `J` para abrir o mapa em tela cheia. Use o minimapa para orientacao e crie marcadores/waypoints pelo proprio menu do mapa. Se o atalho mudar, revise em `Opcoes > Controles`. | Mapa, minimapa, marcadores, coordenadas e navegacao pela propriedade Magic World. |
+| **Effortless Building** | Use `ALT` para abrir/usar o menu de construcao rapida do mod. Os modos ajudam a construir linhas, paredes, espelhos, repeticoes e preenchimentos. Se houver conflito de tecla, ajuste em `Opcoes > Controles`. | Construir e expandir casa, castelo, trilhos e decoracoes sem colocar bloco por bloco. |
+| **Controllable** | Conecte um controle/gamepad antes ou durante o jogo. Abra as opcoes de controles do Minecraft para mapear botoes e sensibilidade. | Jogar Minecraft Java com controle, parecido com console. |
+| **Iris Shaders** | Abra `Opcoes > Video > Shader Packs` ou use o fluxo premium do portal Magic World para aplicar shader/resource pack. | Ativar o Shader Pack Magic World com luz, sombras, agua, bloom e atmosfera. |
+| **Sodium** | Abra `Opcoes > Video` para ajustes de desempenho/renderizacao. O Magic World tambem oferece perfis de PC no menu de criacao. | FPS, estabilidade e renderizacao mais leve. |
+| **Distant Horizons** | Abra o botao `Horizontes Distantes` no menu grafico do Magic World/Video Settings para configurar LODs. | Ver montanhas, florestas e castelos a grandes distancias com menos custo que render distance normal. |
+| **Entity Texture Features / Entity Model Features** | Nao exigem tecla principal; funcionam com resource packs/modelos compativeis. | Texturas e modelos avancados de entidades, incluindo recursos parecidos com OptiFine. |
+
+Imagens de referencia dos mods embutidos:
+
+<table>
+  <tr>
+    <td width="50%"><img src="./screenshots/external_journeymap_minimap.png" alt="JourneyMap minimapa" width="100%"><br><sub>JourneyMap: minimapa e navegacao.</sub></td>
+    <td width="50%"><img src="./screenshots/external_journeymap_fullscreen.png" alt="JourneyMap mapa em tela cheia" width="100%"><br><sub>JourneyMap: mapa em tela cheia no `J`.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="./screenshots/external_effortless_mirror_settings.png" alt="Effortless Building mirror settings" width="100%"><br><sub>Effortless Building: ferramentas de construcao.</sub></td>
+    <td width="50%"><img src="./screenshots/external_controllable_controller.webp" alt="Controllable controle gamepad" width="100%"><br><sub>Controllable: suporte a controle/gamepad.</sub></td>
+  </tr>
+</table>
+
+Fontes oficiais das imagens/referencias: JourneyMap Docs (`teamjm.github.io`), Effortless Building no CurseForge e Controllable/MrCrayfish.
+
 Menu de graficos integrado:
 
 - O menu grafico do Magic World continua no padrao visual do projeto.

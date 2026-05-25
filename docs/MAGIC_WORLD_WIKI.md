@@ -217,6 +217,29 @@ Abre o menu **MagicWorld - Magic Wand**, com sistemas de:
 - dungeons;
 - montarias.
 
+## Mods Built In E Atalhos
+
+O all-in-one tambem inclui mods de terceiros reais via Jar-in-Jar. Eles nao precisam ser instalados separados, mas seus menus e atalhos continuam existindo.
+
+| Mod | Atalho/menu principal | Uso pratico |
+| --- | --- | --- |
+| **JourneyMap** | `J` abre o mapa em tela cheia. O minimapa aparece no HUD. | Criar waypoints, localizar casa/castelo/portal, navegar por coordenadas e marcar pontos importantes. |
+| **Effortless Building** | `ALT` abre/usa o menu de construcao rapida. | Construir linhas, paredes, espelhos, repeticoes e preenchimentos sem colocar bloco por bloco. |
+| **Controllable** | Conectar controle/gamepad e revisar `Opcoes > Controles`. | Jogar Java com controle, mapear botoes e ajustar sensibilidade. |
+| **Iris Shaders** | `Opcoes > Video > Shader Packs` ou ativacao pelo portal premium. | Usar o Shader Pack Magic World. |
+| **Sodium** | `Opcoes > Video`. | Ajustar desempenho e renderizacao. |
+| **Distant Horizons** | Botao `Horizontes Distantes` no menu grafico/Video Settings. | Configurar LODs e mundo visivel a longa distancia. |
+| **Entity Texture Features / Entity Model Features** | Sem tecla principal obrigatoria. | Ativar recursos avancados de resource packs/modelos de entidades. |
+
+Imagens de referencia salvas em `screenshots/`:
+
+- `external_journeymap_minimap.png`
+- `external_journeymap_fullscreen.png`
+- `external_effortless_mirror_settings.png`
+- `external_controllable_controller.webp`
+
+Fontes oficiais/referencias: JourneyMap Docs, Effortless Building no CurseForge e Controllable/MrCrayfish.
+
 ## Itens Principais
 
 Itens do mod:

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+  
+    <html lang="en">
+  
+  <head>
+        <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <meta name="ulp-version" content="1.111.1">
+    
+    
+    
+    <meta name="robots" content="noindex, nofollow">
+    
+    
+    <link rel="stylesheet" href="https://cdn.auth0.com/ulp/react-components/1.188.1/css/main_wcag_compliant.cdn.min.css">
+    <style id="custom-styles-container">
+      
+        
+
+body {
+  background: #e6e6e6;
+  font-family: ulp-font, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, sans-serif;
+}
+.c4591a760 {
+  background: #e6e6e6;
+}
+.c22b01add.cd00e5473 {
+  background: #D00E17;
+}
+.c22b01add.c4eb3a201 {
+  background: #0A8852;
+}
+.ca4bbf5d1 {
+  background-color: #8c2729;
+  color: #ffffff;
+}
+.ca4bbf5d1 a,
+.ca4bbf5d1 a:visited {
+  color: #ffffff;
+}
+.cfb6a0259 {
+  background-color: #0A8852;
+}
+.ce83329b0 {
+  background-color: #D00E17;
+}
+@supports (mask-image: url('/static/img/branding-generic/copy-icon.svg')) {
+  @supports not (-ms-ime-align: auto) {
+    .c7684e6e4.c0fedfce7::before {
+      background-color: #D00E17;
+    }
+  }
+}
+.input.c4f08b61e {
+  border-color: #D00E17;
+}
+.error-cloud {
+  background-color: #D00E17;
+}
+.error-fatal {
+  background-color: #D00E17;
+}
+.error-local {
+  background-color: #D00E17;
+}
+#alert-trigger {
+  background-color: #D00E17;
+}
+
+
+
+      
+    </style>
+    <style>
+    /* By default, hide features for javascript-disabled browsing */
+    /* We use !important to override any css with higher specificity */
+    /* It is also overriden by the styles in <noscript> in the header file */
+    .no-js {
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      height: 1px;
+      overflow: hidden;
+      position: absolute;
+      white-space: nowrap;
+      width: 1px;
+    }
+  </style>
+  <noscript>
+    <style>
+      /* We use !important to override the default for js enabled */
+      /* If the display should be other than block, it should be defined specifically here */
+      .js-required { display: none !important; }
+      .no-js {
+        clip: auto;
+        clip-path: none;
+        height: auto;
+        overflow: auto;
+        position: static;
+        white-space: normal;
+        width: 100%;
+      }
+      .no-js-container {
+        width: var(--prompt-width);
+      }
+    </style>
+  </noscript>
+    
+    <title>Log in | MrCrayfish Dashboard</title>
+  </head>
+  
+  
+  <body >
+    <div class="c4591a760 c03650578">
+  
+<main class="c3f7d7adc login">
+  <section class="cd3262ead _prompt-box-outer">
+    <div class="ca4753c65 c39ec6ef8">
+      
+    
+      <div class="c5f9a5df2">
+        <header class="c6d259d71 c602b1a12" id="screen-header" tabindex="-1">
+          <div title="dev-7qtg0blz" id="custom-prompt-logo" style="width: auto !important; height: 60px !important; position: static !important; margin: auto !important; padding: 0 !important; background-color: transparent !important; background-position: center !important; background-size: contain !important; background-repeat: no-repeat !important"></div>
+        
+          <img class="c615b2513 c98a1bd21" id="prompt-logo-center" src="https://mrcrayfish.com/assets/img/claw-icon.webp" alt="dev-7qtg0blz">
+        
+          
+            <h1 class="cb9c7f1b7 c57554be5">Welcome</h1>
+          
+        
+          <div class="c4829b2bf cb7d0ce18">
+            
+              <p class="c31d4cec6 c29f109ac">Log in to dev-7qtg0blz to continue to MrCrayfish Dashboard.</p>
+            
+          </div>
+        </header>
+      
+        <div class="c3d79b667 c20bf3ec2">
+          
+        
+          
+            
+              <form method="POST" class="c3bd0b638 c00d825da" data-form-primary="true" data-disable-html-validations="true">
+                
+              
+                <input type="hidden" name="state" value="hKFo2SBGNFRIMzNFSDdNSnlzcTJIM0F6R1ZxcGxWTjA3NC1ZcqFur3VuaXZlcnNhbC1sb2dpbqN0aWTZIDFVSGRaOE9ONkVYbV9VTU4tRnVfeFZCNHoyeGJieGZjo2NpZNkgZ2ZYaHZCRzU3dXJrenhqdU1OdEZaWG5uSk1uZXNFcG4">
+              
+                
+              
+                <div class="cc2944307 cbc6871ff">
+                  <div class="c59e05b13">
+                    
+                  
+                    
+                      
+                        <div class="input-wrapper _input-wrapper">
+                          <div class="c7684e6e4 cdd6448e7 text c5869ec4c ulp-field" data-action-text="" data-alternate-action-text="">
+                            <label id="username-label" class="c6875e265 cc134ffa5 c002d3a33" for="username">
+                              Email address
+                            
+                              <span class="required" aria-hidden="true">*</span>
+                            </label>
+                          
+                            <input class="input cb91b73c7 c80d1ce6e" inputMode="email" name="username" id="username" type="text" aria-labelledby="username-label" aria-required="true" value="" required autoComplete="email" autoCapitalize="none" spellCheck="false">
+                          </div>
+                        
+                          
+                            <div id="error-cs-username-required" class="ulp-error-info aria-error-check" data-ulp-validation-function="ulpRequiredFunction" data-ulp-validation-event-listeners="blur,change,input,focus" data-ulp-validation-target="username" aria-live="polite" aria-atomic="true">
+                              Please enter an email address
+                            </div>
+                          
+                        
+                          
+                        
+                          
+                        
+                          
+                        
+                          
+                            <div id="error-cs-pattern-mismatch" class="ulp-error-info aria-error-check" data-ulp-validation-function="ulpPatternCheckFunction" data-ulp-validation-event-listeners="blur,change,input,focus" data-ulp-validation-target="username" aria-live="polite" aria-atomic="true"></div>
+                          
+                        
+                          
+                        </div>
+                      
+                    
+                  
+                    
+                      <div class="input-wrapper _input-wrapper">
+                        <div class="c7684e6e4 cdd6448e7 password c1c548c82 ulp-field" data-action-text="" data-alternate-action-text="">
+                          <label id="password-label" class="c6875e265 cc134ffa5 cb8a397fb" for="password">
+                            Password
+                          
+                            <span class="required" aria-hidden="true">*</span>
+                          </label>
+                        
+                          <input class="input cb91b73c7 c77d8fc90" name="password" id="password" type="password" aria-labelledby="password-label" aria-required="true" required autoComplete="current-password" autoCapitalize="none" spellCheck="false">
+                        
+                          
+                            <button type="button" role="switch" aria-checked="false" aria-label="Show password" class="c97a437dc ulp-button-icon js-required cfc1b9320 _button-icon" data-action="toggle">
+                              <span aria-hidden="true" class="password-icon-tooltip show-password-tooltip">Show password</span>
+                            
+                              <span aria-hidden="true" class="password-icon-tooltip hide-password-tooltip hide">Hide password</span>
+                            
+                              <span class="c05cca2b4 password js-required" aria-hidden="true"></span>
+                            </button>
+                          
+                        </div>
+                      
+                        
+                          <div id="error-cs-password-required" class="ulp-error-info aria-error-check" data-ulp-validation-function="ulpRequiredFunction" data-ulp-validation-event-listeners="blur,change,input,focus" data-ulp-validation-target="password" aria-live="polite" aria-atomic="true">
+                            Password is required
+                          </div>
+                        
+                      
+                        
+                          <div id="error-cs-password-password-too-weak" class="ulp-error-info aria-error-check" data-ulp-validation-function="ulpPasswordPolicyFunction" data-ulp-validation-event-listeners="blur,change,input,focus" data-ulp-validation-target="password" aria-live="polite" aria-atomic="true">The password is too weak</div>
+                        
+                      
+                        
+                      
+                        
+                      
+                        
+                      
+                        
+                      </div>
+                    
+                  
+                    
+                  </div>
+                </div>
+              
+                
+                  
+                    <p class="c8f85262e c557f4681">
+                      
+                        <a class="c5e555daf c7a59cca2 c941ff2f7" href="/u/login/password-reset-start/Username-Password-Authentication?state=hKFo2SBGNFRIMzNFSDdNSnlzcTJIM0F6R1ZxcGxWTjA3NC1ZcqFur3VuaXZlcnNhbC1sb2dpbqN0aWTZIDFVSGRaOE9ONkVYbV9VTU4tRnVfeFZCNHoyeGJieGZjo2NpZNkgZ2ZYaHZCRzU3dXJrenhqdU1OdEZaWG5uSk1uZXNFcG4">Reset password</a>
+                      
+                    </p>
+                  
+                
+              
+                
+              
+                <div class="ca2ccce8e">
+                  
+                    <button type="submit" name="action" value="default" class="c97a437dc ca4bbf5d1 cfc1b9320 ce917de17 c243b7ef8" data-action-button-primary="true">Continue</button>
+                  
+                </div>
+              </form>
+            
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        </div>
+      </div>
+    
+      
+    </div>
+  
+    
+      <a href="https://auth0.com/?utm_source=lock&amp;utm_campaign=badge&amp;utm_medium=widget" target="_blank" rel="noopener noreferrer" class="c546089b9" aria-label="Link to the Auth0 website">
+        <span class="c5b35fe7e"></span>
+      </a>
+    
+  </section>
+</main>
+<script id="client-scripts">
+window.ulpFlags = {"custom_prompts_passkeys":true,"ulp_field_validation_double_submit_fix":false,"enable_ulp_wcag_compliance":true,"enable_ulp_rtl_support":false,"disable_ulp_form_submission_fix":false};!function(){var e,t,n,r,q,N,R,P,I,O,a,j,M,D,H,U,$,i,o,c,l,u={exports:function(e,t){return"object"==typeof e.ulpFlags&&null!==e.ulpFlags?e.ulpFlags:{}}}.exports(window,document),s=((e={}).exports=function(n,l){var r={},a={};function c(e,t){if(e.classList)return e.classList.add(t);var n=e.className.split(" ");-1===n.indexOf(t)&&(n.push(t),e.className=n.join(" "))}function i(e,t,n,r){return e.addEventListener(t,n,r)}function o(e){return"string"==typeof e}function u(e,t){return o(e)?l.querySelector(e):e.querySelector(t)}function s(e,t){var n=o(e)?l.querySelectorAll(e):e.querySelectorAll(t);return Array.prototype.slice.call(n)}function f(e,t){if(e.classList)return e.classList.remove(t);var n=e.className.split(" "),r=n.indexOf(t);-1!==r&&(n.splice(r,1),e.className=n.join(" "))}function d(e,t){return e.getAttribute(t)}function p(e,t,n){return e.setAttribute(t,n)}function v(e){return e.remove()}var e=["text","number","email","password","tel","url"],t="select,textarea,"+e.map(function(e){return'input[type="'+e+'"]'}).join(",");return{addClass:c,toggleClass:function(e,t,n){if(!0===n||!1===n)return r=e,a=t,!0!==n?f(r,a):c(r,a);var r,a;if(e.classList)return e.classList.toggle(t);var i=e.className.split(" "),o=i.indexOf(t);-1!==o?i.splice(o,1):i.push(t),e.className=i.join(" ")},hasClass:function(e,t){return e.classList?e.classList.contains(t):-1!==e.className.split(" ").indexOf(t)},addClickListener:function(e,t){return i(e,"click",t)},addEventListener:i,getAttribute:d,hasAttribute:function(e,t){return e.hasAttribute(t)},getElementById:function(e){return l.getElementById(e)},getParent:function(e){return e.parentNode},isString:o,loadScript:function(e,t){var n=l.createElement("script");for(var r in t)r.startsWith("data-")?n.dataset[r.replace("data-","")]=t[r]:n[r]=t[r];n.src=e,l.body.appendChild(n)},removeScript:function(e){l.querySelectorAll('script[src="'+e+'"]').forEach(function(e){e.remove()})},poll:function(e){var i=e.interval||2e3,t=e.url||n.location.href,o=e.condition||function(){return!0},c=e.onSuccess||function(){},u=e.onError||function(){};return setTimeout(function r(){if(l.hidden)return setTimeout(r,i);var a=new XMLHttpRequest;return a.open("GET",t),a.setRequestHeader("Accept","application/json"),a.onload=function(){if(200===a.status){var e="application/json"===a.getResponseHeader("Content-Type").split(";")[0]?JSON.parse(a.responseText):a.responseText;return o(e)?c():setTimeout(r,i)}if(429!==a.status)return u({status:a.status,responseText:a.responseText});var t=1e3*Number.parseInt(a.getResponseHeader("X-RateLimit-Reset")),n=t-(new Date).getTime();return setTimeout(r,i<n?n:i)},a.send()},i)},querySelector:u,querySelectorAll:s,removeClass:f,removeElement:v,setAttribute:p,removeAttribute:function(e,t){return e.removeAttribute(t)},swapAttributes:function(e,t,n){var r=d(e,t),a=d(e,n);p(e,n,r),p(e,t,a)},setGlobalFlag:function(e,t){r[e]=!!t},getGlobalFlag:function(e){return!!r[e]},setSubmittedForm:function(e,t){a[e]=t},getSubmittedForm:function(e){return a[e]},preventFormSubmit:function(e){e.stopPropagation(),e.preventDefault()},getUlpFields:function(e){var t=[];return s(e,'input[name^="ulp-"], textarea[name^="ulp-"], select[name^="ulp-"]').forEach(function(e){t.push({name:d(e,"name"),value:e.value})}),t},appendUlpFieldsToForm:function(n,e){e&&e.length&&(s(n,'input[type="hidden"][name^="ulp-"], textarea[name^="ulp-"], select[name^="ulp-"]').forEach(function(e){v(e)}),e.forEach(function(e){var t=l.createElement("input");p(t,"type","hidden"),p(t,"name",e.name),p(t,"value",e.value),n.appendChild(t)}))},matchMedia:function(e){return"function"==typeof n.matchMedia&&n.matchMedia(e).matches},dispatchEvent:function(e,t,n){var r;"function"!=typeof Event?(r=l.createEvent("Event")).initCustomEvent(t,n,!1):r=new Event(t,{bubbles:n}),e.dispatchEvent(r)},timeoutPromise:function(e,a){return new Promise(function(t,n){var r=setTimeout(function(){n(new Error("timeoutPromise: promise timed out"))},e);a.then(function(e){clearTimeout(r),t(e)},function(e){clearTimeout(r),n(e)})})},createMutationObserver:function(e){return"undefined"==typeof MutationObserver?null:new MutationObserver(e)},consoleWarn:function(){(console.warn||console.log).apply(console,arguments)},getConfigJson:function(e){try{var t=u(e);if(!t)return null;var n=t.value;return n?JSON.parse(n):null}catch(e){return null}},getCSSVariable:function(e){return getComputedStyle(l.documentElement).getPropertyValue(e)},removeAndTrimString:function(e,t){var n=new RegExp(t,"g"),r=e.replace(n,"");return r=r.replace(/\s+/g,"  ").trim()},htmlEncode:function(e){var t=l.createTextNode(e),n=l.createElement("span");return n.appendChild(t),n.innerHTML||""},cleanServerErrorMessage:function(e,t){0<e.length&&0<t.length&&t.forEach(function(e){v(e)})},arrayFrom:function(e){return Array.prototype.slice.call(e)},arrayIncludes:function(e,t){return-1!==e.indexOf(t)},stringStartsWith:function(e,t){return 0===e.indexOf(t)},stringEndsWith:function(e,t){return-1!==e.indexOf(t,e.length-t.length)},setTimeout:setTimeout,globalWindow:n,SUPPORTED_INPUT_TYPES:e,ELEMENT_TYPE_SELECTOR:t,RUN_INIT:!0}},e.exports)(window,document),f=function(){var e={};function g(e){if(!("string"==typeof e||e instanceof String)){var t=typeof e;throw null===e?t="null":"object"===t&&(t=e.constructor.name),new TypeError("Expected a string but received a "+t)}}function b(e,t){var n,r;g(e),r="object"==typeof t?(n=t.min||0,t.max):(n=t,arguments[2]);var a=encodeURI(e).split(/%..|./).length-1;return n<=a&&(void 0===r||a<=r)}function _(e,t){for(var n in void 0===e&&(e={}),t)void 0===e[n]&&(e[n]=t[n]);return e}var w={require_tld:!0,allow_underscores:!1,allow_trailing_dot:!1,allow_numeric_tld:!1,allow_wildcard:!1,ignore_max_length:!1},t="(?:[0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])",n="("+t+"[.]){3}"+t,r=new RegExp("^"+n+"$"),a="(?:[0-9a-fA-F]{1,4})",i=new RegExp("^((?:"+a+":){7}(?:"+a+"|:)|(?:"+a+":){6}(?:"+n+"|:"+a+"|:)|(?:"+a+":){5}(?::"+n+"|(:"+a+"){1,2}|:)|(?:"+a+":){4}(?:(:"+a+"){0,1}:"+n+"|(:"+a+"){1,3}|:)|(?:"+a+":){3}(?:(:"+a+"){0,2}:"+n+"|(:"+a+"){1,4}|:)|(?:"+a+":){2}(?:(:"+a+"){0,3}:"+n+"|(:"+a+"){1,5}|:)|(?:"+a+":){1}(?:(:"+a+"){0,4}:"+n+"|(:"+a+"){1,6}|:)|(?::((?::"+a+"){0,5}:"+n+"|(?::"+a+"){1,7}|:)))(%[0-9a-zA-Z-.:]{1,})?$");function x(e,t){return void 0===t&&(t=""),g(e),(t=String(t))?"4"===t?r.test(e):"6"===t&&i.test(e):x(e,4)||x(e,6)}var y={allow_display_name:!1,allow_underscores:!1,require_display_name:!1,allow_utf8_local_part:!0,require_tld:!0,blacklisted_chars:"",ignore_max_length:!1,host_blacklist:[],host_whitelist:[]},E=/^([^\x00-\x1F\x7F-\x9F\cX]+)</i,C=/^[a-z\d!#\$%&'\*\+\-\/=\?\^_`{\|}~]+$/i,S=/^[a-z\d]+$/,A=/^([\s\x01-\x08\x0b\x0c\x0e-\x1f\x7f\x21\x23-\x5b\x5d-\x7e]|(\\[\x01-\x09\x0b\x0c\x0d-\x7f]))*$/i,T=/^[a-z\d!#\$%&'\*\+\-\/=\?\^_`{\|}~\u00A1-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+$/i,F=/^([\s\x01-\x08\x0b\x0c\x0e-\x1f\x7f\x21\x23-\x5b\x5d-\x7e\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|(\\[\x01-\x09\x0b\x0c\x0d-\x7f\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))*$/i,L=254;function c(e,t,n,r,a){if(g(e),e=e.trim(),(t=_(t,y)).require_display_name||t.allow_display_name){var i=e.match(E);if(i){var o=i[1];if(e=e.replace(o,"").replace(/(^<|>$)/g,""),a(o," ")&&(o=o.slice(0,-1)),!function(e){var t=e.replace(/^"(.+)"$/,"$1");if(!t.trim())return!1;if(/[\.";<>]/.test(t)){if(t===e)return!1;if(t.split('"').length!==t.split('\\"').length)return!1}return!0}(o))return!1}else if(t.require_display_name)return!1}if(!t.ignore_max_length&&e.length>L)return!1;var c=e.split("@"),u=c.pop(),l=u.toLowerCase();if(n(t.host_blacklist,l))return!1;if(0<t.host_whitelist.length&&!n(t.host_whitelist,l))return!1;var s=c.join("@");if(t.domain_specific_validation&&("gmail.com"===l||"googlemail.com"===l)){var f=(s=s.toLowerCase()).split("+")[0];if(!b(f.replace(/\./g,""),{min:6,max:30}))return!1;for(var d=f.split("."),p=0;p<d.length;p++)if(!S.test(d[p]))return!1}if(!(!1!==t.ignore_max_length||b(s,{max:64})&&b(u,{max:254})))return!1;if(!function(e,t){g(e),(t=_(t,w)).allow_trailing_dot&&"."===e[e.length-1]&&(e=e.substring(0,e.length-1)),!0===t.allow_wildcard&&0===e.indexOf("*.")&&(e=e.substring(2));var n=e.split("."),r=n[n.length-1];if(t.require_tld){if(n.length<2)return!1;if(!t.allow_numeric_tld&&!/^([a-z\u00A1-\u00A8\u00AA-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{2,}|xn[a-z0-9-]{2,})$/i.test(r))return!1;if(/\s/.test(r))return!1}return!(!t.allow_numeric_tld&&/^\d+$/.test(r))&&n.every(function(e){return!(63<e.length&&!t.ignore_max_length||!/^[a-z_\u00a1-\uffff0-9-]+$/i.test(e)||/[\uff01-\uff5e]/.test(e)||/^-|-$/.test(e)||!t.allow_underscores&&/_/.test(e))})}(u,{require_tld:t.require_tld,ignore_max_length:t.ignore_max_length,allow_underscores:t.allow_underscores})){if(!t.allow_ip_domain)return!1;if(!x(u)){if(!r(u,"[")||!a(u,"]"))return!1;var v=u.slice(1,-1);if(0===v.length||!x(v))return!1}}if('"'===s[0])return s=s.slice(1,s.length-1),t.allow_utf8_local_part?F.test(s):A.test(s);for(var h=t.allow_utf8_local_part?T:C,m=(d=s.split("."),0);m<d.length;m++)if(!h.test(d[m]))return!1;return!t.blacklisted_chars||-1===s.search(new RegExp("["+t.blacklisted_chars+"]+","g"))}return e.exports=function(r,a,n,i,o){return{ulpRequiredFunction:function(e,t){return!t||!!e.value},ulpPasswordPolicyFunction:function(e,t){if(r&&r.ulpFlags&&r.ulpFlags.disable_ulp_form_submission_fix)return!0;if(!e||"password"!==e.name)return!0;if(!a.querySelector(".c0327540d.c36fc8fae"))return!0;if(!e.value)return!0;var n=e.classList&&e.classList.contains("c4f08b61e");return!t&&!n||!n},ulpEmailValidationFunction:function(e,t){return!t||!e.value||!!c(e.value,void 0,n,i,o)},ulpPatternCheckFunction:function(e,t){return!t||!e.value||function(e){if("password"===e.name)return!0;var t=e.getAttribute("pattern");return!t||null!==e.value.match(t)}(e)}}},e.exports}()(window,document,s.arrayIncludes,s.stringStartsWith,s.stringEndsWith);((t={}).exports=function(r,e,o,c,u,l,s,f,t){function d(e){"Escape"==e.code&&document.activeElement.blur()}t.enable_ulp_wcag_compliance&&e("div.c7684e6e4.password").forEach(function(e){var a,i,t=r(e,"input"),n=r(e,'[data-action="toggle"]');o(e,(a=t,i=n,function(e){if(e.target.classList.contains("ulp-button-icon")){if(a.type="password"===a.type?"text":"password",i){i.ariaChecked="false"===i.ariaChecked?"true":"false";var t=i.querySelector(".show-password-tooltip"),n=i.querySelector(".hide-password-tooltip");t&&s(t,"hide"),n&&s(n,"hide")}var r=f(a);"text"===a.type?u(r,"show"):l(r,"show")}})),c(n,"keyup",d)})},t.exports)(s.querySelector,s.querySelectorAll,s.addClickListener,s.addEventListener,s.addClass,s.removeClass,s.toggleClass,s.getParent,u),((n={}).exports=function(r,e,o,c,u,l,s,t){t.enable_ulp_wcag_compliance||e("div.c7684e6e4.password").forEach(function(e){var a,i,t=r(e,"input"),n=r(e,'[data-action="toggle"]');o(e,(a=t,i=n,function(e){if(e.target.classList.contains("ulp-button-icon")){if(a.type="password"===a.type?"text":"password",i){var t=i.querySelector(".show-password-tooltip"),n=i.querySelector(".hide-password-tooltip");t&&l(t,"hide"),n&&l(n,"hide")}var r=s(a);"text"===a.type?c(r,"show"):u(r,"show")}}))})},n.exports)(s.querySelector,s.querySelectorAll,s.addClickListener,s.addClass,s.removeClass,s.toggleClass,s.getParent,u),{exports:function(e,r,a,t){var n=e(".c3f7d7adc"),i=e("#alert-trigger"),o=e(".c3cc47214"),c=e(".c55f8bda2"),u=!1;i&&c&&n&&t(n,function(e){var t=e.target===i,n=c.contains(e.target);return t&&!u?(r(o,"show"),void(u=!0)):t&&u||u&&!n?(a(o,"show"),void(u=!1)):void 0})}}.exports(s.querySelector,s.addClass,s.removeClass,s.addClickListener),(q="recaptcha_v2",N="recaptcha_enterprise",R="hcaptcha",P="friendly_captcha",I="arkose",O="auth0_v2",(r={}).exports=function(i,c,u,l,s,f,d,p,n,a){if(!n.enable_ulp_rtl_support){var v=500,h=3,m=0,g=u("div[data-captcha-sitekey]"),b=u(".ulp-captcha-client-error"),r=b?b.innerHTML:"",_=u("div[data-captcha-sitekey] input");if(g){var e=E(),t=C();e&&t&&function(){var e="captchaCallback_"+Math.floor(1000001*Math.random()),t=E(),n={async:!0,defer:!0},r=function(e,t,n,r){switch(E()){case q:return"https://www.recaptcha.net/recaptcha/api.js?render=explicit&hl="+e+"&onload="+t;case N:return"https://www.recaptcha.net/recaptcha/enterprise.js?render=explicit&hl="+e+"&onload="+t;case R:return"https://js.hcaptcha.com/1/api.js?render=explicit&hl="+e+"&onload="+t;case P:return"https://cdn.jsdelivr.net/npm/friendly-challenge@0.9.14/widget.min.js";case I:return"https://"+n+".arkoselabs.com/v2/"+r+"/api.js";case O:return"https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload="+t}}(y(),e,g?g.getAttribute("data-captcha-client-subdomain"):null,C());if(t===I||t===O){n["data-callback"]=e;var o=!(n.onerror=function(){if(m<h)return c(r),i(r,n),void m++;c(r),A("BYPASS_CAPTCHA")}),a=function(e){o=!0;try{if(!e||"function"!=typeof e.run||"function"!=typeof e.setConfig)return void L("INVALID_CREDENTIALS");r=e,a=S(),i=function(e){var t=_?_.value:"";t&&""!==t||(e.preventDefault(),e.stopPropagation(),setTimeout(function(){r.run()},v))},a&&(a.addEventListener("submit",i,!0),r.setConfig({onCompleted:function(e){if(!e||!e.token)return a&&a.removeEventListener("submit",i,!0),void L("INVALID_CREDENTIALS");A(e.token),a&&(a.removeEventListener("submit",i,!0),a.requestSubmit?a.requestSubmit():a.submit())},onError:function(n){return fetch("https://status.arkoselabs.com/api/v2/status.json").then(function(e){return e.json()}).then(function(e){var t=e.status.indicator;return"none"===t}).catch(function(e){return!1}).then(function(e){if(e&&m<h)return r.reset(),new Promise(function(e){setTimeout(function(){e(r.run())},v),m++});var t=n&&n.c0fedfce7?n.c0fedfce7:"RUNTIME_ERROR";b.innerHTML=b.innerHTML.replace("#{errorCode}",p(t)),l(g,"c0fedfce7"),s(b,"hide"),A("BYPASS_CAPTCHA"),a.removeEventListener("submit",i,!0)})}}))}catch(e){L("INIT_ERROR")}var r,a,i};t===O&&(a=function(){k()}),window[e]=a,t===I&&(n.onload=function(){setTimeout(function(){o||L("INVALID_CREDENTIALS")},250)})}else window[e]=function(){delete window[e],k()},t===P&&(l(x(),"frc-captcha"),d(x(),"data-sitekey",C()),n.onload=window[e]);i(r,n)}()}}function w(){switch(E()){case q:return window.grecaptcha;case N:return window.grecaptcha.enterprise;case R:return window.hcaptcha;case P:return window.friendlyChallenge;case I:return window.arkose;case O:return window.turnstile}}function x(){return u(function(){switch(E()){case q:case N:return"#ulp-recaptcha";case R:return"#ulp-hcaptcha";case P:return"#ulp-friendly-captcha";case I:return"#ulp-arkose";case O:return"#ulp-auth0-v2-captcha"}}())}function y(){return g?g.getAttribute("data-captcha-lang"):null}function E(){return g?g.getAttribute("data-captcha-provider"):null}function C(){return g?g.getAttribute("data-captcha-sitekey"):null}function S(){return u('form[data-form-primary="true"]')}function A(e){return _.value=e}function o(){return u("#error-element-captcha-required")}function T(){var e=o();e&&l(e,"hide");var t=u("#captcha-required-status");t&&(t.textContent=""),a&&a("invalidCaptcha",!1)}function F(t){if(n.enable_ulp_wcag_compliance){var e=S();e&&_&&t&&e.addEventListener("submit",function(e){_.value?T():(e.preventDefault(),l(g,"c0fedfce7"),function(){var e=o();e&&s(e,"hide");var t=u("#captcha-required-status");if(t){var n=t.getAttribute("data-captcha-required-error");if(n){var r=-1!==t.textContent.indexOf("​");t.textContent=n+(r?"":"​")}}a&&a("invalidCaptcha",!0)}(),t.focus())},!0)}}function L(e){if(b&&g){b.innerHTML=r.replace("#{errorCode}",p(e||"INIT_ERROR")),l(g,"c0fedfce7"),s(b,"hide");var t=u("#error-element-captcha");t&&l(t,"hide")}}function k(){var e=w(),t=f("--ulp-captcha-widget-theme");t=t?t.trim():"light";var n=u("#captcha-status"),r=n?n.getAttribute("data-captcha-expired-error"):"";if(E()===P)"dark"===t&&l(u(".frc-captcha"),"dark"),(o=e.autoWidget).opts.language=y(),o.opts.doneCallback=function(e){A(e)};else{var a=x();d(a,"tabindex","-1");var i={sitekey:C(),theme:t,"expired-callback":function(){A(""),l(g,"c0fedfce7"),e.reset(o),n&&(n.textContent=r),a.focus()},callback:function(e){A(e),s(g,"c0fedfce7"),n&&(n.textContent=""),T()}};E()===O&&(i.language=y(),i.retry="never",i.size="flexible",i["response-field"]=!1,i["error-callback"]=function(e){return console.error("ERROR: Auth Challenge Error Code",e),A(""),m<h?(m++,w().reset(o)):(b.innerHTML=b.innerHTML.replace("#{errorCode}",p(e)),l(g,"c0fedfce7"),s(b,"hide")),!0});var o=e.render(a,i);n&&(n.textContent=""),E()===q&&F(a)}}},r.exports)(s.loadScript,s.removeScript,s.querySelector,s.addClass,s.removeClass,s.getCSSVariable,s.setAttribute,s.htmlEncode,u,s.setGlobalFlag),(j="recaptcha_v2",M="recaptcha_enterprise",D="hcaptcha",H="friendly_captcha",U="arkose",$="auth0_v2",(a={}).exports=function(i,c,u,l,s,f,d,p,n,a){if(n.enable_ulp_rtl_support){var v=500,h=3,m=0,g=u("div[data-captcha-sitekey]"),b=u(".ulp-captcha-client-error"),r=b?b.innerHTML:"",_=u("div[data-captcha-sitekey] input");if(g){var e=E(),t=C();e&&t&&function(){var e="captchaCallback_"+Math.floor(1000001*Math.random()),t=E(),n={async:!0,defer:!0},r=function(e,t,n,r){switch(E()){case j:return"https://www.recaptcha.net/recaptcha/api.js?render=explicit&hl="+e+"&onload="+t;case M:return"https://www.recaptcha.net/recaptcha/enterprise.js?render=explicit&hl="+e+"&onload="+t;case D:return"https://js.hcaptcha.com/1/api.js?render=explicit&hl="+e+"&onload="+t;case H:return"https://cdn.jsdelivr.net/npm/friendly-challenge@0.9.14/widget.min.js";case U:return"https://"+n+".arkoselabs.com/v2/"+r+"/api.js";case $:return"https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload="+t}}(y(),e,g?g.getAttribute("data-captcha-client-subdomain"):null,C());if(t===U||t===$){n["data-callback"]=e;var o=!(n.onerror=function(){if(m<h)return c(r),i(r,n),void m++;c(r),A("BYPASS_CAPTCHA")}),a=function(e){o=!0;try{if(!e||"function"!=typeof e.run||"function"!=typeof e.setConfig)return void L("INVALID_CREDENTIALS");r=e,a=S(),i=function(e){var t=_?_.value:"";t&&""!==t||(e.preventDefault(),e.stopPropagation(),setTimeout(function(){r.run()},v))},a&&(a.addEventListener("submit",i,!0),r.setConfig({language:y(),onCompleted:function(e){if(!e||!e.token)return a&&a.removeEventListener("submit",i,!0),void L("INVALID_CREDENTIALS");A(e.token),a&&(a.removeEventListener("submit",i,!0),a.requestSubmit?a.requestSubmit():a.submit())},onError:function(n){return fetch("https://status.arkoselabs.com/api/v2/status.json").then(function(e){return e.json()}).then(function(e){var t=e.status.indicator;return"none"===t}).catch(function(e){return!1}).then(function(e){if(e&&m<h)return r.reset(),new Promise(function(e){setTimeout(function(){e(r.run())},v),m++});var t=n&&n.c0fedfce7?n.c0fedfce7:"RUNTIME_ERROR";b.innerHTML=b.innerHTML.replace("#{errorCode}",p(t)),l(g,"c0fedfce7"),s(b,"hide"),A("BYPASS_CAPTCHA"),a.removeEventListener("submit",i,!0)})}}))}catch(e){L("INIT_ERROR")}var r,a,i};t===$&&(a=function(){k()}),window[e]=a,t===U&&(n.onload=function(){setTimeout(function(){o||L("INVALID_CREDENTIALS")},250)})}else window[e]=function(){delete window[e],k()},t===H&&(l(x(),"frc-captcha"),d(x(),"data-sitekey",C()),d(x(),"data-lang",y()),n.onload=window[e]);i(r,n)}()}}function w(){switch(E()){case j:return window.grecaptcha;case M:return window.grecaptcha.enterprise;case D:return window.hcaptcha;case H:return window.friendlyChallenge;case U:return window.arkose;case $:return window.turnstile}}function x(){return u(function(){switch(E()){case j:case M:return"#ulp-recaptcha";case D:return"#ulp-hcaptcha";case H:return"#ulp-friendly-captcha";case U:return"#ulp-arkose";case $:return"#ulp-auth0-v2-captcha"}}())}function y(){return g?g.getAttribute("data-captcha-lang"):null}function E(){return g?g.getAttribute("data-captcha-provider"):null}function C(){return g?g.getAttribute("data-captcha-sitekey"):null}function S(){return u('form[data-form-primary="true"]')}function A(e){return _.value=e}function o(){return u("#error-element-captcha-required")}function T(){var e=o();e&&l(e,"hide");var t=u("#captcha-required-status");t&&(t.textContent=""),a&&a("invalidCaptcha",!1)}function F(t){if(n.enable_ulp_wcag_compliance){var e=S();e&&_&&t&&e.addEventListener("submit",function(e){_.value?T():(e.preventDefault(),l(g,"c0fedfce7"),function(){var e=o();e&&s(e,"hide");var t=u("#captcha-required-status");if(t){var n=t.getAttribute("data-captcha-required-error");if(n){var r=-1!==t.textContent.indexOf("​");t.textContent=n+(r?"":"​")}}a&&a("invalidCaptcha",!0)}(),t.focus())},!0)}}function L(e){if(b&&g){b.innerHTML=r.replace("#{errorCode}",p(e||"INIT_ERROR")),l(g,"c0fedfce7"),s(b,"hide");var t=u("#error-element-captcha");t&&l(t,"hide")}}function k(){var e=w(),t=f("--ulp-captcha-widget-theme");t=t?t.trim():"light";var n=u("#captcha-status"),r=n?n.getAttribute("data-captcha-expired-error"):"";if(E()===H)"dark"===t&&l(u(".frc-captcha"),"dark"),(o=e.autoWidget).opts.language=y(),o.opts.doneCallback=function(e){A(e)};else{var a=x();d(a,"tabindex","-1");var i={sitekey:C(),theme:t,"expired-callback":function(){A(""),l(g,"c0fedfce7"),e.reset(o),n&&(n.textContent=r),a.focus()},callback:function(e){A(e),s(g,"c0fedfce7"),n&&(n.textContent=""),T()}};E()===$&&(i.language=y(),i.retry="never",i.size="flexible",i["response-field"]=!1,i["error-callback"]=function(e){return console.error("ERROR: Auth Challenge Error Code",e),A(""),m<h?(m++,w().reset(o)):(b.innerHTML=b.innerHTML.replace("#{errorCode}",p(e)),l(g,"c0fedfce7"),s(b,"hide")),!0});var o=e.render(a,i);n&&(n.textContent=""),E()===j&&F(a)}}},a.exports)(s.loadScript,s.removeScript,s.querySelector,s.addClass,s.removeClass,s.getCSSVariable,s.setAttribute,s.htmlEncode,u,s.setGlobalFlag),((i={}).exports=function(r,e,a,i,o,c,u,l,n,s,t){if(!t.enable_ulp_wcag_compliance){if(r("body._simple-labels"))return e(".c6875e265.no-js").forEach(function(e){o(e,"no-js")}),void e(".c6875e265.js-required").forEach(function(e){i(e,"hide")});e(".c7684e6e4:not(.cb7b77219):not(disabled)").forEach(function(e){i(e,"c3cc7de2c");var t,n=r(e,".input");n.value&&i(e,"c4f35e913"),a(e,"change",f),a(n,"blur",f),a(n,"animationstart",d),t=n,u(function(){t.value&&l(t,"change",!0)},100)})}function f(e){var t=e.target,n=c(t);t.value||s(t,"data-autofilled")?i(n,"c4f35e913"):o(n,"c4f35e913")}function d(e){var t=e.target;"onAutoFillStart"===e.animationName&&(n(t,"data-autofilled",!0),l(e.target,"change",!0),a(t,"keyup",p,{once:!0}))}function p(e){var t=e.target;n(t,"data-autofilled","")}},i.exports)(s.querySelector,s.querySelectorAll,s.addEventListener,s.addClass,s.removeClass,s.getParent,s.setTimeout,s.dispatchEvent,s.setAttribute,s.getAttribute,u),{exports:function(e,t,r,a,i,o,c,u){function n(e){var t=r("submitted"),n=i("submittedForm");a("submitted",!0),o("submittedForm",e.currentTarget),t&&n&&n===e.currentTarget?c(e):"apple"===u(e.target,"data-provider")&&setTimeout(function(){a("submitted",!1)},2e3)}var l=e("form");l&&l.forEach(function(e){t(e,"submit",n)})}}.exports(s.querySelectorAll,s.addEventListener,s.getGlobalFlag,s.setGlobalFlag,s.getSubmittedForm,s.setSubmittedForm,s.preventFormSubmit,s.getAttribute),{exports:function(n,e,r,a,i,o,c,u,l,t,s,f){if(f.enable_ulp_wcag_compliance){var d=e("[id^='ulp-container-']");if(d&&d.length){var p=t(x);if(p)for(var v=0;v<d.length;v++)p.observe(d[v],{childList:!0,subtree:!0})}x()}function h(e){var t=e.target,n=o(t);t.value||u(t,"data-autofilled")?a(n,"c4f35e913"):i(n,"c4f35e913")}function m(e){var t=e.target,n=o(t);a(n,"focus"),w(t,n)}function g(e){var t=e.target,n=o(t);i(n,"focus"),h(e),w(t,n)}function b(e){var t=e.target;l(t,"data-autofilled","")}function _(e){var t=e.target;"onAutoFillStart"===e.animationName&&(l(t,"data-autofilled",!0),dispatchEvent(e.target,"change",!0),r(t,"keyup",b,{once:!0}))}function w(e,t){e.value?a(t,"c4f35e913"):i(t,"c4f35e913")}function x(){e(".ulp-field").forEach(function(e){if(!c(e,"c3cc7de2c")){var t=n(e,s);t&&(a(e,"c3cc7de2c"),w(t,e),setTimeout(function(){w(t,e)},50),t===document.activeElement&&a(e,"focus"),r(t,"change",h),r(t,"focus",m),r(t,"blur",g),r(t,"animationstart",_))}})}}}.exports(s.querySelector,s.querySelectorAll,s.addEventListener,s.addClass,s.removeClass,s.getParent,s.hasClass,s.getAttribute,s.setAttribute,s.createMutationObserver,s.ELEMENT_TYPE_SELECTOR,u),{exports:function(n,e,r,a,i,o,c,t,u,l){if(!l.enable_ulp_wcag_compliance){var s=e("[id^='ulp-container-']");if(s&&s.length){var f=t(g);if(f)for(var d=0;d<s.length;d++)f.observe(s[d],{childList:!0,subtree:!0});g()}}function p(e){var t=e.target,n=o(t);t.value?a(n,"c4f35e913"):i(n,"c4f35e913")}function v(e){var t=e.target,n=o(t);a(n,"focus"),m(t,n)}function h(e){var t=e.target,n=o(t);i(n,"focus"),m(t,n)}function m(e,t){e.value?a(t,"c4f35e913"):i(t,"c4f35e913")}function g(){e("[id^='ulp-container-'] .ulp-field").forEach(function(e){if(!c(e,"c3cc7de2c")){var t=n(e,u);t&&(a(e,"c3cc7de2c"),m(t,e),setTimeout(function(){m(t,e)},50),t===document.activeElement&&a(e,"focus"),r(t,"change",p),r(t,"focus",v),r(t,"blur",h))}})}}}.exports(s.querySelector,s.querySelectorAll,s.addEventListener,s.addClass,s.removeClass,s.getParent,s.hasClass,s.createMutationObserver,s.ELEMENT_TYPE_SELECTOR,u),{exports:function(r,o,a,i,u,l,c,s,f,d,p,v,t,h,m,e,n,g,b,_,w){if(_.enable_ulp_wcag_compliance){var x=!1,y=e+',input[type="checkbox"]';return q(),[y,E,C,S,A,T,L,F,k,q]}function E(e){var t=u(e,"data-ulp-validation-function"),n=i(e);return{functionName:t,element:r(n,y),parent:n}}function C(e){var a=[],i=[];return o(e,"[data-ulp-validation-function]").forEach(function(e){var t=E(e),n=[];if(t.element){if("input"===t.element.tagName.toLowerCase()){var r=u(t.element,"type");"checkbox"!==r&&-1===m.indexOf(r)&&n.push("Unsupported input type: "+r)}}else n.push("Could not find element");v[t.functionName]||n.push("Could not find function with name: "+t.functionName),n.length?i=i.concat(n):a.push(e)}),i.length&&t(i.join("\r\n")),a}function S(e,t,n){var r=E(e),a=(0,v[r.functionName])(r.element,t,n);a?s(e,"ulp-validator-error")&&(d(e,"ulp-validator-error"),c(e,"data-is-error")):s(e,"ulp-validator-error")||(f(e,"ulp-validator-error"),l(e,"data-is-error",!0));var i=o(r.parent,".ulp-validator-error");return p(r.parent,"ulp-error",!!i.length),a}function A(t){var n=E(t),e=(u(t,"data-ulp-validation-event-listeners")||"").replace(/\s/g,"").split(",").filter(function(e){return!!e});e.length&&e.forEach(function(e){a(n.element,e,function(){S(t,x,e)})})}function T(e,t,n){x=!0;var r=n.filter(function(e){return!S(e,x,"submit")});if(_.disable_ulp_form_submission_fix){if(!r.length)return t.submitter&&"default"==u(t.submitter,"value")&&l(t.submitter,"disabled",!0),void e.submit();h(t);var a=E(r[0]);return a.element.focus({preventScroll:!0}),void a.parent.scrollIntoView({behavior:"smooth"})}var i=w&&w("invalidPasswordPolicy"),o=w&&w("invalidCaptcha");if(!r.length&&!i&&!o)return t.submitter&&"default"==u(t.submitter,"value")&&l(t.submitter,"disabled",!0),void e.submit();if(h(t),r.length){var c=E(r[0]);c.element.focus({preventScroll:!0}),c.parent.scrollIntoView({behavior:"smooth"})}}function F(){var t=r('form[data-form-primary="true"]'),n=C(t);0!==n.length&&(n.forEach(function(e){A(e)}),a(t,"submit",function(e){T(t,e,n)}))}function L(){var n=r('form[data-form-primary="true"]'),e=o('form[data-form-secondary="true"]');n&&e.length&&e.forEach(function(t){a(t,"submit",function(){var e=g(n);e.length&&b(t,e)})})}function k(){if(n)for(var e in n)n.hasOwnProperty(e)&&(v[e]=n[e])}function q(){var e=r("form[data-disable-html-validations]");e&&(k(),l(e,"novalidate",""),F(),_.custom_prompts_passkeys&&L())}}}.exports(s.querySelector,s.querySelectorAll,s.addEventListener,s.getParent,s.getAttribute,s.setAttribute,s.removeAttribute,s.hasClass,s.addClass,s.removeClass,s.toggleClass,s.globalWindow,s.consoleWarn,s.preventFormSubmit,s.SUPPORTED_INPUT_TYPES,s.ELEMENT_TYPE_SELECTOR,f,s.getUlpFields,s.appendUlpFieldsToForm,u,s.getGlobalFlag),{exports:function(r,o,a,i,c,u,l,t,s,f,e,n){if(!n.enable_ulp_wcag_compliance){var d=!1,p=e+',input[type="checkbox"]';return w(),[p,v,h,m,g,b,_,w]}function v(e){var t=c(e,"data-ulp-validation-function"),n=i(e);return{functionName:t,element:r(n,p),parent:n}}function h(e){var a=[],i=[];return o(e,"[data-ulp-validation-function]").forEach(function(e){var t=v(e),n=[];if(t.element){if("input"===t.element.tagName.toLowerCase()){var r=c(t.element,"type");"checkbox"!==r&&-1===f.indexOf(r)&&n.push("Unsupported input type: "+r)}}else n.push("Could not find element");l[t.functionName]||n.push("Could not find function with name: "+t.functionName),n.length?i=i.concat(n):a.push(e)}),i.length&&t(i.join("\r\n")),a}function m(e,t,n){var r=v(e),a=(0,l[r.functionName])(r.element,t,n);u(e,"ulp-validator-error",!a);var i=o(r.parent,".ulp-validator-error");return u(r.parent,"ulp-error",!!i.length),a}function g(t){var n=v(t),e=(c(t,"data-ulp-validation-event-listeners")||"").replace(/\s/g,"").split(",").filter(function(e){return!!e});e.length&&e.forEach(function(e){a(n.element,e,function(){m(t,d,e)})})}function b(e,t,n){d=!0;var r=n.filter(function(e){return!m(e,d,"submit")});if(r.length){s(t);var a=v(r[0]);a.element.focus({preventScroll:!0}),a.parent.scrollIntoView({behavior:"smooth"})}else e.submit()}function _(){var t=r('form[data-form-primary="true"]'),n=h(t);0!==n.length&&(n.forEach(function(e){g(e)}),a(t,"submit",function(e){b(t,e,n)}))}function w(){var e=o("[id^='ulp-container-']");e&&e.length&&_()}}}.exports(s.querySelector,s.querySelectorAll,s.addEventListener,s.getParent,s.getAttribute,s.toggleClass,s.globalWindow,s.consoleWarn,s.preventFormSubmit,s.SUPPORTED_INPUT_TYPES,s.ELEMENT_TYPE_SELECTOR,u),{exports:function(e,t,n){function r(n){t(n,"click",function(e){e.preventDefault();var t=document.createElement("input");t.name="action",t.type="hidden",t.value=n.value,n.form.appendChild(t),n.form.submit(),n.form.removeChild(t)})}function a(){e('form button[type="submit"][formnovalidate], form input[type="submit"][formnovalidate]').forEach(function(e){r(e)})}return n&&a(),[a,r]}}.exports(s.querySelectorAll,s.addEventListener,s.RUN_INIT),((o={}).exports=function(o,e,c,u,l,s,t,f,n){if(n.enable_ulp_wcag_compliance){var r=e('[class*="aria-error-check"]');if(r&&r.length){var a=t(function(e){e&&e.length&&e.map(function(e){if(e.target&&c(e.target,"aria-error-check")){var t=o('[id="'+u(e.target,"data-ulp-validation-target")+'"');if(t){var n=u(t,"aria-describedby");u(e.target,"data-is-error")?(r=t,a=n,i=e.target.id,a&&-1!==a.search(i)||l(r,"aria-describedby",a?a+" "+i:i),l(r,"aria-invalid",!0)):function(e,t,n){if(t){var r=f(t,n);r.length?l(e,"aria-describedby",r):(s(e,"aria-invalid"),s(e,"aria-describedby"))}else s(e,"aria-invalid"),s(e,"aria-describedby")}(t,n,e.target.id)}}var r,a,i})});a&&r.map(function(e){a.observe(e,{attributes:!0,attributeFilter:["class","data-is-error"]})})}}},o.exports)(s.querySelector,s.querySelectorAll,s.hasClass,s.getAttribute,s.setAttribute,s.removeAttribute,s.createMutationObserver,s.removeAndTrimString,u),(l="https://accounts.google.com/gsi/client",(c={}).exports=function(t,n,u,e){var r=e("#one-tap-config-json");if(r&&r.clientId){var a=0;!function e(){t(l,{async:!0,defer:!0,onload:function(){!function(){var e=window.google;if(e&&e.accounts&&e.accounts.id){var t={client_id:r.clientId,callback:i,auto_select:!!r.autoSelect,nonce:r.nonce,cancel_on_tap_outside:!!r.cancelOnTapOutside,itp_support:!!r.itpSupport};r.context&&(t.context=r.context),e.accounts.id.initialize(t),e.accounts.id.prompt()}}()},onerror:function(){n(l),a<2&&(a++,e())}})}()}function i(e){if(e&&e.credential){var t,n=document.createElement("form");n.method="POST",n.action=(t=u('form[data-form-primary="true"]'))&&t.getAttribute("action")?t.getAttribute("action"):window.location.pathname,n.style.display="none";var r=document.createElement("input");r.type="hidden",r.name="action",r.value="google-one-tap",n.appendChild(r);var a=document.createElement("input");a.type="hidden",a.name="one_tap_credential",a.value=e.credential,n.appendChild(a);var i=u('form[data-form-primary="true"]'),o=i?u(i,'input[name="state"]'):null;if(o){var c=document.createElement("input");c.type="hidden",c.name="state",c.value=o.value,n.appendChild(c),document.body.appendChild(n),n.submit()}}}},c.exports)(s.loadScript,s.removeScript,s.querySelector,s.getConfigJson),function(){var e={},p=['input[type="text"]','input[type="email"]','input[type="tel"]','input[type="number"]','input[type="url"]','input[type="password"]',"input:not([type])"].join(", "),v=['input:not([type="hidden"]):not([aria-hidden="true"]):not([disabled])','select:not([aria-hidden="true"]):not([disabled])','textarea:not([aria-hidden="true"]):not([disabled])','button:not([aria-hidden="true"]):not([disabled])'].join(", ");function h(e){var t=window.getComputedStyle(e);return"none"!==t.display&&"hidden"!==t.visibility}return e.exports=function(t,e,n,r){if(e.enable_ulp_wcag_compliance&&!t("#prompt-alert")){var a=r("(pointer: coarse), (pointer: fine), (pointer: none)"),i=r("(hover: hover), (hover: none)");if(a&&i&&(r("(pointer: coarse)")||!r("(hover: hover)")))return;var o=t(".cd3262ead");if(o){for(var c=n(o.querySelectorAll(v)),u=null,l=0;l<c.length;l++)if(h(c[l])){u=c[l];break}if(u){for(var s=n(o.querySelectorAll(p)),f=null,d=0;d<s.length;d++)if(h(s[d])){f=s[d];break}setTimeout(function(){if(f&&f===u)f.focus();else{var e=t("#screen-header");e&&e.focus()}},250)}}}},e.exports}()(s.querySelector,u,s.arrayFrom,s.matchMedia)}();
+</script>
+    </div>
+  </body>
+</html>

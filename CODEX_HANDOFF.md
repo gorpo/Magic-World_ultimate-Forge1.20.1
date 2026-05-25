@@ -901,3 +901,21 @@ Pedido adicional executado no projeto NeoForge 26.1.2:
 - `run/mods` ficou somente com `MagicWorld-Ultimate-NeoForge-26.1.2-1.2.0-all-in-one.jar` atualizado.
 
 Observacao: testar em mundo novo. Mundo ja gerado antes nao corrige estruturas antigas automaticamente.
+
+## Atualizacao de Documentacao - 2026-05-25 14:15 America/Sao_Paulo
+
+- README e wiki receberam secao pratica dos mods built in do all-in-one:
+  - JourneyMap: `J` para mapa em tela cheia, minimapa e waypoints;
+  - Effortless Building: `ALT` para menu/uso de construcao rapida;
+  - Controllable: suporte a controle/gamepad e configuracao em controles;
+  - Iris Shaders: Shader Packs;
+  - Sodium: menu de video/performance;
+  - Distant Horizons: botao Horizontes Distantes;
+  - Entity Texture Features / Entity Model Features: suporte visual para packs.
+- Imagens externas baixadas para `screenshots/`:
+  - `external_journeymap_minimap.png`
+  - `external_journeymap_fullscreen.png`
+  - `external_effortless_mirror_settings.png`
+  - `external_controllable_controller.webp`
+- Fontes usadas para referencia/imagens: JourneyMap Docs, CurseForge/Effortless Building e MrCrayfish/Controllable.
+- Proximo passo: sincronizar com repo do port e subir README/wiki/imagens online.
