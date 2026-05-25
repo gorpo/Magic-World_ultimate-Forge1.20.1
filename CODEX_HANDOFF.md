@@ -877,3 +877,27 @@ Este projeto inteiro deve receber downgrade para Minecraft 1.20.1 usando **Forge
 - Commit enviado: `c8bfa41 chore: importa base do port Forge 1.20.1`.
 - Repositorio antigo `MagicWorld-MagicWand_Mod` continua limpo e preservado.
 - Proximo passo real do port: adaptar Gradle/mod metadata/APIs de NeoForge 26.1.2 para Forge 1.20.1 seguindo `Downgrade_1.20.1.txt`.
+
+## Atualizacao de Execucao - 2026-05-25 14:03 America/Sao_Paulo
+
+Pedido adicional executado no projeto NeoForge 26.1.2:
+
+- Corrigido metro subterraneo:
+  - tunel agora e uma galeria selada com piso, paredes e teto de deepslate;
+  - trilhos energizados ficam conectados por uma curva real usando `RAIL` curvo no canto;
+  - escadas de acesso da casa/castelo ganharam paredes, teto e luzes;
+  - estacoes receberam luz extra;
+  - area do tunel fica protegida por limpeza periodica de monstros hostis.
+- Corrigido menu de criacao de mundo:
+  - quando qualquer opcao Magic World exige comandos, o botao de comandos/cheats do Minecraft e sincronizado para ON;
+  - toggles de Casa/Castelo/Aura forcam nova sincronizacao de comandos.
+- Corrigidos baus/cama da casa importada:
+  - baus/cama agora usam busca por posicao interna com teto acima;
+  - baus/camas sem teto na area da casa sao removidos durante a decoracao.
+- Bonus novo criado:
+  - Galeria Arcana secreta no caminho do metro, com mesa de encantamento, luzes, livros e guardiao allay.
+- `README.md` atualizado com essas mudancas.
+- Rodado `.\gradlew.bat build magicWorldAllInOneJar` com sucesso.
+- `run/mods` ficou somente com `MagicWorld-Ultimate-NeoForge-26.1.2-1.2.0-all-in-one.jar` atualizado.
+
+Observacao: testar em mundo novo. Mundo ja gerado antes nao corrige estruturas antigas automaticamente.

@@ -473,6 +473,12 @@ Este projeto inteiro deve receber downgrade para Minecraft 1.20.1 usando Forge. 
 - Pasta local do repositorio dedicado: `C:\Users\guilh\Desktop\MinecraftProjects\Magic-World_ultimate-Forge1.20.1`.
 - Usar esse repositorio dedicado para subir README, handoff, wiki, codigo-base e futuras alteracoes do downgrade Forge 1.20.1.
 - Importacao inicial enviada para `main` em 2026-05-25 13:49 no commit `c8bfa41 chore: importa base do port Forge 1.20.1`.
+- 2026-05-25 14:03: antes do port, a base NeoForge recebeu correcoes importantes que tambem devem ser levadas para Forge 1.20.1:
+  - metro subterraneo selado, iluminado, sem mobs hostis e com trilhos conectados por curva real;
+  - escadas de acesso completas para casa/castelo;
+  - cheats/comandos forçados ON quando qualquer opcao Magic World estiver ativa no menu de criacao de mundo;
+  - baus/camas da casa somente em posicoes internas com teto;
+  - bonus Galeria Arcana secreta no tunel.
 - A pasta `C:\Users\guilh\Desktop\MinecraftProjects\Port_1.20.1-Forge_MagicWorld-v1.3` existe localmente, mas nao e um repositorio Git.
 - `gh` nao esta instalado nesta maquina, mas nao e necessario para este fluxo porque o repositorio dedicado ja existe e foi clonado via Git.
 

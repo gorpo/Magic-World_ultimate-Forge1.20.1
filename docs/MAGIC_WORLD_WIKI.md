@@ -63,6 +63,7 @@ A casa tem:
 
 - spawn do jogador ao lado da cama;
 - baus internos com equipamentos, comida, recursos, armadura Draconic Aether e varinha magica;
+- baus e cama so devem ser posicionados em locais internos com teto;
 - aliados magicos nomeados;
 - iluminacao interna extra;
 - fazendas e estabulos iluminados no entorno.
@@ -111,7 +112,10 @@ Caracteristicas:
 - estacao no subsolo da casa;
 - estacao no subsolo do castelo;
 - escadas de acesso com vao alto;
-- trilhos energizados;
+- galeria selada com piso, paredes e teto;
+- trilhos energizados conectados por curva real;
+- iluminacao forte com sea lantern, glowstone e end rods;
+- protecao que remove monstros hostis dentro da area do tunel;
 - redstone blocks alimentando segmentos;
 - nenhum minecart nasce no trilho;
 - cada estacao tem 3 baus com pecas para expandir o sistema.
@@ -163,7 +167,8 @@ Elementos atuais:
 - redstone lamps;
 - particulas de enchant, end rod, portal e smoke;
 - postes magicos externos;
-- santuario secreto subterraneo perto do portal.
+- santuario secreto subterraneo perto do portal;
+- galeria arcana secreta no tunel do metro, com mesa de encantamento, livros e guardiao allay.
 
 ## Dragao Pacifico
 

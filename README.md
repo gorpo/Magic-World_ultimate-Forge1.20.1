@@ -121,18 +121,19 @@ Ao criar um mundo novo pelo painel **Magic World**, o mod monta uma area inicial
 
 Recursos atuais da propriedade:
 
-- casa importada com spawn do jogador ao lado da cama;
+- casa importada com spawn do jogador ao lado da cama, com baus e cama reposicionados somente em pontos internos com teto;
 - portal premium no gramado, com ativacao somente ao passar pelo centro;
 - castelo importado proximo, com baus cheios, armor stands internos e moradores aliados;
 - dragao pacifico patrulhando a propriedade;
 - aves, allays, fumaca, brilhos e focos magicos ao redor da casa, portal e castelo;
 - 3 soldados montados em cavalos patrulhando a frente do castelo;
 - placas indicando caminho para portal, castelo e retorno para casa;
-- metro subterraneo com trilhos energizados ligando casa e castelo;
-- estacoes subterraneas na casa e no castelo, cada uma com baus de pecas para trilhos e minecarts;
+- metro subterraneo selado, iluminado e protegido contra monstros, com trilhos energizados conectados por curva real entre casa e castelo;
+- estacoes subterraneas na casa e no castelo, cada uma com escada reforcada e baus de pecas para trilhos e minecarts;
 - postes magicos, lanternas, tochas e lampadas reforcando iluminacao externa e interna;
 - camara selada de morcegos no castelo;
-- santuario secreto subterraneo perto do portal.
+- santuario secreto subterraneo perto do portal;
+- galeria arcana secreta no trajeto subterraneo do metro, com guardiao magico.
 
 Para testar alteracoes de estrutura, sempre crie um mundo novo. Mundos antigos nao regeneram automaticamente casa, portal, castelo, baus, trilhos ou decoracoes ja criadas.
 
@@ -1488,14 +1489,3 @@ Regras do script:
 <p align="center">
   <strong>Entre no portal, equipe sua armadura, acenda sua varinha e descubra um Minecraft transformado pela magia do Magic World.</strong>
 </p>
-# Magic World Ultimate - Port Forge 1.20.1
-
-> Repositorio oficial do port Forge 1.20.1. A base inicial veio do projeto Magic World Ultimate NeoForge 26.1.2 e esta sendo adaptada para Minecraft Forge 1.20.1.
-
-## Status Do Port
-
-- Base do projeto, README, handoff, wiki, scripts, assets e codigo atual foram importados para este repositorio.
-- O port Forge 1.20.1 ainda esta em andamento; arquivos Gradle, APIs NeoForge/Forge, networking, eventos, mixins e compatibilidade grafica precisam ser revisados conforme `Downgrade_1.20.1.txt`.
-- O repositorio antigo `MagicWorld-MagicWand_Mod` deve permanecer preservado como versao finalizada/original.
-
----

@@ -26,6 +26,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -37,12 +38,14 @@ import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.RailBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.StandingSignBlock;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
@@ -100,6 +103,7 @@ public final class StarterPortalEvents {
     private static final Map<UUID, EstateExpansionTask> PENDING_ESTATE_EXPANSIONS = new HashMap<>();
     private static final Map<UUID, UUID> FOLLOWING_ALLIES = new HashMap<>();
     private static final Map<UUID, BlockPos> CASTLE_PATROL_GUARDS = new HashMap<>();
+    private static final Set<BlockPos> PROTECTED_RAIL_TUNNELS = new HashSet<>();
     private static final Set<UUID> ALLY_ENTITY_IDS = new HashSet<>();
     private static final Set<UUID> PLAYERS_TOUCHING_STARTER_PORTAL = new HashSet<>();
 
@@ -204,6 +208,7 @@ public final class StarterPortalEvents {
         handlePendingEstateExpansion(player);
         handleFollowingAllies(player);
         handleCastlePatrols(player);
+        handleProtectedRailTunnel(player);
         handlePortalAmbientEffects(player);
         handleMagicEstateAmbience(player);
 
@@ -271,6 +276,27 @@ public final class StarterPortalEvents {
                 default -> patrolCenter.offset(0, 0, -5);
             };
             guard.getNavigation().moveTo(target.getX() + 0.5D, target.getY(), target.getZ() + 0.5D, 1.0D);
+        }
+    }
+
+    private static void handleProtectedRailTunnel(ServerPlayer player) {
+        if (player.tickCount % 40 != 0 || !(player.level() instanceof ServerLevel level)) {
+            return;
+        }
+
+        if (PROTECTED_RAIL_TUNNELS.isEmpty()) {
+            return;
+        }
+
+        for (BlockPos center : PROTECTED_RAIL_TUNNELS) {
+            if (player.distanceToSqr(center.getX() + 0.5D, center.getY() + 0.5D, center.getZ() + 0.5D) > 30000.0D) {
+                continue;
+            }
+
+            AABB tunnelArea = new AABB(center).inflate(120.0D, 18.0D, 120.0D);
+            for (Monster monster : level.getEntitiesOfClass(Monster.class, tunnelArea)) {
+                monster.discard();
+            }
         }
     }
 
@@ -2018,6 +2044,7 @@ public final class StarterPortalEvents {
     }
 
     private static void decorateImportedHouseAddons(ServerLevel level, BlockPos base) {
+        cleanupOutdoorImportedHouseFurniture(level, base);
         for (BlockPos pos : new BlockPos[] {
                 base.offset(-76, 1, -54), base.offset(28, 1, -54),
                 base.offset(-76, 1, 64), base.offset(28, 1, 64),
@@ -2037,11 +2064,15 @@ public final class StarterPortalEvents {
             level.setBlock(pos, Blocks.SEA_LANTERN.defaultBlockState(), 3);
         }
 
-        placeBed(level, base.offset(-2, 1, 0), Direction.EAST);
-        level.setBlock(base.offset(0, 1, 0), Blocks.WHITE_CARPET.defaultBlockState(), 3);
+        placeSafeBed(level, base.offset(-2, 1, 0), Direction.EAST);
+        BlockPos carpet = findSafeInteriorFloor(level, base.offset(0, 1, 0), 24, 8);
+        if (carpet != null) {
+            level.setBlock(carpet, Blocks.WHITE_CARPET.defaultBlockState(), 3);
+        }
     }
 
     private static void fillImportedHouseChests(ServerLevel level, BlockPos base) {
+        cleanupOutdoorImportedHouseFurniture(level, base);
         BlockPos[] chests = new BlockPos[] {
                 placeSafeChest(level, base.offset(-8, 1, -6), Direction.SOUTH),
                 placeSafeChest(level, base.offset(-4, 1, -6), Direction.SOUTH),
@@ -2348,13 +2379,15 @@ public final class StarterPortalEvents {
 
         BlockPos houseStation = base.offset(10, -6, 18);
         BlockPos castleStation = castleLifeCenter(base).offset(0, -6, -42);
+        PROTECTED_RAIL_TUNNELS.add(midpoint(houseStation, castleStation));
         buildRailStation(level, houseStation, Direction.NORTH, "Metro da Casa", "para o castelo");
         buildRailStation(level, castleStation, Direction.SOUTH, "Metro do Castelo", "para a casa");
-        buildStairAccess(level, base.offset(10, 1, 12), houseStation, Direction.SOUTH);
-        buildStairAccess(level, castleLifeCenter(base).offset(0, 1, -34), castleStation, Direction.NORTH);
+        buildStairAccess(level, base.offset(10, 1, 11), houseStation, Direction.SOUTH);
+        buildStairAccess(level, castleLifeCenter(base).offset(0, 1, -35), castleStation, Direction.NORTH);
         buildPoweredRailPath(level, houseStation, castleStation);
         placeRailSupplyChests(level, houseStation, Direction.EAST);
         placeRailSupplyChests(level, castleStation, Direction.WEST);
+        buildRailTunnelBonus(level, midpoint(houseStation, castleStation));
     }
 
     private static void buildRailStation(ServerLevel level, BlockPos center, Direction signFacing, String line1, String line2) {
@@ -2376,6 +2409,10 @@ public final class StarterPortalEvents {
             level.setBlock(lamp, Blocks.SEA_LANTERN.defaultBlockState(), 3);
             level.setBlock(lamp.below(), Blocks.REDSTONE_LAMP.defaultBlockState().setValue(net.minecraft.world.level.block.RedstoneLampBlock.LIT, true), 3);
         }
+        level.setBlock(center.offset(0, 3, -4), Blocks.GLOWSTONE.defaultBlockState(), 3);
+        level.setBlock(center.offset(0, 3, 4), Blocks.GLOWSTONE.defaultBlockState(), 3);
+        level.setBlock(center.offset(-4, 3, 0), Blocks.GLOWSTONE.defaultBlockState(), 3);
+        level.setBlock(center.offset(4, 3, 0), Blocks.GLOWSTONE.defaultBlockState(), 3);
 
         placePortalSign(level, center.relative(signFacing, 4), 0, line1, line2, "trilhos", "energizados");
     }
@@ -2392,6 +2429,14 @@ public final class StarterPortalEvents {
                     level.setBlock(mutable.offset(dx, head, 0), Blocks.AIR.defaultBlockState(), 3);
                 }
             }
+            level.setBlock(mutable.offset(-2, 0, 0), Blocks.DEEPSLATE_BRICKS.defaultBlockState(), 3);
+            level.setBlock(mutable.offset(2, 0, 0), Blocks.DEEPSLATE_BRICKS.defaultBlockState(), 3);
+            level.setBlock(mutable.offset(-2, 1, 0), Blocks.DEEPSLATE_BRICKS.defaultBlockState(), 3);
+            level.setBlock(mutable.offset(2, 1, 0), Blocks.DEEPSLATE_BRICKS.defaultBlockState(), 3);
+            level.setBlock(mutable.above(4), Blocks.DEEPSLATE_TILES.defaultBlockState(), 3);
+            if (step % 2 == 0) {
+                level.setBlock(mutable.above(3), Blocks.SEA_LANTERN.defaultBlockState(), 3);
+            }
             level.setBlock(mutable.below(), Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, direction.getOpposite()), 3);
         }
     }
@@ -2399,41 +2444,71 @@ public final class StarterPortalEvents {
     private static void buildPoweredRailPath(ServerLevel level, BlockPos start, BlockPos end) {
         BlockPos cursor = start;
         int poweredIndex = 0;
-        while (cursor.getZ() != end.getZ()) {
+        BlockPos corner = new BlockPos(start.getX(), start.getY(), end.getZ());
+        while (cursor.getZ() != corner.getZ()) {
             Direction direction = cursor.getZ() < end.getZ() ? Direction.SOUTH : Direction.NORTH;
             placePoweredRailSegment(level, cursor, direction, poweredIndex++);
             cursor = cursor.relative(direction);
         }
+        placeRailCorner(level, corner, start.getZ() < end.getZ() ? Direction.SOUTH : Direction.NORTH, start.getX() < end.getX() ? Direction.EAST : Direction.WEST, poweredIndex++);
+        cursor = corner.relative(start.getX() < end.getX() ? Direction.EAST : Direction.WEST);
         while (cursor.getX() != end.getX()) {
             Direction direction = cursor.getX() < end.getX() ? Direction.EAST : Direction.WEST;
             placePoweredRailSegment(level, cursor, direction, poweredIndex++);
             cursor = cursor.relative(direction);
         }
-        placePoweredRailSegment(level, end, Direction.NORTH, poweredIndex);
+        placePoweredRailSegment(level, end, start.getX() < end.getX() ? Direction.EAST : Direction.WEST, poweredIndex);
     }
 
     private static void placePoweredRailSegment(ServerLevel level, BlockPos pos, Direction direction, int index) {
-        for (int x = -1; x <= 1; x++) {
-            for (int y = 0; y <= 3; y++) {
-                for (int z = -1; z <= 1; z++) {
-                    level.setBlock(pos.offset(x, y, z), Blocks.AIR.defaultBlockState(), 3);
-                }
-            }
-        }
+        carveRailTunnelSection(level, pos);
         level.setBlock(pos.below(), index % 4 == 0 ? Blocks.REDSTONE_BLOCK.defaultBlockState() : Blocks.POLISHED_DEEPSLATE.defaultBlockState(), 3);
         level.setBlock(
                 pos,
                 Blocks.POWERED_RAIL.defaultBlockState()
                         .setValue(net.minecraft.world.level.block.PoweredRailBlock.SHAPE,
                                 direction.getAxis() == Direction.Axis.X
-                                        ? net.minecraft.world.level.block.state.properties.RailShape.EAST_WEST
-                                        : net.minecraft.world.level.block.state.properties.RailShape.NORTH_SOUTH)
+                                        ? RailShape.EAST_WEST
+                                        : RailShape.NORTH_SOUTH)
                         .setValue(net.minecraft.world.level.block.PoweredRailBlock.POWERED, true),
                 3
         );
-        if (index % 6 == 0) {
-            level.setBlock(pos.above(2), Blocks.LANTERN.defaultBlockState(), 3);
+        if (index % 3 == 0) {
+            level.setBlock(pos.above(3), Blocks.SEA_LANTERN.defaultBlockState(), 3);
+            level.setBlock(pos.offset(direction.getAxis() == Direction.Axis.X ? 0 : 1, 1, direction.getAxis() == Direction.Axis.Z ? 0 : 1), Blocks.END_ROD.defaultBlockState(), 3);
         }
+    }
+
+    private static void placeRailCorner(ServerLevel level, BlockPos pos, Direction zDirection, Direction xDirection, int index) {
+        carveRailTunnelSection(level, pos);
+        level.setBlock(pos.below(), Blocks.REDSTONE_BLOCK.defaultBlockState(), 3);
+        RailShape shape = switch (zDirection) {
+            case SOUTH -> xDirection == Direction.EAST ? RailShape.SOUTH_EAST : RailShape.SOUTH_WEST;
+            case NORTH -> xDirection == Direction.EAST ? RailShape.NORTH_EAST : RailShape.NORTH_WEST;
+            default -> RailShape.SOUTH_EAST;
+        };
+        level.setBlock(pos, Blocks.RAIL.defaultBlockState().setValue(RailBlock.SHAPE, shape), 3);
+        level.setBlock(pos.above(3), Blocks.SEA_LANTERN.defaultBlockState(), 3);
+        level.setBlock(pos.above(2), Blocks.END_ROD.defaultBlockState(), 3);
+    }
+
+    private static void carveRailTunnelSection(ServerLevel level, BlockPos pos) {
+        for (int x = -2; x <= 2; x++) {
+            for (int z = -2; z <= 2; z++) {
+                level.setBlock(pos.offset(x, -1, z), Blocks.DEEPSLATE_TILES.defaultBlockState(), 3);
+                level.setBlock(pos.offset(x, 4, z), Blocks.DEEPSLATE_BRICKS.defaultBlockState(), 3);
+            }
+        }
+        for (int x = -2; x <= 2; x++) {
+            for (int y = 0; y <= 3; y++) {
+                for (int z = -2; z <= 2; z++) {
+                    boolean wall = Math.abs(x) == 2 || Math.abs(z) == 2;
+                    level.setBlock(pos.offset(x, y, z), wall ? Blocks.DEEPSLATE_BRICKS.defaultBlockState() : Blocks.AIR.defaultBlockState(), 3);
+                }
+            }
+        }
+        level.setBlock(pos.offset(-2, 2, 0), Blocks.SEA_LANTERN.defaultBlockState(), 3);
+        level.setBlock(pos.offset(2, 2, 0), Blocks.SEA_LANTERN.defaultBlockState(), 3);
     }
 
     private static void placeRailSupplyChests(ServerLevel level, BlockPos station, Direction side) {
@@ -2454,6 +2529,34 @@ public final class StarterPortalEvents {
                     new ItemStack(Items.REDSTONE_TORCH, 64),
                     new ItemStack(Items.LEVER, 32));
         }
+    }
+
+    private static BlockPos midpoint(BlockPos first, BlockPos second) {
+        return new BlockPos((first.getX() + second.getX()) / 2, (first.getY() + second.getY()) / 2, (first.getZ() + second.getZ()) / 2);
+    }
+
+    private static void buildRailTunnelBonus(ServerLevel level, BlockPos center) {
+        for (int x = -4; x <= 4; x++) {
+            for (int z = -4; z <= 4; z++) {
+                level.setBlock(center.offset(x, -1, z), Blocks.POLISHED_DEEPSLATE.defaultBlockState(), 3);
+                level.setBlock(center.offset(x, 4, z), Blocks.DEEPSLATE_TILES.defaultBlockState(), 3);
+                for (int y = 0; y <= 3; y++) {
+                    boolean wall = Math.abs(x) == 4 || Math.abs(z) == 4;
+                    level.setBlock(center.offset(x, y, z), wall ? Blocks.DEEPSLATE_BRICKS.defaultBlockState() : Blocks.AIR.defaultBlockState(), 3);
+                }
+            }
+        }
+        level.setBlock(center.offset(0, 0, 0), Blocks.AMETHYST_BLOCK.defaultBlockState(), 3);
+        level.setBlock(center.offset(0, 1, 0), Blocks.ENCHANTING_TABLE.defaultBlockState(), 3);
+        level.setBlock(center.offset(-2, 1, 0), Blocks.BOOKSHELF.defaultBlockState(), 3);
+        level.setBlock(center.offset(2, 1, 0), Blocks.BOOKSHELF.defaultBlockState(), 3);
+        level.setBlock(center.offset(0, 3, -3), Blocks.SEA_LANTERN.defaultBlockState(), 3);
+        level.setBlock(center.offset(0, 3, 3), Blocks.SEA_LANTERN.defaultBlockState(), 3);
+        level.setBlock(center.offset(-3, 3, 0), Blocks.SEA_LANTERN.defaultBlockState(), 3);
+        level.setBlock(center.offset(3, 3, 0), Blocks.SEA_LANTERN.defaultBlockState(), 3);
+        placePortalSign(level, center.offset(0, 1, -3), 0,
+                "Galeria", "Arcana", "parada", "secreta");
+        spawnNamedCharacter(level, EntityType.ALLAY, center.offset(0, 2, 2), "Guardiao da Galeria Arcana");
     }
 
     private static void buildEnhancedEstateLighting(ServerLevel level, BlockPos base) {
@@ -3244,11 +3347,35 @@ public final class StarterPortalEvents {
     }
 
     private static BlockPos placeSafeChest(ServerLevel level, BlockPos preferred, Direction facing) {
-        BlockPos safePos = findSafeInteriorFloor(level, preferred, 6, 5);
+        BlockPos safePos = findSafeInteriorFloor(level, preferred, 28, 8);
         if (safePos != null) {
             placeChest(level, safePos, facing);
         }
         return safePos;
+    }
+
+    private static void placeSafeBed(ServerLevel level, BlockPos preferred, Direction facing) {
+        BlockPos safePos = findSafeInteriorFloor(level, preferred, 28, 8);
+        if (safePos == null || !level.getBlockState(safePos.relative(facing)).isAir()) {
+            return;
+        }
+        placeBed(level, safePos, facing);
+    }
+
+    private static void cleanupOutdoorImportedHouseFurniture(ServerLevel level, BlockPos base) {
+        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
+        for (int x = -36; x <= 36; x++) {
+            for (int y = -2; y <= 8; y++) {
+                for (int z = -24; z <= 30; z++) {
+                    mutable.set(base.getX() + x, base.getY() + y, base.getZ() + z);
+                    BlockState state = level.getBlockState(mutable);
+                    if ((state.is(Blocks.CHEST) || state.getBlock() instanceof BedBlock)
+                            && !hasSolidCeilingAbove(level, mutable, 14)) {
+                        level.removeBlock(mutable, false);
+                    }
+                }
+            }
+        }
     }
 
     private static BlockPos findSafeInteriorFloor(ServerLevel level, BlockPos preferred, int horizontalRadius, int verticalRadius) {
@@ -3263,7 +3390,8 @@ public final class StarterPortalEvents {
                     if (!level.isInWorldBounds(mutable)
                             || !level.getBlockState(mutable).isAir()
                             || !level.getBlockState(mutable.above()).isAir()
-                            || !level.getBlockState(mutable.below()).isSolid()) {
+                            || !level.getBlockState(mutable.below()).isSolid()
+                            || !hasSolidCeilingAbove(level, mutable, 14)) {
                         continue;
                     }
 
@@ -3277,6 +3405,15 @@ public final class StarterPortalEvents {
         }
 
         return best;
+    }
+
+    private static boolean hasSolidCeilingAbove(ServerLevel level, BlockPos pos, int maxHeight) {
+        for (int y = 2; y <= maxHeight; y++) {
+            if (level.getBlockState(pos.above(y)).isSolid()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static BlockState stair(Direction facing) {

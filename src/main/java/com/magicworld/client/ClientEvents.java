@@ -241,6 +241,7 @@ public class ClientEvents {
                             magicWorldButtonLabel(),
                             pressed -> {
                                 MagicWorldWorldOptions.toggleStarterEstateEnabled();
+                                syncAutomaticCommands(vanillaWidgets);
                                 pressed.setMessage(magicWorldButtonLabel());
                             }
                     )
@@ -259,6 +260,7 @@ public class ClientEvents {
                             castlesButtonLabel(),
                             pressed -> {
                                 MagicWorldWorldOptions.toggleCastlesEnabled();
+                                syncAutomaticCommands(vanillaWidgets);
                                 pressed.setMessage(castlesButtonLabel());
                             }
                     )
@@ -277,6 +279,7 @@ public class ClientEvents {
                             auraButtonLabel(),
                             pressed -> {
                                 MagicWorldWorldOptions.toggleAuraEnabled();
+                                syncAutomaticCommands(vanillaWidgets);
                                 pressed.setMessage(auraButtonLabel());
                             }
                     )
@@ -387,6 +390,7 @@ public class ClientEvents {
             );
 
             MAGIC_CREATE_WORLD_PANELS.put(screen, new MagicCreateWorldPanel(screen, vanillaWidgets, magicTabButton, magicWidgets));
+            syncAutomaticCommands(vanillaWidgets);
 
             event.addListener(magicTabButton);
             vanillaWidgets.add(magicTabButton);
@@ -528,10 +532,32 @@ public class ClientEvents {
                 return;
             }
 
-            boolean current = messageContainsAny(button, "on", "sim", "ligado", "true");
-            if (current != enabled) {
+            for (int attempt = 0; attempt < 4; attempt++) {
+                boolean current = buttonStateLooksEnabled(button);
+                if (current == enabled) {
+                    return;
+                }
                 button.onPress(null);
             }
+        }
+
+        private static boolean buttonStateLooksEnabled(Button button) {
+            String message = button.getMessage().getString().toLowerCase();
+            if (message.contains("off")
+                    || message.contains("desativado")
+                    || message.contains("desligado")
+                    || message.contains("nao")
+                    || message.contains("não")
+                    || message.contains("false")) {
+                return false;
+            }
+
+            return message.contains("on")
+                    || message.contains("sim")
+                    || message.contains("ligado")
+                    || message.contains("ativado")
+                    || message.contains("enabled")
+                    || message.contains("true");
         }
 
         private static boolean messageContainsAny(AbstractWidget widget, String... values) {
