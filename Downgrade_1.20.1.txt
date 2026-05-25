@@ -472,6 +472,7 @@ Este projeto inteiro deve receber downgrade para Minecraft 1.20.1 usando Forge. 
 - Repositorio dedicado definido pelo usuario: `https://github.com/gorpo/Magic-World_ultimate-Forge1.20.1`.
 - Pasta local do repositorio dedicado: `C:\Users\guilh\Desktop\MinecraftProjects\Magic-World_ultimate-Forge1.20.1`.
 - Usar esse repositorio dedicado para subir README, handoff, wiki, codigo-base e futuras alteracoes do downgrade Forge 1.20.1.
+- Importacao inicial enviada para `main` em 2026-05-25 13:49 no commit `c8bfa41 chore: importa base do port Forge 1.20.1`.
 - A pasta `C:\Users\guilh\Desktop\MinecraftProjects\Port_1.20.1-Forge_MagicWorld-v1.3` existe localmente, mas nao e um repositorio Git.
 - `gh` nao esta instalado nesta maquina, mas nao e necessario para este fluxo porque o repositorio dedicado ja existe e foi clonado via Git.
 

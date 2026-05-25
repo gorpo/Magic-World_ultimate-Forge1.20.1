@@ -869,3 +869,11 @@ Este projeto inteiro deve receber downgrade para Minecraft 1.20.1 usando **Forge
 - Copia excluiu `.git`, `.gradle`, `build`, `run`, `tmp`, caches locais e jars `neoforge-*.jar`.
 - README do repo Forge recebeu aviso no topo informando que este e o repositorio oficial do port Forge 1.20.1 e que a base ainda vem do NeoForge 26.1.2.
 - Proximo passo imediato: commitar e enviar para `origin/main` do repo `Magic-World_ultimate-Forge1.20.1`.
+
+## Atualizacao - 2026-05-25 13:49
+
+- Importacao inicial do port enviada para `https://github.com/gorpo/Magic-World_ultimate-Forge1.20.1`.
+- Branch enviado: `main`.
+- Commit enviado: `c8bfa41 chore: importa base do port Forge 1.20.1`.
+- Repositorio antigo `MagicWorld-MagicWand_Mod` continua limpo e preservado.
+- Proximo passo real do port: adaptar Gradle/mod metadata/APIs de NeoForge 26.1.2 para Forge 1.20.1 seguindo `Downgrade_1.20.1.txt`.
