@@ -1,0 +1,19 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "com.magicworld.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "RenderSetupSamplerCompatMixin",
+    "SodiumDonationButtonCompatMixin",
+    "SodiumConfigBuilderMagicWorldMixin",
+    "SodiumVideoSettingsScreenMagicWorldLayoutMixin",
+    "SodiumExternalPageEntryMagicWorldMixin",
+    "IrisConfigMagicWorldMixin",
+    "MagicWorldScreenBackgroundMixin",
+    "CubeMapMagicWorldDepthMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

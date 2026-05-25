@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "magicworld:item/draconic_aether_helmet"
+  }
+}

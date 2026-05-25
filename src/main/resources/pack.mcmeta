@@ -1,0 +1,10 @@
+{
+  "pack": {
+    "description": {
+      "text": "Magic World resources"
+    },
+    "pack_format": 82,
+    "min_format": 82,
+    "max_format": 101
+  }
+}

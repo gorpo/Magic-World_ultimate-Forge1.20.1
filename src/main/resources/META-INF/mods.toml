@@ -1,0 +1,32 @@
+modLoader="javafml"
+loaderVersion="[64,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="magicworld"
+version="1.2.0"
+displayName="Magic World Ultimate"
+description='''Magic World Ultimate para Minecraft NeoForge 26.1.2.
+Menu magico com a varinha magica, teleportes, comandos, transformacoes do mundo e sistemas especiais.
+A build all-in-one v1.2 inclui o motor de shaders e desempenho ja embutido para facilitar o uso em um unico arquivo de mod.'''
+
+[[dependencies.magicworld]]
+modId="neoforge"
+mandatory=true
+versionRange="[26.1.2,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.magicworld]]
+modId="minecraft"
+mandatory=true
+versionRange="[26.1.2,26.2)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.magicworld]]
+modId="distanthorizons"
+mandatory=false
+versionRange="[3.0.3-b,)"
+ordering="BEFORE"
+side="CLIENT"

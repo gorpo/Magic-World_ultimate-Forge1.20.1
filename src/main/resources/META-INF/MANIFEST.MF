@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Specification-Title: magicworld
+Specification-Vendor: GuiPaluch
+Specification-Version: 1
+Implementation-Title: MagicWorld-MagicWand_Mod
+Implementation-Version: 1.0.0
+Implementation-Vendor: GuiPaluch
+Implementation-Timestamp: 2026-05-22T15:12:22-0300
+
