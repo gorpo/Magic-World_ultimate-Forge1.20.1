@@ -482,6 +482,10 @@ Este projeto inteiro deve receber downgrade para Minecraft 1.20.1 usando Forge. 
 - 2026-05-25 14:15: documentacao README/wiki passou a explicar uso dos mods built in do all-in-one que tambem devem constar no port:
   - JourneyMap, Effortless Building, Controllable, Iris, Sodium, Distant Horizons, Entity Texture Features e Entity Model Features;
   - imagens externas de referencia foram salvas em `screenshots/external_*.png` e `screenshots/external_controllable_controller.webp`.
+- 2026-05-25 14:25: base NeoForge recebeu correcao importante para portar depois:
+  - tunel/trilhos preservam trilhos e redstone blocks durante a abertura da galeria;
+  - entrada do metro refeita com escada limpa;
+  - limpeza aerea remove blocos naturais soltos acima do layout da propriedade.
 - A pasta `C:\Users\guilh\Desktop\MinecraftProjects\Port_1.20.1-Forge_MagicWorld-v1.3` existe localmente, mas nao e um repositorio Git.
 - `gh` nao esta instalado nesta maquina, mas nao e necessario para este fluxo porque o repositorio dedicado ja existe e foi clonado via Git.
 

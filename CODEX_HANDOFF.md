@@ -919,3 +919,22 @@ Observacao: testar em mundo novo. Mundo ja gerado antes nao corrige estruturas a
   - `external_controllable_controller.webp`
 - Fontes usadas para referencia/imagens: JourneyMap Docs, CurseForge/Effortless Building e MrCrayfish/Controllable.
 - Proximo passo: sincronizar com repo do port e subir README/wiki/imagens online.
+
+## Atualizacao de Execucao - 2026-05-25 14:25 America/Sao_Paulo
+
+Pedido adicional executado:
+
+- Corrigido bug do tunel/trilhos:
+  - a abertura de cada novo trecho do tunel agora preserva trilhos e redstone blocks ja colocados;
+  - antes, um trecho novo podia apagar o trilho do trecho anterior.
+- Entrada do metro refeita:
+  - substituida por uma escada mais baixa/limpa;
+  - removida a logica que criava uma estrutura vertical feia na superficie;
+  - entrada agora usa corredor 3 blocos largo, paredes laterais, teto e sea lanterns.
+- Limpeza visual reforcada:
+  - adicionada limpeza agressiva de blocos naturais no espaco aereo da propriedade, fora dos footprints da casa/castelo;
+  - remove blocos soltos de terra, pedra, minerios simples, troncos, folhas, agua/lava etc acima da area de layout.
+- Rodado `.\gradlew.bat build magicWorldAllInOneJar` com sucesso.
+- `run/mods` atualizado com o novo all-in-one.
+
+Observacao: testar em mundo novo para validar o tunel reconstruido e a limpeza aerea.

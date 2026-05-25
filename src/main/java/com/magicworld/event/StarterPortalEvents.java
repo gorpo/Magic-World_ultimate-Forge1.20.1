@@ -724,6 +724,7 @@ public final class StarterPortalEvents {
             PENDING_ESTATE_EXPANSIONS.remove(player.getUUID());
             cleanupEstateGenerationDebris(level, task.base());
             cleanupFloatingDebrisBlocks(level, task.base());
+            cleanupEstateAirspaceDebris(level, task.base());
             sendInitialLoadProgress(player, 100, "Tudo carregado. Pode confirmar e jogar.", true);
             player.sendSystemMessage(Component.literal(
                     "Magic World: castelos, fazendas, muralhas e dragao finalizados."
@@ -961,6 +962,60 @@ public final class StarterPortalEvents {
                 }
             }
         }
+    }
+
+    private static void cleanupEstateAirspaceDebris(ServerLevel level, BlockPos base) {
+        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
+        int minY = base.getY() + 2;
+        int maxY = Math.min(level.getMaxY() - 1, base.getY() + 120);
+        for (int x = -150; x <= 220; x++) {
+            for (int z = -95; z <= 190; z++) {
+                if (isInsideImportedHouseFootprint(x, z) || isInsideImportedCastleFootprint(x, z)) {
+                    continue;
+                }
+
+                for (int y = minY; y <= maxY; y++) {
+                    mutable.set(base.getX() + x, y, base.getZ() + z);
+                    if (!level.isInWorldBounds(mutable)) {
+                        continue;
+                    }
+
+                    BlockState state = level.getBlockState(mutable);
+                    if (isEstateAirspaceDebrisBlock(state)) {
+                        level.setBlock(mutable, Blocks.AIR.defaultBlockState(), 3);
+                    }
+                }
+            }
+        }
+    }
+
+    private static boolean isEstateAirspaceDebrisBlock(BlockState state) {
+        return state.is(Blocks.GRASS_BLOCK)
+                || state.is(Blocks.DIRT)
+                || state.is(Blocks.COARSE_DIRT)
+                || state.is(Blocks.ROOTED_DIRT)
+                || state.is(Blocks.STONE)
+                || state.is(Blocks.COBBLESTONE)
+                || state.is(Blocks.GRAVEL)
+                || state.is(Blocks.SAND)
+                || state.is(Blocks.SANDSTONE)
+                || state.is(Blocks.COAL_ORE)
+                || state.is(Blocks.IRON_ORE)
+                || state.is(Blocks.COPPER_ORE)
+                || state.is(Blocks.OAK_LOG)
+                || state.is(Blocks.SPRUCE_LOG)
+                || state.is(Blocks.BIRCH_LOG)
+                || state.is(Blocks.JUNGLE_LOG)
+                || state.is(Blocks.DARK_OAK_LOG)
+                || state.is(Blocks.OAK_LEAVES)
+                || state.is(Blocks.SPRUCE_LEAVES)
+                || state.is(Blocks.BIRCH_LEAVES)
+                || state.is(Blocks.JUNGLE_LEAVES)
+                || state.is(Blocks.DARK_OAK_LEAVES)
+                || state.is(Blocks.FLOWERING_AZALEA_LEAVES)
+                || state.is(Blocks.AZALEA_LEAVES)
+                || state.is(Blocks.WATER)
+                || state.is(Blocks.LAVA);
     }
 
     private static boolean isFloatingDebrisBlock(BlockState state) {
@@ -2382,8 +2437,8 @@ public final class StarterPortalEvents {
         PROTECTED_RAIL_TUNNELS.add(midpoint(houseStation, castleStation));
         buildRailStation(level, houseStation, Direction.NORTH, "Metro da Casa", "para o castelo");
         buildRailStation(level, castleStation, Direction.SOUTH, "Metro do Castelo", "para a casa");
-        buildStairAccess(level, base.offset(10, 1, 11), houseStation, Direction.SOUTH);
-        buildStairAccess(level, castleLifeCenter(base).offset(0, 1, -35), castleStation, Direction.NORTH);
+        buildCleanRailEntrance(level, base.offset(10, 1, 10), houseStation, Direction.SOUTH, "Entrada", "Metro Casa");
+        buildCleanRailEntrance(level, castleLifeCenter(base).offset(0, 1, -34), castleStation, Direction.NORTH, "Entrada", "Metro Castelo");
         buildPoweredRailPath(level, houseStation, castleStation);
         placeRailSupplyChests(level, houseStation, Direction.EAST);
         placeRailSupplyChests(level, castleStation, Direction.WEST);
@@ -2441,6 +2496,49 @@ public final class StarterPortalEvents {
         }
     }
 
+    private static void buildCleanRailEntrance(ServerLevel level, BlockPos top, BlockPos station, Direction direction, String line1, String line2) {
+        Direction left = direction.getCounterClockWise();
+        Direction right = direction.getClockWise();
+        int steps = Math.max(1, top.getY() - station.getY());
+
+        for (int step = -1; step <= steps + 2; step++) {
+            int y = top.getY() - Math.max(step, 0);
+            BlockPos center = top.relative(direction, Math.max(step, 0));
+            clearEntranceSlice(level, center, y, left, right);
+        }
+
+        for (int step = 0; step <= steps; step++) {
+            int y = top.getY() - step;
+            BlockPos center = new BlockPos(top.getX(), y, top.getZ()).relative(direction, step);
+            level.setBlock(center, Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, direction.getOpposite()), 3);
+            level.setBlock(center.relative(left), Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, direction.getOpposite()), 3);
+            level.setBlock(center.relative(right), Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, direction.getOpposite()), 3);
+            level.setBlock(center.relative(left, 2), Blocks.DEEPSLATE_BRICKS.defaultBlockState(), 3);
+            level.setBlock(center.relative(right, 2), Blocks.DEEPSLATE_BRICKS.defaultBlockState(), 3);
+            level.setBlock(center.above(4), Blocks.DEEPSLATE_TILES.defaultBlockState(), 3);
+            if (step % 2 == 0) {
+                level.setBlock(center.above(3), Blocks.SEA_LANTERN.defaultBlockState(), 3);
+            }
+        }
+
+        BlockPos frame = top.relative(direction.getOpposite());
+        for (int side = -2; side <= 2; side++) {
+            BlockPos edge = frame.relative(left, side);
+            level.setBlock(edge, Blocks.POLISHED_DEEPSLATE.defaultBlockState(), 3);
+        }
+        placePortalSign(level, frame.above(), 0, line1, line2, "desca para", "os trilhos");
+    }
+
+    private static void clearEntranceSlice(ServerLevel level, BlockPos center, int y, Direction left, Direction right) {
+        BlockPos base = new BlockPos(center.getX(), y, center.getZ());
+        for (int side = -2; side <= 2; side++) {
+            BlockPos column = side < 0 ? base.relative(left, -side) : base.relative(right, side);
+            for (int head = 0; head <= 5; head++) {
+                level.setBlock(column.above(head), Blocks.AIR.defaultBlockState(), 3);
+            }
+        }
+    }
+
     private static void buildPoweredRailPath(ServerLevel level, BlockPos start, BlockPos end) {
         BlockPos cursor = start;
         int poweredIndex = 0;
@@ -2495,7 +2593,10 @@ public final class StarterPortalEvents {
     private static void carveRailTunnelSection(ServerLevel level, BlockPos pos) {
         for (int x = -2; x <= 2; x++) {
             for (int z = -2; z <= 2; z++) {
-                level.setBlock(pos.offset(x, -1, z), Blocks.DEEPSLATE_TILES.defaultBlockState(), 3);
+                BlockPos floor = pos.offset(x, -1, z);
+                if (!level.getBlockState(floor).is(Blocks.REDSTONE_BLOCK)) {
+                    level.setBlock(floor, Blocks.DEEPSLATE_TILES.defaultBlockState(), 3);
+                }
                 level.setBlock(pos.offset(x, 4, z), Blocks.DEEPSLATE_BRICKS.defaultBlockState(), 3);
             }
         }
@@ -2503,7 +2604,12 @@ public final class StarterPortalEvents {
             for (int y = 0; y <= 3; y++) {
                 for (int z = -2; z <= 2; z++) {
                     boolean wall = Math.abs(x) == 2 || Math.abs(z) == 2;
-                    level.setBlock(pos.offset(x, y, z), wall ? Blocks.DEEPSLATE_BRICKS.defaultBlockState() : Blocks.AIR.defaultBlockState(), 3);
+                    BlockPos target = pos.offset(x, y, z);
+                    BlockState existing = level.getBlockState(target);
+                    if (y == 0 && (existing.is(Blocks.RAIL) || existing.is(Blocks.POWERED_RAIL))) {
+                        continue;
+                    }
+                    level.setBlock(target, wall ? Blocks.DEEPSLATE_BRICKS.defaultBlockState() : Blocks.AIR.defaultBlockState(), 3);
                 }
             }
         }
