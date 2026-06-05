@@ -106,3 +106,20 @@ Testar visualmente no Minecraft:
 2. Telas iniciais como selecao/criacao de mundo devem usar o mesmo background sem cobrir botoes.
 3. Loading inicial do Magic World deve usar o mesmo background durante criacao do mapa.
 4. Se o loading vanilla do Minecraft ainda aparecer com outro visual antes da tela do mod, avaliar mixin/overlay em etapa separada.
+
+## Ajuste em 2026-06-05 - logo menor e botoes NeoForge
+
+- Corrigida a tela inicial depois do teste visual do usuario.
+- Logo `logo_full.png` reduzida para largura maxima de 300 px, mais proxima da proporcao visual da logo vanilla do Minecraft.
+- Corrigido o desenho da logo para usar o overload correto de `GuiGraphics.blit`, evitando escala estourada.
+- Criado `MagicWorldMenuTheme` adaptado do NeoForge para Forge 1.20.1.
+- Criado `MagicWorldMenuButton` adaptado do NeoForge para Forge 1.20.1.
+- `MagicWorldTitleScreen` deixou de usar `Button.builder` vanilla nos botoes principais.
+- Botoes principais agora usam layout central estreito e visual azul/dourado do NeoForge.
+- Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
+
+## Proximo teste visual
+
+- Confirmar se a logo ficou pequena o suficiente.
+- Confirmar se os botoes customizados aparecem alinhados e clicaveis.
+- Se aprovado, portar os botoes rapidos/menus adicionais do NeoForge na proxima etapa.

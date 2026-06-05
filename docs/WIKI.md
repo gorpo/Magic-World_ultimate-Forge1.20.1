@@ -78,3 +78,17 @@ Pendencia visual para teste manual:
 
 - Confirmar dentro do jogo se o evento `ScreenEvent.BackgroundRendered` cobre todas as telas iniciais esperadas sem esconder widgets.
 - Confirmar se o loading vanilla antes da abertura do menu precisa de mixin/overlay adicional.
+
+## Ajuste de tela inicial - 2026-06-05
+
+Apos teste visual:
+
+- A logo full estava grande demais e foi reduzida para largura maxima de 300 px.
+- Os botoes vanilla foram substituidos por `MagicWorldMenuButton`, adaptado do NeoForge.
+- `MagicWorldMenuTheme` foi portado de forma compativel com Forge 1.20.1 usando `GuiGraphics`.
+- Build local passou.
+
+Pendente:
+
+- Validar no jogo se o layout ficou igual ao esperado.
+- Portar os botoes rapidos/menus extras do NeoForge se o layout principal estiver aprovado.

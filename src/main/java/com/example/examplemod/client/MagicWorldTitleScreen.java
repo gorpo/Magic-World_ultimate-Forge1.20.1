@@ -1,7 +1,6 @@
 package com.example.examplemod.client;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.OptionsScreen;
@@ -10,9 +9,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraftforge.client.gui.ModListScreen;
 
 public class MagicWorldTitleScreen extends Screen {
-    private static final int BUTTON_WIDTH = 200;
+    private static final int BUTTON_WIDTH = 148;
     private static final int BUTTON_HEIGHT = 20;
     private static final int BUTTON_GAP = 6;
+    private static final int MENU_WIDTH = 300;
 
     public MagicWorldTitleScreen() {
         super(Component.literal("Magic World"));
@@ -20,43 +20,53 @@ public class MagicWorldTitleScreen extends Screen {
 
     @Override
     protected void init() {
-        int x = width / 2 - BUTTON_WIDTH / 2;
-        int y = Math.max(118, Math.min(height - 132, height / 2 - 6));
+        int x = getMenuX() + (MENU_WIDTH - BUTTON_WIDTH) / 2;
+        int y = getButtonY();
 
-        addRenderableWidget(Button.builder(
-                        Component.literal("Um jogador"),
-                        button -> minecraft.setScreen(new SelectWorldScreen(this))
-                )
-                .bounds(x, y, BUTTON_WIDTH, BUTTON_HEIGHT)
-                .build());
+        addRenderableWidget(new MagicWorldMenuButton(
+                x,
+                y,
+                BUTTON_WIDTH,
+                BUTTON_HEIGHT,
+                Component.literal("JOGAR"),
+                () -> minecraft.setScreen(new SelectWorldScreen(this))
+        ));
 
-        addRenderableWidget(Button.builder(
-                        Component.literal("Multijogador"),
-                        button -> minecraft.setScreen(new JoinMultiplayerScreen(this))
-                )
-                .bounds(x, y + step(1), BUTTON_WIDTH, BUTTON_HEIGHT)
-                .build());
+        addRenderableWidget(new MagicWorldMenuButton(
+                x,
+                y + step(1),
+                BUTTON_WIDTH,
+                BUTTON_HEIGHT,
+                Component.literal("MULTIPLAYER"),
+                () -> minecraft.setScreen(new JoinMultiplayerScreen(this))
+        ));
 
-        addRenderableWidget(Button.builder(
-                        Component.literal("Mods"),
-                        button -> minecraft.setScreen(new ModListScreen(this))
-                )
-                .bounds(x, y + step(2), 98, BUTTON_HEIGHT)
-                .build());
+        addRenderableWidget(new MagicWorldMenuButton(
+                x,
+                y + step(2),
+                BUTTON_WIDTH,
+                BUTTON_HEIGHT,
+                Component.literal("MODS"),
+                () -> minecraft.setScreen(new ModListScreen(this))
+        ));
 
-        addRenderableWidget(Button.builder(
-                        Component.literal("Opcoes..."),
-                        button -> minecraft.setScreen(new OptionsScreen(this, minecraft.options))
-                )
-                .bounds(x, y + step(3) + 10, 98, BUTTON_HEIGHT)
-                .build());
+        addRenderableWidget(new MagicWorldMenuButton(
+                x,
+                y + step(3),
+                BUTTON_WIDTH,
+                BUTTON_HEIGHT,
+                Component.literal("OPCOES"),
+                () -> minecraft.setScreen(new OptionsScreen(this, minecraft.options))
+        ));
 
-        addRenderableWidget(Button.builder(
-                        Component.literal("Sair do jogo"),
-                        button -> minecraft.stop()
-                )
-                .bounds(x + 102, y + step(3) + 10, 98, BUTTON_HEIGHT)
-                .build());
+        addRenderableWidget(new MagicWorldMenuButton(
+                x,
+                y + step(4),
+                BUTTON_WIDTH,
+                BUTTON_HEIGHT,
+                Component.literal("SAIR"),
+                () -> minecraft.stop()
+        ));
     }
 
     @Override
@@ -81,22 +91,39 @@ public class MagicWorldTitleScreen extends Screen {
         return index * (BUTTON_HEIGHT + BUTTON_GAP);
     }
 
+    private int getMenuX() {
+        return Math.max(18, (width - MENU_WIDTH) / 2);
+    }
+
+    private int getLogoY() {
+        return Math.max(12, Math.round(height * 0.08F));
+    }
+
+    private int getButtonY() {
+        int logoHeight = getLogoWidth() * MagicWorldStaticBackground.LOGO_HEIGHT / MagicWorldStaticBackground.LOGO_WIDTH;
+        int preferred = getLogoY() + logoHeight + 16;
+        int max = height - step(5) - BUTTON_HEIGHT - 38;
+        return Math.max(84, Math.min(preferred, max));
+    }
+
+    private int getLogoWidth() {
+        return Math.max(180, Math.min(300, width / 5));
+    }
+
     private void drawLogo(GuiGraphics graphics) {
-        int logoWidth = Math.max(260, Math.min(520, width - 56));
+        int logoWidth = getLogoWidth();
         int logoHeight = logoWidth * MagicWorldStaticBackground.LOGO_HEIGHT / MagicWorldStaticBackground.LOGO_WIDTH;
-        int x = width / 2 - logoWidth / 2;
-        int y = Math.max(18, Math.min(64, height / 8));
+        int x = getMenuX() + (MENU_WIDTH - logoWidth) / 2;
+        int y = getLogoY();
 
         graphics.blit(
                 MagicWorldStaticBackground.FULL_LOGO,
                 x,
                 y,
+                0,
+                0,
                 logoWidth,
                 logoHeight,
-                0,
-                0,
-                MagicWorldStaticBackground.LOGO_WIDTH,
-                MagicWorldStaticBackground.LOGO_HEIGHT,
                 MagicWorldStaticBackground.LOGO_WIDTH,
                 MagicWorldStaticBackground.LOGO_HEIGHT
         );
