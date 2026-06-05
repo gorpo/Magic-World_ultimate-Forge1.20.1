@@ -223,3 +223,42 @@ Pendente:
 
 - Teste visual no jogo apos reiniciar o client.
 - Confirmar se as abas estao boas com o recorte do background ou se devem copiar exatamente o estilo NeoForge.
+## Import funcional terreno NeoForge - 2026-06-05
+
+O projeto entrou na fase seguinte do downgrade controlado: terreno inicial e sistemas de mundo ligados ao menu Magic World.
+
+Implementado:
+
+- `StarterPortalEvents` agora controla a criacao da propriedade inicial em etapas.
+- Casa importada usa `data/magicworld/structures/imported_house.nbt`.
+- Castelo importado usa `data/magicworld/structures/imported_castle.nbt`.
+- O menu Magic World da criacao de mundo agora tem efeito real em:
+  - `Portal: ON/OFF`
+  - `Castelo: ON/OFF`
+  - `Fazendas: ON/OFF`
+  - `Aura: ON/OFF`
+  - `Modo: Normal/Criativo`
+- Foram adicionadas lavouras maduras, currais, animais vanilla, casas simples de trabalhadores e villagers nomeados.
+- Foi adicionada praca compacta de portais funcionais com Nether, End e Gateway.
+- Portais criam plataformas de retorno nas dimensoes destino e retornam para a propriedade.
+- `AuraEvents` foi criado e registrado no Forge event bus.
+- Aura inicial protege contra dano ambiental, queda, fogo, fome/agua, aplica efeitos invisiveis e preserva retorno pos-morte.
+
+Validacao:
+
+- `./gradlew.bat compileJava --stacktrace`: sucesso.
+- `./gradlew.bat build --stacktrace`: sucesso.
+
+Nao incluido ainda:
+
+- Port bruto completo do `StarterPortalEvents` NeoForge de 6 mil linhas.
+- Entidade custom real do dragao.
+- Armaduras draconicas custom.
+- IA completa dos trabalhadores do NeoForge.
+- Compat/menus de Iris, Sodium, Distant Horizons e central premium.
+
+Teste manual necessario:
+
+- Criar mundo novo com todos os toggles ligados.
+- Confirmar casa/castelo/fazendas/portais/aura.
+- Se o terreno ficar pesado demais ou demorar demais na geracao, ajustar os passos de limpeza/colocacao de estrutura antes de portar mais detalhes.

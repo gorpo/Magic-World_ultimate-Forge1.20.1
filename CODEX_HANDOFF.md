@@ -297,3 +297,68 @@ Pendente para teste visual:
 - Reabrir o client para confirmar que `Preparando a criacao do mundo...` usa o background Magic World.
 - Confirmar se as abas da criacao de mundo agora aparecem sem dirt vanilla.
 - Se alguma aba ainda precisar do visual exato NeoForge, comparar o widget de abas do projeto NeoForge antes de novos ajustes.
+
+## Import em 2026-06-05 - terreno inicial, fazendas, portais funcionais e aura
+
+Pedido:
+
+- Comecar o import importante do terreno ja criado no NeoForge.
+- Trazer casa/castelo importados, fazendas, portais funcionais e aura ligados ao menu Magic World da criacao de mundo.
+
+Feito neste primeiro bloco funcional Forge 1.20.1:
+
+- `StarterPortalEvents` foi refeito como controlador servidor do mundo inicial:
+  - usa `data/magicworld/structures/imported_house.nbt`;
+  - usa `data/magicworld/structures/imported_castle.nbt`;
+  - guarda a base da propriedade no `PersistentData` do jogador;
+  - cria a sequencia por etapas com progresso no loading inicial;
+  - respeita `Portal`, `Castelo`, `Fazendas`, `Modo` e `Aura` definidos no menu Magic World.
+- Casa importada:
+  - limpa/achata volume ao redor;
+  - posiciona a estrutura NBT;
+  - cria bau seguro com ferramentas, comida, materiais, sementes e varinha.
+- Fazendas:
+  - adicionadas lavouras maduras de trigo, cenoura, batata e beterraba;
+  - adicionados currais e jardim de alimento animal;
+  - adicionados animais vanilla iniciais;
+  - adicionadas casas simples de trabalhadores e villagers nomeados.
+- Portal inicial:
+  - construcao visual magic/premium;
+  - bau de equipamentos;
+  - alternancia premium por entrada/clique sem ficar alternando repetidamente enquanto o jogador fica parado nele.
+- Portais funcionais:
+  - praca compacta com portal do Nether, portal do End e gateway;
+  - teleporte custom para Nether/End;
+  - plataformas/portais de retorno criados nas dimensoes destino;
+  - retorno para a praca da propriedade no Overworld;
+  - cooldown persistente para evitar loop de teleporte.
+- Castelo:
+  - usa o NBT `imported_castle.nbt` quando `Castelo: ON`;
+  - adiciona bau de equipamentos, golem/villagers e marcador visual de dragao via armor stand leve.
+- Aura:
+  - criado `AuraEvents` Forge;
+  - registrado no `MagicWorld`;
+  - se `Aura: ON`, o jogador recebe aura ao entrar;
+  - aura remove fogo, afogamento/congelamento/fome, aplica efeitos invisiveis, cancela dano ambiental, cancela queda, permite quebrar bloco com clique esquerdo e preserva retorno pos-morte.
+- Validado com `./gradlew.bat compileJava --stacktrace`: BUILD SUCCESSFUL.
+- Validado com `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+
+Limites intencionais deste bloco:
+
+- Nao foi copiado o `StarterPortalEvents` NeoForge bruto de 6 mil linhas.
+- Nao entraram ainda entidades custom pesadas do NeoForge, armaduras draconicas custom, compat de Iris/Sodium/Distant Horizons ou menus centrais.
+- O dragao do castelo esta como marcador leve por `ArmorStand` para evitar risco de bossfight/crash antes do teste do terreno.
+
+Proximo teste manual:
+
+1. Criar mundo novo com `Portal`, `Castelo`, `Fazendas` e `Aura` ligados.
+2. Confirmar que casa e castelo NBT aparecem no terreno.
+3. Confirmar que fazendas/animais/trabalhadores aparecem perto da propriedade.
+4. Entrar nos portais Nether/End/Gateway e testar retorno.
+5. Testar aura: fogo, queda, fome/agua e quebra rapida de bloco.
+
+Proximos blocos se aprovado:
+
+1. Portar acabamentos finos do NeoForge que ainda ficaram fora: aldeoes trabalhadores com IA de cuidado real, patrulhas do castelo, ambience maior e reparos de decoracao flutuante.
+2. Portar entidades/itens custom necessarios, um pacote por vez.
+3. Substituir o marcador leve do dragao pelo sistema correto apenas quando a entidade custom estiver portada e estavel.

@@ -1,6 +1,7 @@
 package com.magicworld;
 
 import com.magicworld.event.CraftEvents;
+import com.magicworld.event.AuraEvents;
 import com.magicworld.event.MobEvents;
 import com.magicworld.event.StarterPortalEvents;
 import com.magicworld.network.MagicWorldNetwork;
@@ -59,6 +60,10 @@ public class MagicWorld {
 
         MinecraftForge.EVENT_BUS.register(
                 new MobEvents()
+        );
+
+        MinecraftForge.EVENT_BUS.register(
+                new AuraEvents()
         );
 
         MinecraftForge.EVENT_BUS.register(
