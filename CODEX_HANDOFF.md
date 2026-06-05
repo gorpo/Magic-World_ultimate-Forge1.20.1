@@ -196,3 +196,38 @@ Feito:
   - logo usa largura limitada ao menu (`MENU_WIDTH`) mantendo proporcao;
   - adicionados ornamentos/borda dourada/azul como no NeoForge.
 - Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
+## Fix em 2026-06-05 - background em menus de criacao de mundo
+
+Problema:
+
+- Algumas telas iniciais aplicavam o background Magic World, mas submenus da criacao de mundo ainda mostravam o fundo vanilla marrom/cinza.
+- Motivo: essas telas chamam `renderBackground`/`renderDirtBackground` e/ou usam a textura vanilla `assets/minecraft/textures/gui/options_background.png`, sobrescrevendo o desenho feito por evento.
+
+Feito:
+
+- Criado `MagicWorldScreenBackgrounds` para centralizar quais telas devem usar o fundo estatico.
+- Criado mixin client-side `MagicWorldScreenBackgroundMixin` interceptando `Screen.renderBackground` e `Screen.renderDirtBackground`.
+- Registrado `magicworld.mixins.json` no jar e no `mods.toml`.
+- Adicionado override especifico `assets/minecraft/textures/gui/options_background.png` copiando o background estatico do Magic World.
+- Ajustado `.gitignore` e `build.gradle` para incluir apenas esse override vanilla e continuar excluindo os panoramas auxiliares de `assets/minecraft/textures/gui/title/**`.
+- Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
+- Verificado no jar: `assets/minecraft/textures/gui/options_background.png`, `magicworld.mixins.json` e `MagicWorldScreenBackgroundMixin.class` estao presentes.
+
+Proximo teste visual:
+
+- Reabrir criacao de mundo e entrar nos submenus/opcoes avancadas.
+- Confirmar que nao aparece mais o fundo vanilla marrom/cinza.
+- Se alguma tela ainda escapar, mapear o nome da tela no log/screenshot e adicionar na regra de `MagicWorldScreenBackgrounds`.
+## Fix em 2026-06-05 - logo ausente na title screen
+
+Problema:
+
+- A tela inicial ficou sem a logo Magic World.
+- O codigo Forge ainda apontava para `textures/gui/title/logo_full.png`, enquanto o layout aprovado do NeoForge usa `textures/gui/title_logo.png` com proporcao 512x171.
+
+Feito:
+
+- `MagicWorldStaticBackground.FULL_LOGO` agora aponta para `textures/gui/title_logo.png`.
+- Dimensoes da logo ajustadas para 512x171, iguais ao asset aprovado do NeoForge.
+- Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
+- Verificado no jar: `assets/magicworld/textures/gui/title_logo.png` esta presente.

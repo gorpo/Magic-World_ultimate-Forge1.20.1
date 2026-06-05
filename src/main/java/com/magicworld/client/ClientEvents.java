@@ -548,13 +548,8 @@ public class ClientEvents {
         }
 
         private static boolean shouldUseMagicBackground(Object screen) {
-            return screen instanceof CreateWorldScreen
-                    || screen instanceof SelectWorldScreen
-                    || screen instanceof JoinMultiplayerScreen
-                    || screen instanceof OptionsScreen
-                    || screen instanceof PackSelectionScreen
-                    || screen instanceof ModListScreen
-                    || screen instanceof LevelLoadingScreen;
+            return screen instanceof net.minecraft.client.gui.screens.Screen minecraftScreen
+                    && MagicWorldScreenBackgrounds.shouldUseStaticBackground(minecraftScreen);
         }
 
         private static String normalize(String text) {

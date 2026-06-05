@@ -178,3 +178,22 @@ A tela inicial foi realinhada ao codigo aprovado da versao NeoForge:
 - Main menu voltou ao desenho do NeoForge: JOGAR, OPCOES, MODS e SAIR.
 - Logo limitada ao painel central para manter proporcao visual.
 - Build passou com sucesso.
+## Fix background nos submenus da criacao de mundo - 2026-06-05
+
+Correcoes aplicadas:
+
+- Background Magic World agora tambem cobre telas que usam `renderDirtBackground`.
+- Foi criado override de textura vanilla `assets/minecraft/textures/gui/options_background.png` para bloquear o fundo vanilla das telas de opcoes/criacao.
+- Foi adicionado mixin client-side para interceptar `Screen.renderBackground` e `Screen.renderDirtBackground` nas telas iniciais.
+- O jar foi verificado e contem o override de textura e o mixin.
+
+Regra mantida:
+
+- A pasta auxiliar `assets/minecraft/textures/gui/title/**` continua excluida do jar.
+- Apenas `assets/minecraft/textures/gui/options_background.png` entra no build nesta etapa.
+## Fix logo title screen - 2026-06-05
+
+- A logo da tela inicial agora usa o asset aprovado do NeoForge: `assets/magicworld/textures/gui/title_logo.png`.
+- O codigo deixou de depender de `textures/gui/title/logo_full.png` para o title screen.
+- Proporcao corrigida para 512x171.
+- Build validado com sucesso.
