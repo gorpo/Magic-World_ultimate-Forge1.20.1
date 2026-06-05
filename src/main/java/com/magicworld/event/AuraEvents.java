@@ -198,6 +198,13 @@ public class AuraEvents {
     }
 
     private static void addInvisibleEffect(ServerPlayer player, net.minecraft.world.effect.MobEffect effect, int amplifier) {
-        player.addEffect(new MobEffectInstance(effect, 60, amplifier, false, false, false));
+        MobEffectInstance current = player.getEffect(effect);
+        if (current != null && !current.isVisible() && !current.showIcon() && current.getAmplifier() >= amplifier && current.getDuration() > 20) {
+            return;
+        }
+        if (current != null) {
+            player.removeEffect(effect);
+        }
+        player.addEffect(new MobEffectInstance(effect, 80, amplifier, false, false, false));
     }
 }

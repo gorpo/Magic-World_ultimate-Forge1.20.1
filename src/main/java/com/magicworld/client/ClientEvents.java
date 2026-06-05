@@ -11,6 +11,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.client.gui.screens.OptionsScreen;
+import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
@@ -123,6 +124,10 @@ public class ClientEvents {
 
         @SubscribeEvent
         public static void onScreenInit(ScreenEvent.Init.Post event) {
+            if (event.getScreen() instanceof PauseScreen pauseScreen) {
+                tunePauseMenu(event, pauseScreen);
+            }
+
             if (!(event.getScreen() instanceof CreateWorldScreen screen)) {
                 return;
             }
@@ -584,6 +589,47 @@ public class ClientEvents {
                 }
             }
             return false;
+        }
+
+        private static void tunePauseMenu(ScreenEvent.Init.Post event, PauseScreen pauseScreen) {
+            List<AbstractWidget> widgets = new ArrayList<>();
+            for (GuiEventListener listener : event.getListenersList()) {
+                if (listener instanceof AbstractWidget widget) {
+                    widgets.add(widget);
+                }
+            }
+
+            if (findPauseButton(widgets, "magicworld", "magic world") != null) {
+                return;
+            }
+
+            AbstractWidget lanButton = findPauseButton(widgets, "open to lan", "abrir em lan", "lan");
+            if (lanButton == null) {
+                return;
+            }
+
+            event.addListener(Button.builder(Component.literal("MagicWorld"),
+                            button -> Minecraft.getInstance().setScreen(new MagicWorldCentralPauseScreen(pauseScreen)))
+                    .bounds(
+                            lanButton.getX(),
+                            lanButton.getY() + lanButton.getHeight() + 4,
+                            lanButton.getWidth(),
+                            lanButton.getHeight()
+                    )
+                    .tooltip(Tooltip.create(Component.literal("Abre os atalhos magicos do Magic World.")))
+                    .build());
+        }
+
+        private static AbstractWidget findPauseButton(List<AbstractWidget> widgets, String... needles) {
+            for (AbstractWidget widget : widgets) {
+                String label = normalize(widget.getMessage().getString());
+                for (String needle : needles) {
+                    if (label.contains(normalize(needle))) {
+                        return widget;
+                    }
+                }
+            }
+            return null;
         }
 
         private static boolean isCreateWorldGameTab(CreateWorldScreen screen) {

@@ -8,12 +8,12 @@ public final class MagicWorldStaticBackground {
     public static final ResourceLocation TITLE_BACKGROUND =
             new ResourceLocation(MagicWorld.MODID, "textures/gui/title/title_background_static.png");
     public static final ResourceLocation FULL_LOGO =
-            new ResourceLocation(MagicWorld.MODID, "textures/gui/title_logo.png");
+            new ResourceLocation(MagicWorld.MODID, "textures/gui/title/logo_full.png");
 
     public static final int BACKGROUND_WIDTH = 2560;
     public static final int BACKGROUND_HEIGHT = 1440;
-    public static final int LOGO_WIDTH = 512;
-    public static final int LOGO_HEIGHT = 171;
+    public static final int LOGO_WIDTH = 2172;
+    public static final int LOGO_HEIGHT = 724;
 
     private MagicWorldStaticBackground() {
     }

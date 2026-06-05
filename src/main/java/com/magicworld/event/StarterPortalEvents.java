@@ -38,6 +38,7 @@ import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.EndPortalFrameBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.NetherPortalBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -389,6 +390,8 @@ public class StarterPortalEvents {
         buildPlantationWorkerSettlement(level, base);
         buildAnimalCaretakerSettlement(level, base);
         buildStarterEstateRoads(level, base);
+        buildGreenVillageSquare(level, base);
+        buildStoneTreasureMineHouse(level, base.offset(67, -1, 46));
         buildEstateLivingBorder(level, base, -128, 122, -76, 80);
         buildEnhancedEstateLighting(level, base);
 
@@ -433,15 +436,29 @@ public class StarterPortalEvents {
             for (int z = 0; z <= depth; z++) {
                 BlockPos pos = corner.offset(x, 0, z);
                 boolean edge = x == 0 || x == width || z == 0 || z == depth;
-                level.setBlock(pos.below(), Blocks.DIRT.defaultBlockState(), 2);
-                level.setBlock(pos, edge ? Blocks.OAK_FENCE.defaultBlockState() : Blocks.GRASS_BLOCK.defaultBlockState(), 2);
-                for (int y = 1; y <= 4; y++) {
+                level.setBlock(pos.below(), Blocks.GRASS_BLOCK.defaultBlockState(), 2);
+                level.setBlock(pos, Blocks.GRASS_BLOCK.defaultBlockState(), 2);
+                for (int y = 1; y <= 8; y++) {
                     level.setBlock(pos.above(y), Blocks.AIR.defaultBlockState(), 2);
+                }
+                if (edge) {
+                    level.setBlock(pos.above(), Blocks.OAK_FENCE.defaultBlockState(), 2);
                 }
             }
         }
-        level.setBlock(corner.offset(width / 2, 0, 0), Blocks.OAK_FENCE_GATE.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.SOUTH), 2);
+        placeAnimalPenGates(level, corner, width, depth);
         placeLampPost(level, corner.offset(width / 2, 0, depth / 2));
+    }
+
+    private static void placeAnimalPenGates(ServerLevel level, BlockPos corner, int width, int depth) {
+        level.setBlock(corner.offset(width / 2, 1, 0), Blocks.OAK_FENCE_GATE.defaultBlockState()
+                .setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH), 2);
+        level.setBlock(corner.offset(width / 2, 1, depth), Blocks.OAK_FENCE_GATE.defaultBlockState()
+                .setValue(HorizontalDirectionalBlock.FACING, Direction.SOUTH), 2);
+        level.setBlock(corner.offset(0, 1, depth / 2), Blocks.OAK_FENCE_GATE.defaultBlockState()
+                .setValue(HorizontalDirectionalBlock.FACING, Direction.WEST), 2);
+        level.setBlock(corner.offset(width, 1, depth / 2), Blocks.OAK_FENCE_GATE.defaultBlockState()
+                .setValue(HorizontalDirectionalBlock.FACING, Direction.EAST), 2);
     }
 
     private static void buildAnimalFeedGarden(ServerLevel level, BlockPos corner, int width, int depth) {
@@ -708,10 +725,11 @@ public class StarterPortalEvents {
     private static void buildStarterRoad(ServerLevel level, BlockPos base, Direction direction, int length) {
         Direction side = direction.getClockWise();
         for (int step = 0; step <= length; step++) {
-            BlockPos center = base.relative(direction, step).below();
+            BlockPos center = filledGroundAt(level, base.relative(direction, step));
             for (int width = -2; width <= 2; width++) {
                 BlockPos pos = center.relative(side, width);
-                level.setBlock(pos, Math.abs(width) == 2 ? Blocks.SMOOTH_STONE_SLAB.defaultBlockState() : Blocks.DIRT_PATH.defaultBlockState(), 2);
+                level.setBlock(pos.below(), Blocks.DIRT.defaultBlockState(), 2);
+                level.setBlock(pos, Math.abs(width) == 2 ? Blocks.POLISHED_ANDESITE.defaultBlockState() : Blocks.SMOOTH_STONE.defaultBlockState(), 2);
                 level.setBlock(pos.above(), Blocks.AIR.defaultBlockState(), 2);
                 level.setBlock(pos.above(2), Blocks.AIR.defaultBlockState(), 2);
             }
@@ -725,13 +743,14 @@ public class StarterPortalEvents {
     private static void buildRoadBetween(ServerLevel level, BlockPos from, BlockPos to) {
         int dx = Integer.compare(to.getX(), from.getX());
         int dz = Integer.compare(to.getZ(), from.getZ());
-        BlockPos pos = from;
+        BlockPos pos = filledGroundAt(level, from);
         int guard = 0;
-        while (!pos.equals(to) && guard++ < 256) {
+        while ((pos.getX() != to.getX() || pos.getZ() != to.getZ()) && guard++ < 256) {
             for (int x = -1; x <= 1; x++) {
                 for (int z = -1; z <= 1; z++) {
-                    BlockPos road = pos.offset(x, 0, z);
-                    level.setBlock(road, Blocks.DIRT_PATH.defaultBlockState(), 2);
+                    BlockPos road = filledGroundAt(level, pos.offset(x, 0, z));
+                    level.setBlock(road.below(), Blocks.DIRT.defaultBlockState(), 2);
+                    level.setBlock(road, Blocks.SMOOTH_STONE.defaultBlockState(), 2);
                     level.setBlock(road.above(), Blocks.AIR.defaultBlockState(), 2);
                 }
             }
@@ -763,6 +782,267 @@ public class StarterPortalEvents {
                 placeLampPost(level, pos);
             }
         }
+    }
+
+    private static void buildGreenVillageSquare(ServerLevel level, BlockPos base) {
+        BlockPos center = filledGroundAt(level, base.offset(-54, 0, 96));
+        for (int x = -18; x <= 18; x++) {
+            for (int z = -14; z <= 14; z++) {
+                BlockPos ground = center.offset(x, 0, z);
+                level.setBlock(ground.below(), Blocks.DIRT.defaultBlockState(), 2);
+                boolean edge = Math.abs(x) == 18 || Math.abs(z) == 14;
+                boolean path = Math.abs(x) <= 2 || Math.abs(z) <= 2;
+                level.setBlock(ground, edge ? Blocks.MOSSY_COBBLESTONE.defaultBlockState() : path ? Blocks.SMOOTH_STONE.defaultBlockState() : Blocks.GRASS_BLOCK.defaultBlockState(), 2);
+                level.setBlock(ground.above(), Blocks.AIR.defaultBlockState(), 2);
+                if (!path && !edge && Math.floorMod(x * 13 + z * 17, 11) == 0) {
+                    level.setBlock(ground.above(), flowerFor(x + z), 2);
+                }
+            }
+        }
+
+        level.setBlock(center, Blocks.BELL.defaultBlockState(), 2);
+        level.setBlock(center.offset(0, 1, 0), Blocks.LANTERN.defaultBlockState(), 2);
+        buildCommunityHall(level, center.offset(-8, 0, -28));
+        buildSimplePlantationWorkerHouse(level, center.offset(-23, 0, 8), Direction.SOUTH, Direction.NORTH);
+        buildSimplePlantationWorkerHouse(level, center.offset(9, 0, 8), Direction.SOUTH, Direction.NORTH);
+
+        for (BlockPos lamp : new BlockPos[] {
+                center.offset(-18, 0, -14), center.offset(18, 0, -14),
+                center.offset(-18, 0, 14), center.offset(18, 0, 14),
+                center.offset(0, 0, -14), center.offset(0, 0, 14)
+        }) {
+            placeLampPost(level, lamp);
+        }
+
+        spawnAnimalGroup(level, EntityType.CAT, center.offset(-7, 1, 8), 3);
+        spawnAnimalGroup(level, EntityType.PARROT, center.offset(7, 1, 8), 3);
+        spawnWorkerVillager(level, center.offset(-2, 1, 3), "Morador da Praca Verde 1", center, center, Items.EMERALD);
+        spawnWorkerVillager(level, center.offset(2, 1, 3), "Morador da Praca Verde 2", center, center, Items.BREAD);
+    }
+
+    private static void buildCommunityHall(ServerLevel level, BlockPos corner) {
+        int width = 18;
+        int depth = 14;
+        for (int x = 0; x <= width; x++) {
+            for (int z = 0; z <= depth; z++) {
+                BlockPos pos = corner.offset(x, 0, z);
+                boolean wall = x == 0 || x == width || z == 0 || z == depth;
+                boolean post = (x == 0 || x == width) && (z == 0 || z == depth);
+                level.setBlock(pos.below(), Blocks.COBBLESTONE.defaultBlockState(), 2);
+                level.setBlock(pos, Blocks.SPRUCE_PLANKS.defaultBlockState(), 2);
+                for (int y = 1; y <= 7; y++) {
+                    level.setBlock(pos.above(y), wall ? (post ? Blocks.DARK_OAK_LOG.defaultBlockState() : Blocks.STRIPPED_OAK_LOG.defaultBlockState()) : Blocks.AIR.defaultBlockState(), 2);
+                }
+            }
+        }
+        for (int x = -2; x <= width + 2; x++) {
+            for (int z = -2; z <= depth + 2; z++) {
+                level.setBlock(corner.offset(x, 8, z), Blocks.DARK_OAK_PLANKS.defaultBlockState(), 2);
+            }
+        }
+        placeHouseDoor(level, corner.offset(width / 2, 1, depth), Direction.SOUTH);
+        placeHouseDoor(level, corner.offset(width / 2, 1, 0), Direction.NORTH);
+        for (int x = 4; x <= width - 4; x += 5) {
+            placeWindow(level, corner.offset(x, 3, 0));
+            placeWindow(level, corner.offset(x, 3, depth));
+        }
+        level.setBlock(corner.offset(width / 2, 5, depth / 2), Blocks.LANTERN.defaultBlockState(), 2);
+        level.setBlock(corner.offset(4, 1, 4), Blocks.LECTERN.defaultBlockState(), 2);
+        level.setBlock(corner.offset(width - 4, 1, 4), Blocks.CARTOGRAPHY_TABLE.defaultBlockState(), 2);
+        placeChest(level, corner.offset(width / 2, 1, 3), Direction.SOUTH);
+        putItems(level, corner.offset(width / 2, 1, 3), new ItemStack(Items.MAP, 8), new ItemStack(Items.BREAD, 64), new ItemStack(Items.TORCH, 64));
+    }
+
+    private static void buildStoneTreasureMineHouse(ServerLevel level, BlockPos approximateCenter) {
+        BlockPos center = filledGroundAt(level, approximateCenter);
+        prepareMineHouseGround(level, center);
+        buildTreasureMine(level, center);
+
+        for (int x = -5; x <= 4; x++) {
+            for (int z = -5; z <= 4; z++) {
+                boolean wall = x == -5 || x == 4 || z == -5 || z == 4;
+                level.setBlock(center.offset(x, 0, z), Blocks.POLISHED_DEEPSLATE.defaultBlockState(), 2);
+                for (int y = 1; y <= 5; y++) {
+                    level.setBlock(center.offset(x, y, z), wall ? mineHouseWallBlock(x, y, z) : Blocks.AIR.defaultBlockState(), 2);
+                }
+            }
+        }
+        for (int x = -6; x <= 5; x++) {
+            for (int z = -6; z <= 5; z++) {
+                level.setBlock(center.offset(x, 6, z), Blocks.DEEPSLATE_BRICKS.defaultBlockState(), 2);
+            }
+        }
+
+        placeHouseDoor(level, center.offset(0, 1, -5), Direction.NORTH);
+        for (int x : new int[] {-3, 2}) {
+            placeWindow(level, center.offset(x, 2, -5));
+            placeWindow(level, center.offset(x, 2, 4));
+        }
+        for (int z : new int[] {-3, 2}) {
+            placeWindow(level, center.offset(-5, 2, z));
+            placeWindow(level, center.offset(4, 2, z));
+        }
+
+        decorateMineHouse(level, center);
+    }
+
+    private static BlockState mineHouseWallBlock(int x, int y, int z) {
+        if (y == 1 && Math.floorMod(x * 17 + z * 11, 5) == 0) {
+            return Blocks.CHISELED_STONE_BRICKS.defaultBlockState();
+        }
+        if (y >= 4 && Math.floorMod(x + z, 4) == 0) {
+            return Blocks.MOSSY_STONE_BRICKS.defaultBlockState();
+        }
+        return Blocks.STONE_BRICKS.defaultBlockState();
+    }
+
+    private static void prepareMineHouseGround(ServerLevel level, BlockPos center) {
+        for (int x = -10; x <= 9; x++) {
+            for (int z = -10; z <= 9; z++) {
+                BlockPos ground = center.offset(x, 0, z);
+                level.setBlock(ground.below(), Blocks.DIRT.defaultBlockState(), 2);
+                level.setBlock(ground, Blocks.GRASS_BLOCK.defaultBlockState(), 2);
+                for (int y = 1; y <= 10; y++) {
+                    level.setBlock(ground.above(y), Blocks.AIR.defaultBlockState(), 2);
+                }
+            }
+        }
+    }
+
+    private static void decorateMineHouse(ServerLevel level, BlockPos center) {
+        BlockPos toolsChest = center.offset(-4, 1, -2);
+        BlockPos richesChest = center.offset(-4, 1, 1);
+        BlockPos buildingChest = center.offset(3, 1, -2);
+        BlockPos foodChest = center.offset(3, 1, 1);
+        placeChest(level, toolsChest, Direction.EAST);
+        placeChest(level, richesChest, Direction.EAST);
+        placeChest(level, buildingChest, Direction.WEST);
+        placeChest(level, foodChest, Direction.WEST);
+        putItems(level, toolsChest, new ItemStack(Items.DIAMOND_PICKAXE), new ItemStack(Items.DIAMOND_AXE),
+                new ItemStack(Items.DIAMOND_SHOVEL), new ItemStack(Items.BOW), new ItemStack(Items.ARROW, 64), new ItemStack(Items.TORCH, 64));
+        putItems(level, richesChest, treasureMineStacks());
+        putItems(level, buildingChest, new ItemStack(Items.CHEST, 32), new ItemStack(Items.CRAFTING_TABLE, 16),
+                new ItemStack(Items.FURNACE, 16), new ItemStack(Items.RAIL, 64), new ItemStack(Items.LANTERN, 32));
+        putItems(level, foodChest, new ItemStack(Items.GOLDEN_CARROT, 64), new ItemStack(Items.COOKED_BEEF, 64),
+                new ItemStack(Items.BREAD, 64), new ItemStack(Items.GOLDEN_APPLE, 16));
+
+        level.setBlock(center.offset(-2, 1, 3), Blocks.CRAFTING_TABLE.defaultBlockState(), 2);
+        level.setBlock(center.offset(-1, 1, 3), Blocks.FURNACE.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH), 2);
+        level.setBlock(center.offset(0, 1, 3), Blocks.BLAST_FURNACE.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH), 2);
+        level.setBlock(center.offset(1, 1, 3), Blocks.SMITHING_TABLE.defaultBlockState(), 2);
+        level.setBlock(center.offset(2, 1, 3), Blocks.ANVIL.defaultBlockState(), 2);
+        level.setBlock(center.offset(-3, 1, 3), Blocks.STONECUTTER.defaultBlockState(), 2);
+        level.setBlock(center.offset(0, 5, 0), Blocks.SEA_LANTERN.defaultBlockState(), 2);
+
+        for (int y = center.getY(); y >= center.getY() - 22; y--) {
+            BlockPos shaft = new BlockPos(center.getX(), y, center.getZ());
+            level.setBlock(shaft, Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.NORTH), 2);
+            level.setBlock(shaft.relative(Direction.SOUTH), Blocks.STONE_BRICKS.defaultBlockState(), 2);
+        }
+
+        for (BlockPos pos : new BlockPos[] {
+                center.offset(-7, 0, -7), center.offset(6, 0, -7),
+                center.offset(-7, 0, 6), center.offset(6, 0, 6)
+        }) {
+            placeLampPost(level, pos);
+        }
+        buildHousePathToFarm(level, center.offset(0, 1, -5), Direction.NORTH, 5);
+        spawnWorkerVillager(level, center.offset(0, 1, 2), "Minerador Magic World", center, center, Items.DIAMOND_PICKAXE);
+    }
+
+    private static void buildTreasureMine(ServerLevel level, BlockPos center) {
+        int topY = center.getY() - 2;
+        BlockState[] layers = new BlockState[] {
+                Blocks.STONE.defaultBlockState(),
+                Blocks.COAL_ORE.defaultBlockState(),
+                Blocks.IRON_ORE.defaultBlockState(),
+                Blocks.COPPER_ORE.defaultBlockState(),
+                Blocks.REDSTONE_ORE.defaultBlockState(),
+                Blocks.LAPIS_ORE.defaultBlockState(),
+                Blocks.EMERALD_ORE.defaultBlockState(),
+                Blocks.DIAMOND_ORE.defaultBlockState(),
+                Blocks.DEEPSLATE_DIAMOND_ORE.defaultBlockState()
+        };
+
+        for (int layer = 0; layer < layers.length; layer++) {
+            for (int depth = 0; depth < 2; depth++) {
+                int y = topY - layer * 2 - depth;
+                for (int x = -20; x <= 19; x++) {
+                    for (int z = -20; z <= 19; z++) {
+                        level.setBlock(new BlockPos(center.getX() + x, y, center.getZ() + z), layers[layer], 2);
+                    }
+                }
+            }
+        }
+
+        for (int galleryY : new int[] {topY - 3, topY - 9, topY - 15}) {
+            carveTreasureMineGallery(level, center, galleryY);
+        }
+    }
+
+    private static void carveTreasureMineGallery(ServerLevel level, BlockPos center, int galleryY) {
+        for (int x = -18; x <= 18; x++) {
+            for (int z = -1; z <= 1; z++) {
+                clearMineWalkway(level, center.offset(x, galleryY - center.getY(), z));
+            }
+            level.setBlock(center.offset(x, galleryY - center.getY(), 0), Blocks.RAIL.defaultBlockState(), 2);
+        }
+        for (int z = -18; z <= 18; z++) {
+            for (int x = -1; x <= 1; x++) {
+                clearMineWalkway(level, center.offset(x, galleryY - center.getY(), z));
+            }
+            if (Math.abs(z) > 2) {
+                level.setBlock(center.offset(0, galleryY - center.getY(), z), Blocks.RAIL.defaultBlockState(), 2);
+            }
+        }
+        for (int step = -16; step <= 16; step += 8) {
+            placeMineSupport(level, center.offset(step, galleryY - center.getY(), -2));
+            placeMineSupport(level, center.offset(step, galleryY - center.getY(), 2));
+            placeMineSupport(level, center.offset(-2, galleryY - center.getY(), step));
+            placeMineSupport(level, center.offset(2, galleryY - center.getY(), step));
+            level.setBlock(center.offset(step, galleryY - center.getY() + 3, 0), Blocks.SEA_LANTERN.defaultBlockState(), 2);
+            level.setBlock(center.offset(0, galleryY - center.getY() + 3, step), Blocks.SEA_LANTERN.defaultBlockState(), 2);
+        }
+        for (BlockPos pos : new BlockPos[] {
+                center.offset(-15, galleryY - center.getY(), -15),
+                center.offset(15, galleryY - center.getY(), -15),
+                center.offset(-15, galleryY - center.getY(), 15),
+                center.offset(15, galleryY - center.getY(), 15)
+        }) {
+            clearMineWalkway(level, pos);
+            placeChest(level, pos, Direction.SOUTH);
+            putItems(level, pos, treasureMineStacks());
+        }
+    }
+
+    private static void clearMineWalkway(ServerLevel level, BlockPos foot) {
+        level.setBlock(foot, Blocks.AIR.defaultBlockState(), 2);
+        level.setBlock(foot.above(), Blocks.AIR.defaultBlockState(), 2);
+        level.setBlock(foot.above(2), Blocks.AIR.defaultBlockState(), 2);
+        level.setBlock(foot.below(), Blocks.POLISHED_DEEPSLATE.defaultBlockState(), 2);
+    }
+
+    private static void placeMineSupport(ServerLevel level, BlockPos foot) {
+        for (int y = 0; y <= 2; y++) {
+            level.setBlock(foot.above(y), Blocks.OAK_LOG.defaultBlockState(), 2);
+        }
+        level.setBlock(foot.above(3), Blocks.OAK_PLANKS.defaultBlockState(), 2);
+    }
+
+    private static ItemStack[] treasureMineStacks() {
+        return new ItemStack[] {
+                new ItemStack(Items.COAL, 64),
+                new ItemStack(Items.RAW_IRON, 64),
+                new ItemStack(Items.RAW_GOLD, 64),
+                new ItemStack(Items.RAW_COPPER, 64),
+                new ItemStack(Items.IRON_INGOT, 64),
+                new ItemStack(Items.GOLD_INGOT, 64),
+                new ItemStack(Items.DIAMOND, 32),
+                new ItemStack(Items.EMERALD, 32),
+                new ItemStack(Items.REDSTONE, 64),
+                new ItemStack(Items.LAPIS_LAZULI, 64),
+                new ItemStack(Items.TORCH, 64)
+        };
     }
 
     private static void buildWorkerSettlement(ServerLevel level, BlockPos base) {
@@ -859,7 +1139,8 @@ public class StarterPortalEvents {
         for (int x = -3; x <= 3; x++) {
             for (int z = -2; z <= 2; z++) {
                 boolean edge = Math.abs(x) == 3 || Math.abs(z) == 2;
-                level.setBlock(center.offset(x, 0, z), edge ? Blocks.OAK_SLAB.defaultBlockState() : Blocks.DIRT_PATH.defaultBlockState(), 2);
+                level.setBlock(center.offset(x, -1, z), Blocks.DIRT.defaultBlockState(), 2);
+                level.setBlock(center.offset(x, 0, z), edge ? Blocks.POLISHED_ANDESITE.defaultBlockState() : Blocks.SMOOTH_STONE.defaultBlockState(), 2);
             }
         }
 
@@ -1554,7 +1835,7 @@ public class StarterPortalEvents {
     ) {
         BlockPos spot = findSafeInteriorFloor(level, requested, 8, 18);
         if (spot == null) {
-            spot = requested;
+            spot = castleGroundResidentSpot(level, requested);
         }
         AABB nearby = new AABB(spot).inflate(28.0D, 20.0D, 28.0D);
         if (level.getEntitiesOfClass(Villager.class, nearby, villager -> name.equals(villager.getName().getString())).isEmpty()) {
@@ -1568,6 +1849,14 @@ public class StarterPortalEvents {
             }
         }
         decorateCastleResidentStation(level, spot, facing, jobBlock, supplies);
+    }
+
+    private static BlockPos castleGroundResidentSpot(ServerLevel level, BlockPos requested) {
+        BlockPos surface = findHighestFeatureSurface(level, requested, 96);
+        if (surface.getY() > requested.getY() + 8) {
+            return requested;
+        }
+        return surface;
     }
 
     private static void decorateCastleResidentStation(ServerLevel level, BlockPos spot, Direction facing, BlockState jobBlock, ItemStack... supplies) {
@@ -1684,7 +1973,8 @@ public class StarterPortalEvents {
         level.setBlock(lower.above(), Blocks.OAK_DOOR.defaultBlockState()
                 .setValue(DoorBlock.FACING, facing)
                 .setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER), 2);
-        level.setBlock(lower.relative(facing).below(), Blocks.DIRT_PATH.defaultBlockState(), 2);
+        BlockPos step = filledGroundAt(level, lower.relative(facing));
+        level.setBlock(step, Blocks.SMOOTH_STONE.defaultBlockState(), 2);
     }
 
     private static void placeWindow(ServerLevel level, BlockPos pos) {
@@ -1704,14 +1994,26 @@ public class StarterPortalEvents {
     private static void buildHousePathToFarm(ServerLevel level, BlockPos door, Direction direction, int length) {
         Direction side = direction.getClockWise();
         for (int step = 1; step <= length; step++) {
-            BlockPos center = door.relative(direction, step).below();
+            BlockPos center = filledGroundAt(level, door.relative(direction, step));
             for (int width = -1; width <= 1; width++) {
                 BlockPos path = center.relative(side, width);
-                level.setBlock(path, Blocks.DIRT_PATH.defaultBlockState(), 2);
+                level.setBlock(path.below(), Blocks.DIRT.defaultBlockState(), 2);
+                level.setBlock(path, Blocks.SMOOTH_STONE.defaultBlockState(), 2);
                 level.setBlock(path.above(), Blocks.AIR.defaultBlockState(), 2);
             }
         }
         placeLampPost(level, door.relative(direction, Math.max(3, length / 2)).below().relative(side, 3));
+    }
+
+    private static BlockPos filledGroundAt(ServerLevel level, BlockPos approximate) {
+        BlockPos surface = findHighestFeatureSurface(level, approximate, 24).below();
+        if (surface.getY() < approximate.getY() - 1) {
+            surface = new BlockPos(approximate.getX(), approximate.getY() - 1, approximate.getZ());
+        }
+        for (int y = surface.getY() - 3; y < surface.getY(); y++) {
+            level.setBlock(new BlockPos(surface.getX(), y, surface.getZ()), Blocks.DIRT.defaultBlockState(), 2);
+        }
+        return surface;
     }
 
     private static void spawnAnimalGroup(ServerLevel level, EntityType<?> type, BlockPos center, int count) {

@@ -327,3 +327,18 @@ Teste manual:
 Observacao:
 
 - Este bloco nao e o port bruto completo de `StarterPortalEvents` NeoForge. Ainda podem faltar detalhes finos de decoracao/IA, que devem ser ajustados por screenshot apos criar mundo novo.
+
+## Fix loading, ESC, aura e terreno - 2026-06-05
+
+- Loading usa a logo full 2172x724 e nao mostra mais `Primeira criacao de mapa`.
+- Aura reforcada para remover efeitos visiveis antes de aplicar efeitos invisiveis/sem particulas/sem icones.
+- Menu Magic World do ESC foi portado em versao Forge: botao `MagicWorld` no pause abre atalhos e menu da varinha.
+- Caminhos novos nao usam mais `DIRT_PATH`, removendo o rebaixo marrom.
+- Currais seguem o padrao NeoForge: piso de grama e cerca/gates acima do piso.
+- Estruturas de villagers do castelo agora usam fallback para chao/superficie quando nao encontram piso interno seguro.
+- Predio da mina e mina subterranea foram adicionados no setor do gramado.
+- Build passou com `./gradlew.bat build --stacktrace`.
+
+Pendente de teste visual:
+
+- Criar mundo novo e conferir se ainda existe area vazia, estrutura voando, animal escapando ou terreno desnivelado.

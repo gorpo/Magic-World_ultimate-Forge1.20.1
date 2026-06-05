@@ -5,7 +5,10 @@ import com.magicworld.client.InitialLoadNoticeScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.NetworkRegistry;
@@ -47,6 +50,15 @@ public final class MagicWorldNetwork {
                 InitialLoadProgressPacket::handle,
                 Optional.of(NetworkDirection.PLAY_TO_CLIENT)
         );
+
+        CHANNEL.registerMessage(
+                packetId++,
+                MagicWorldPanelActionPacket.class,
+                MagicWorldPanelActionPacket::encode,
+                MagicWorldPanelActionPacket::decode,
+                MagicWorldPanelActionPacket::handle,
+                Optional.of(NetworkDirection.PLAY_TO_SERVER)
+        );
     }
 
     public static void openInitialLoadNotice(ServerPlayer player) {
@@ -55,6 +67,10 @@ public final class MagicWorldNetwork {
 
     public static void sendInitialLoadProgress(ServerPlayer player, int progress, String message, boolean complete) {
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new InitialLoadProgressPacket(progress, message, complete));
+    }
+
+    public static void sendPanelAction(String action) {
+        CHANNEL.sendToServer(new MagicWorldPanelActionPacket(action));
     }
 
     public static final class OpenInitialLoadNoticePacket {
@@ -101,5 +117,54 @@ public final class MagicWorldNetwork {
             ));
             context.setPacketHandled(true);
         }
+    }
+
+    public record MagicWorldPanelActionPacket(String action) {
+        public static void encode(MagicWorldPanelActionPacket packet, FriendlyByteBuf buffer) {
+            buffer.writeUtf(packet.action);
+        }
+
+        public static MagicWorldPanelActionPacket decode(FriendlyByteBuf buffer) {
+            return new MagicWorldPanelActionPacket(buffer.readUtf());
+        }
+
+        public static void handle(MagicWorldPanelActionPacket packet, Supplier<NetworkEvent.Context> contextSupplier) {
+            NetworkEvent.Context context = contextSupplier.get();
+            context.enqueueWork(() -> {
+                ServerPlayer player = context.getSender();
+                if (player != null) {
+                    handlePanelAction(player, packet.action);
+                }
+            });
+            context.setPacketHandled(true);
+        }
+    }
+
+    private static void handlePanelAction(ServerPlayer player, String action) {
+        ServerLevel level = player.serverLevel();
+        switch (action) {
+            case "magic_wand" -> player.getInventory().add(new ItemStack(MagicWorld.VARINHA_MAGICA.get()));
+            case "teleport_home" -> teleportHome(player);
+            case "time_day" -> level.setDayTime(1000L);
+            case "time_night" -> level.setDayTime(13000L);
+            case "weather_clear" -> level.setWeatherParameters(6000, 0, false, false);
+            case "weather_rain" -> level.setWeatherParameters(0, 6000, true, false);
+            default -> {
+            }
+        }
+    }
+
+    private static void teleportHome(ServerPlayer player) {
+        if (!player.getPersistentData().contains("MagicWorldForgeStarterEstateBaseX")) {
+            return;
+        }
+        ServerLevel overworld = player.server.getLevel(Level.OVERWORLD);
+        if (overworld == null) {
+            return;
+        }
+        int x = player.getPersistentData().getInt("MagicWorldForgeStarterEstateBaseX");
+        int y = player.getPersistentData().getInt("MagicWorldForgeStarterEstateBaseY");
+        int z = player.getPersistentData().getInt("MagicWorldForgeStarterEstateBaseZ");
+        player.teleportTo(overworld, x + 0.5D, y + 1.0D, z + 0.5D, player.getYRot(), player.getXRot());
     }
 }

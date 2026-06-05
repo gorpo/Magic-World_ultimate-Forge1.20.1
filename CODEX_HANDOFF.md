@@ -507,3 +507,51 @@ Teste manual necessario:
 2. Criar mundo novo pelo menu Magic World com fazendas, portal, castelo e aura ligados.
 3. Conferir se aparecem os caminhos, luzes, casas do canto das plantacoes, cuidadores das fazendas, moradores do castelo e decoracao ao redor dos portais.
 4. Mandar screenshots dos pontos ainda vazios para o segundo ajuste fino do terreno.
+
+## Fix em 2026-06-05 - loading, aura, ESC, currais, mina e terreno
+
+Pedido:
+
+- Remover texto `Primeira criacao de mapa` do loading.
+- Corrigir logo pixelada do loading usando asset de maior resolucao.
+- Trazer menu Magic World ao apertar ESC, como no NeoForge.
+- Fazer efeitos da aura nao brilharem/nao mostrarem particulas/icones.
+- Corrigir rebaixo marrom das ruas/caminhos.
+- Corrigir currais que ganharam camada interna e deixavam animais fugir.
+- Corrigir abrigos/estruturas dos villagers do castelo aparecendo voando.
+- Trazer predio da mina e mina que faltaram no gramado.
+
+Feito:
+
+- `MagicWorldStaticBackground.FULL_LOGO` agora aponta para `textures/gui/title/logo_full.png` em 2172x724.
+- `InitialLoadNoticeScreen` removeu os textos extras e manteve logo + mensagem atual + barra de progresso.
+- `AuraEvents` remove efeito visivel existente antes de reaplicar versao invisivel/sem icone/sem particulas.
+- `ClientEvents` adiciona botao `MagicWorld` no PauseScreen/ESC.
+- Criada `MagicWorldCentralPauseScreen` com botoes:
+  - abrir menu completo da varinha;
+  - receber varinha;
+  - teleportar para casa;
+  - dia/noite;
+  - sol/chuva;
+  - voltar/continuar.
+- `MagicWorldNetwork` recebeu pacote client->server para executar esses atalhos.
+- Removido uso de `DIRT_PATH` dos caminhos novos para evitar o rebaixo marrom; caminhos agora usam blocos inteiros (`SMOOTH_STONE`/`POLISHED_ANDESITE`) com preenchimento abaixo.
+- Currais agora seguem a logica NeoForge: piso de grama no chao e cercas/gates um bloco acima, evitando camada interna errada e reduzindo fuga dos animais.
+- Villagers do castelo agora caem para ponto de chao/superficie se nao houver piso interno seguro, evitando abrigos voando.
+- Adicionado predio da mina e mina subterranea leve no offset NeoForge `base.offset(67, -1, 46)`:
+  - casa de pedra/deepslate;
+  - bau de ferramentas, minerios, comida e construcao;
+  - shaft com escada;
+  - galerias subterraneas com minerios, trilhos, suportes e baus.
+- Validado com `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+
+Teste manual necessario:
+
+1. Reiniciar o client.
+2. Criar mundo novo pelo menu Magic World.
+3. Conferir loading sem texto extra e logo sem pixelacao.
+4. Entrar no mundo, apertar ESC e testar o botao `MagicWorld`.
+5. Conferir aura sem brilho visual no personagem.
+6. Conferir currais sem camada interna alta e com animais presos.
+7. Conferir se estruturas dos villagers do castelo nao ficam voando.
+8. Conferir se o predio da mina e a mina aparecem no gramado.

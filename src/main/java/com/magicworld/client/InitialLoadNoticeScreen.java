@@ -48,14 +48,14 @@ public class InitialLoadNoticeScreen extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         int panelWidth = Math.min(420, width - 32);
-        int panelHeight = 220;
+        int panelHeight = 174;
         int left = width / 2 - panelWidth / 2;
-        int top = Math.max(18, height / 2 - 112);
+        int top = Math.max(18, height / 2 - 88);
         int progressLeft = left + 28;
-        int progressTop = top + 148;
+        int progressTop = top + 118;
         int progressWidth = panelWidth - 56;
         int filledWidth = progressWidth * currentProgress / 100;
-        int logoWidth = Math.min(260, Math.max(160, panelWidth - 120));
+        int logoWidth = Math.min(300, Math.max(190, panelWidth - 104));
         int logoHeight = logoWidth * MagicWorldStaticBackground.LOGO_HEIGHT / MagicWorldStaticBackground.LOGO_WIDTH;
         int logoX = width / 2 - logoWidth / 2;
         int logoY = top + 18;
@@ -79,9 +79,7 @@ public class InitialLoadNoticeScreen extends Screen {
                 MagicWorldStaticBackground.LOGO_WIDTH,
                 MagicWorldStaticBackground.LOGO_HEIGHT
         );
-        graphics.drawCenteredString(font, Component.literal("Primeira criacao de mapa"), width / 2, top + 82, 0xFFFFE0A0);
-        graphics.drawCenteredString(font, Component.literal("Casa, fazendas, portais e castelo carregam em etapas."), width / 2, top + 100, 0xFFE8F2FF);
-        graphics.drawCenteredString(font, Component.literal(currentMessage), width / 2, top + 122, 0xFFBFD7FF);
+        graphics.drawCenteredString(font, Component.literal(currentMessage), width / 2, top + 94, 0xFFBFD7FF);
 
         graphics.fill(progressLeft, progressTop, progressLeft + progressWidth, progressTop + 12, 0xFF070B13);
         graphics.renderOutline(progressLeft, progressTop, progressWidth, 12, 0xAADDAD55);
