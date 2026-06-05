@@ -6,9 +6,11 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public class InitialLoadNoticeScreen extends Screen {
+    private static final long COMPLETE_CLOSE_DELAY_MS = 5000L;
     private static int currentProgress;
     private static String currentMessage = "Preparando o carregamento inicial...";
     private static boolean currentComplete;
+    private static long completedAtMs = -1L;
 
     public InitialLoadNoticeScreen() {
         super(Component.literal("Carregamento Magic World"));
@@ -18,6 +20,7 @@ public class InitialLoadNoticeScreen extends Screen {
         currentProgress = 0;
         currentMessage = "Preparando o carregamento inicial...";
         currentComplete = false;
+        completedAtMs = -1L;
     }
 
     public static void updateProgress(Minecraft minecraft, int progress, String message, boolean complete) {
@@ -25,7 +28,19 @@ public class InitialLoadNoticeScreen extends Screen {
         currentMessage = message == null || message.isBlank() ? currentMessage : message;
         currentComplete = complete || currentProgress >= 100;
 
-        if (minecraft.screen instanceof InitialLoadNoticeScreen && currentComplete) {
+        if (currentComplete && completedAtMs < 0L) {
+            completedAtMs = System.currentTimeMillis();
+        }
+    }
+
+    @Override
+    public void tick() {
+        if (currentComplete
+                && minecraft != null
+                && minecraft.player != null
+                && minecraft.level != null
+                && completedAtMs > 0L
+                && System.currentTimeMillis() - completedAtMs >= COMPLETE_CLOSE_DELAY_MS) {
             minecraft.setScreen(null);
         }
     }
@@ -41,7 +56,8 @@ public class InitialLoadNoticeScreen extends Screen {
         int progressWidth = panelWidth - 56;
         int filledWidth = progressWidth * currentProgress / 100;
 
-        graphics.fill(0, 0, width, height, 0xAA030611);
+        MagicWorldStaticBackground.draw(graphics, width, height);
+        graphics.fill(0, 0, width, height, 0x66030611);
         graphics.fill(left, top, left + panelWidth, top + panelHeight, 0xEE101018);
         graphics.renderOutline(left, top, panelWidth, panelHeight, 0xAADDAD55);
         graphics.drawCenteredString(font, Component.literal("MAGIC WORLD"), width / 2, top + 14, 0xFFFFFFFF);

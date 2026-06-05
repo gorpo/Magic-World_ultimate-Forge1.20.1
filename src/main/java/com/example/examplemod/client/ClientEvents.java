@@ -3,11 +3,17 @@ package com.example.examplemod.client;
 import com.example.examplemod.MagicWorldWorldOptions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
+import net.minecraft.client.gui.screens.OptionsScreen;
+import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
+import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.client.gui.ModListScreen;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -57,6 +63,12 @@ public class ClientEvents {
             Minecraft minecraft =
                     Minecraft.getInstance();
 
+            if (minecraft.screen instanceof TitleScreen
+                    && !(minecraft.screen instanceof MagicWorldTitleScreen)) {
+                minecraft.setScreen(new MagicWorldTitleScreen());
+                return;
+            }
+
             while (KeyBindings.OPEN_MENU_KEY
                     .consumeClick()) {
 
@@ -104,6 +116,31 @@ public class ClientEvents {
         }
 
         @SubscribeEvent
+        public static void onScreenOpening(
+                ScreenEvent.Opening event
+        ) {
+
+            if (event.getNewScreen() instanceof TitleScreen
+                    && !(event.getNewScreen() instanceof MagicWorldTitleScreen)) {
+                event.setNewScreen(new MagicWorldTitleScreen());
+            }
+        }
+
+        @SubscribeEvent
+        public static void onScreenBackground(
+                ScreenEvent.BackgroundRendered event
+        ) {
+
+            if (shouldUseMagicBackground(event.getScreen())) {
+                MagicWorldStaticBackground.draw(
+                        event.getGuiGraphics(),
+                        event.getScreen().width,
+                        event.getScreen().height
+                );
+            }
+        }
+
+        @SubscribeEvent
         public static void onScreenRender(
                 ScreenEvent.Render.Post event
         ) {
@@ -140,6 +177,15 @@ public class ClientEvents {
 
         private static int magicButtonY(int screenHeight) {
             return Math.max(8, screenHeight - 52);
+        }
+
+        private static boolean shouldUseMagicBackground(Object screen) {
+            return screen instanceof CreateWorldScreen
+                    || screen instanceof SelectWorldScreen
+                    || screen instanceof JoinMultiplayerScreen
+                    || screen instanceof OptionsScreen
+                    || screen instanceof PackSelectionScreen
+                    || screen instanceof ModListScreen;
         }
     }
 }

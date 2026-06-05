@@ -62,3 +62,19 @@ Arquivos de referencia importados:
 - Remoto configurado para `https://github.com/gorpo/Magic-World_ultimate-Forge1.20.1.git`.
 - Ainda falta portar codigo/telas desta etapa.
 - Ainda falta compilar, commitar e enviar o branch.
+
+## Atualizacao visual inicial - 2026-06-05
+
+Implementado nesta etapa:
+
+- Background estatico oficial importado de `screenshots/title_background_static_2560x1440_final.png`.
+- Logo full importada de `screenshots/logo_full.png`.
+- Tela de titulo customizada `MagicWorldTitleScreen` substitui a tela vanilla do Minecraft.
+- `MagicWorldStaticBackground` centraliza o desenho do fundo para telas iniciais e loading.
+- `InitialLoadNoticeScreen` agora usa o background estatico e fecha automaticamente 5s apos completar.
+- Build local validado com sucesso.
+
+Pendencia visual para teste manual:
+
+- Confirmar dentro do jogo se o evento `ScreenEvent.BackgroundRendered` cobre todas as telas iniciais esperadas sem esconder widgets.
+- Confirmar se o loading vanilla antes da abertura do menu precisa de mixin/overlay adicional.

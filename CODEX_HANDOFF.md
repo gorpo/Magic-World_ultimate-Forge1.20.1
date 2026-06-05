@@ -81,3 +81,28 @@ Portar somente as telas/menus iniciais e backgrounds:
 3. Rodar `./gradlew.bat build`.
 4. Atualizar este handoff com resultado.
 5. Commitar e enviar branch `Inicio-Port-Neoforge` ao GitHub.
+
+## Bloco concluido em 2026-06-05 - background e logo iniciais
+
+- Copiado `screenshots/title_background_static_2560x1440_final.png` para `src/main/resources/assets/examplemod/textures/gui/title/title_background_static.png`.
+- Copiado `screenshots/logo_full.png` para `src/main/resources/assets/examplemod/textures/gui/title/logo_full.png`.
+- Criado `MagicWorldStaticBackground` para desenhar o fundo estatico em modo cover 16:9.
+- Criado `MagicWorldTitleScreen` para substituir a tela vanilla `TitleScreen`:
+  - usa o background estatico;
+  - remove a logo Minecraft vanilla;
+  - desenha a logo full Magic World;
+  - mantem botoes principais de entrada: um jogador, multijogador, mods, opcoes e sair.
+- Atualizado `ClientEvents` para:
+  - trocar `TitleScreen` por `MagicWorldTitleScreen` ao abrir/tickar;
+  - desenhar o background estatico nas telas iniciais via `ScreenEvent.BackgroundRendered`.
+- Atualizado `InitialLoadNoticeScreen` para usar o mesmo background estatico no loading inicial e fechar 5s apos completar.
+- Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
+
+## Proximo passo
+
+Testar visualmente no Minecraft:
+
+1. Tela inicial deve mostrar `title_background_static.png` e `logo_full.png`.
+2. Telas iniciais como selecao/criacao de mundo devem usar o mesmo background sem cobrir botoes.
+3. Loading inicial do Magic World deve usar o mesmo background durante criacao do mapa.
+4. Se o loading vanilla do Minecraft ainda aparecer com outro visual antes da tela do mod, avaliar mixin/overlay em etapa separada.
