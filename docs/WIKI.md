@@ -297,3 +297,15 @@ Teste manual necessario:
 - Em modo criativo, o jogador entra em criativo e recebe permissao de comandos.
 - Aura ON protege contra lava/fogo, agua/afogamento, altura/queda, fome, preserva inventario, tenta voltar ao local da morte, quebra bloco com clique esquerdo e mata entidades em um golpe.
 - Build passou.
+
+## Background em confirmacoes - 2026-06-05
+
+- A tela de apagar mundo usa `ConfirmScreen`, fora do pacote `worldselection`.
+- `ConfirmScreen`, `AlertScreen` e `BackupConfirmScreen` agora entram na regra global de background Magic World.
+- Isso cobre a confirmacao de apagar mundo e alertas iniciais semelhantes.
+- Build passou com `./gradlew.bat build --stacktrace`.
+
+Teste manual:
+
+- Reiniciar o client e abrir a tela de apagar mundo.
+- Confirmar que nao aparece mais o fundo vanilla de terra.

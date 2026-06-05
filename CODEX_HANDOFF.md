@@ -458,3 +458,22 @@ Teste manual:
 - Confirmar `/gamemode`, `/tp` ou outro comando no chat.
 - Testar lava, agua, queda, morte/respawn e inventario.
 - Testar quebrar bloco e atacar entidade com aura.
+
+## Fix em 2026-06-05 - background na tela de apagar mundo
+
+Problema:
+
+- A confirmacao `Deseja mesmo apagar esse mundo?` ainda mostrava o fundo vanilla de terra.
+- Essa tela nao pertence ao pacote de criacao/selecao de mundo; ela usa `ConfirmScreen`.
+
+Feito:
+
+- `MagicWorldScreenBackgrounds` agora inclui `ConfirmScreen`, `AlertScreen` e `BackupConfirmScreen` na lista de telas com background estatico.
+- Isso cobre a tela de apagar mundo e outras confirmacoes/alertas do fluxo inicial.
+- Validado com `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+
+Teste manual:
+
+- Reiniciar o client.
+- Abrir selecao de mundos e clicar em apagar um mundo.
+- A tela de confirmacao deve usar o background Magic World, sem fundo de terra vanilla.
