@@ -77,6 +77,7 @@ public class ClientEvents {
                 if (panel != null) {
                     hideMagicPanelIfVanillaTabTookOver(panel);
                     relayoutMagicPanel(panel);
+                    updateMagicTabButton(panel);
                     MagicWorldWorldOptions.setCommandsEnabled(true);
                     forceCreateWorldAllowCommands(screen);
                     syncAutomaticCommands(panel.vanillaWidgets());
@@ -250,6 +251,7 @@ public class ClientEvents {
                 MagicCreateWorldPanel panel = MAGIC_CREATE_WORLD_PANELS.get(screen);
                 if (panel != null) {
                     relayoutMagicPanel(panel);
+                    updateMagicTabButton(panel);
                 }
             }
         }
@@ -288,6 +290,20 @@ public class ClientEvents {
                         && !(widget instanceof MagicCreateWorldLineCover)
                         && !(widget instanceof MagicCreateWorldInfo)
                         && !(widget instanceof MagicCreateWorldTitle);
+            }
+
+            updateMagicTabButton(panel);
+        }
+
+        private static void updateMagicTabButton(MagicCreateWorldPanel panel) {
+            boolean gameTab = isCreateWorldGameTab(panel.screen());
+            if (!gameTab && isMagicPanelVisible(panel)) {
+                showMagicPanel(panel.screen(), false);
+            }
+
+            if (!isMagicPanelVisible(panel)) {
+                panel.magicTabButton().visible = gameTab;
+                panel.magicTabButton().active = gameTab;
             }
         }
 
@@ -545,6 +561,28 @@ public class ClientEvents {
                 }
             }
             return false;
+        }
+
+        private static boolean isCreateWorldGameTab(CreateWorldScreen screen) {
+            try {
+                var tabManagerField = CreateWorldScreen.class.getDeclaredField("tabManager");
+                tabManagerField.setAccessible(true);
+                Object tabManager = tabManagerField.get(screen);
+                Object tab = tabManager.getClass().getMethod("getCurrentTab").invoke(tabManager);
+                if (tab == null) {
+                    return true;
+                }
+
+                Object title = tab.getClass().getMethod("getTabTitle").invoke(tab);
+                String titleText = title instanceof Component component ? component.getString() : String.valueOf(title);
+                String normalized = normalize(titleText);
+                return !normalized.contains("mundo")
+                        && !normalized.contains("world")
+                        && !normalized.contains("mais")
+                        && !normalized.contains("more");
+            } catch (ReflectiveOperationException ignored) {
+                return true;
+            }
         }
 
         private static boolean shouldUseMagicBackground(Object screen) {

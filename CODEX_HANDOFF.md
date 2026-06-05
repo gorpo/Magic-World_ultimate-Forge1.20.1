@@ -254,3 +254,19 @@ Proximo teste visual:
 - Tela inicial deve exibir logo novamente.
 - O background nao deve mais aparecer em quadradinhos/mosaico.
 - Menus/submenus de criacao de mundo devem depender do mixin carregado para cobrir `renderBackground`/`renderDirtBackground`.
+## Ajuste em 2026-06-05 - abas Mundo/Mais e fundo restante
+
+Problema:
+
+- O botao `Magic World` aparecia tambem nas abas `Mundo` e `Mais` da criacao de mundo, onde nao deve aparecer e nao abre fluxo util.
+- Uma area/subtela da criacao ainda ficava sem o background Magic World porque `CreateWorldScreen` sobrescreve `renderDirtBackground`, escapando do mixin generico em `Screen`.
+
+Feito:
+
+- `ClientEvents` agora inspeciona a aba ativa do `CreateWorldScreen` via `tabManager.getCurrentTab().getTabTitle()`.
+- O botao `Magic World` fica visivel/ativo apenas quando a aba ativa nao e `Mundo/World` nem `Mais/More`.
+- Se o painel Magic World estiver aberto e o usuario trocar para outra aba, ele e fechado e o botao fica oculto.
+- Criado `MagicWorldCreateWorldScreenBackgroundMixin` para interceptar especificamente `CreateWorldScreen.renderDirtBackground`.
+- `magicworld.mixins.json` atualizado para carregar o novo mixin.
+- Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
+- Validado com `./gradlew.bat runClient --stacktrace`: cliente carregou ate timeout, sem erro de mixin/crash.

@@ -204,3 +204,9 @@ Regra mantida:
 - `runClient` agora recebe `--mixin.config magicworld.mixins.json` para garantir carregamento do mixin em ambiente dev.
 - Logo corrigida usando o overload correto de `GuiGraphics.blit`, escalando a textura inteira.
 - Build passou e `runClient` carregou sem crash.
+## Ajuste abas criacao de mundo - 2026-06-05
+
+- O botao `Magic World` agora so aparece na aba principal da criacao de mundo.
+- O botao fica oculto nas abas `Mundo` e `Mais`.
+- Adicionado mixin especifico para `CreateWorldScreen.renderDirtBackground`, cobrindo a subtela que ainda ficava sem fundo.
+- Build e runClient sem crash.
