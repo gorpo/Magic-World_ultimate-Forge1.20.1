@@ -183,3 +183,16 @@ Plano de downgrade controlado a partir daqui:
 3. Depois portar os sistemas ligados aos botoes da aba Magic World: portal/casa inicial, castelos, fazendas, aura e perfis graficos reais.
 4. So depois portar menus centrais, compat de Sodium/Iris/Distant Horizons e mixins, em blocos pequenos e sempre compilando.
 5. Nao copiar `com.magicworld` inteiro do NeoForge sem adaptacao; cada classe precisa passar por downgrade NeoForge -> Forge 1.20.1.
+## Ajuste em 2026-06-05 - title screen alinhado ao NeoForge aprovado
+
+Feito:
+
+- Comparado diretamente com `MagicWorldTitleScreen` e `MagicWorldIconButton` do projeto NeoForge.
+- Portado `MagicWorldIconButton` para Forge 1.20.1 usando `GuiGraphics`.
+- Tela inicial voltou ao layout aprovado:
+  - 4 botoes principais: JOGAR, OPCOES, MODS, SAIR;
+  - 5 botoes rapidos customizados abaixo: Multiplayer, Idioma, Controles, Pacotes e Acessibilidade;
+  - removidos botoes vanilla pequenos `L/A` que estavam desalinhados e fora do tema;
+  - logo usa largura limitada ao menu (`MENU_WIDTH`) mantendo proporcao;
+  - adicionados ornamentos/borda dourada/azul como no NeoForge.
+- Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.

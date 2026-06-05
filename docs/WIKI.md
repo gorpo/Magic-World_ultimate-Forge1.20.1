@@ -168,3 +168,13 @@ Proximos blocos planejados:
 1. Ajustar overlay/mixin se algum loading vanilla ainda ignorar o background.
 2. Portar comportamento real dos botoes da aba Magic World, um sistema por vez.
 3. Portar menus centrais e compat somente depois dos menus iniciais estarem aprovados.
+## Ajuste title screen aprovado - 2026-06-05
+
+A tela inicial foi realinhada ao codigo aprovado da versao NeoForge:
+
+- `MagicWorldIconButton` foi portado para Forge 1.20.1.
+- Botoes inferiores agora sao customizados, nao vanilla.
+- Layout inferior contem 5 atalhos: Multiplayer, Idioma, Controles, Pacotes e Acessibilidade.
+- Main menu voltou ao desenho do NeoForge: JOGAR, OPCOES, MODS e SAIR.
+- Logo limitada ao painel central para manter proporcao visual.
+- Build passou com sucesso.
