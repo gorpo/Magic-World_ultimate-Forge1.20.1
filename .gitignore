@@ -39,8 +39,3 @@ forge*changelog.txt
 /src/main/resources/assets/iris/
 /src/main/resources/assets/sodium/
 /src/main/resources/assets/minecraft/
-!/src/main/resources/assets/minecraft/
-!/src/main/resources/assets/minecraft/textures/
-!/src/main/resources/assets/minecraft/textures/gui/
-/src/main/resources/assets/minecraft/textures/gui/title/
-!/src/main/resources/assets/minecraft/textures/gui/options_background.png

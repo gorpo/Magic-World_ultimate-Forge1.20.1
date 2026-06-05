@@ -189,10 +189,12 @@ public class MagicWorldTitleScreen extends Screen {
                 MagicWorldStaticBackground.FULL_LOGO,
                 x,
                 y,
-                0,
-                0,
                 logoWidth,
                 logoHeight,
+                0,
+                0,
+                MagicWorldStaticBackground.LOGO_WIDTH,
+                MagicWorldStaticBackground.LOGO_HEIGHT,
                 MagicWorldStaticBackground.LOGO_WIDTH,
                 MagicWorldStaticBackground.LOGO_HEIGHT
         );

@@ -197,3 +197,10 @@ Regra mantida:
 - O codigo deixou de depender de `textures/gui/title/logo_full.png` para o title screen.
 - Proporcao corrigida para 512x171.
 - Build validado com sucesso.
+## Fix mosaico/background/logo - 2026-06-05
+
+- Removido override vanilla `options_background.png`, pois o Minecraft repete essa textura em mosaico.
+- `assets/minecraft/**` voltou a ser apenas referencia local e nao entra no jar.
+- `runClient` agora recebe `--mixin.config magicworld.mixins.json` para garantir carregamento do mixin em ambiente dev.
+- Logo corrigida usando o overload correto de `GuiGraphics.blit`, escalando a textura inteira.
+- Build passou e `runClient` carregou sem crash.

@@ -231,3 +231,26 @@ Feito:
 - Dimensoes da logo ajustadas para 512x171, iguais ao asset aprovado do NeoForge.
 - Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
 - Verificado no jar: `assets/magicworld/textures/gui/title_logo.png` esta presente.
+## Fix em 2026-06-05 - remover mosaico e forcar mixin em dev
+
+Problema:
+
+- O override `assets/minecraft/textures/gui/options_background.png` fez o Minecraft repetir o background como mosaico, porque essa textura vanilla e usada em tile, nao em cover/fullscreen.
+- Nos menus de criacao de mundo, o background ainda falhava porque o mixin nao estava explicitamente sendo passado ao `runClient` em ambiente dev.
+- A logo tambem estava invisivel por uso do overload errado de `GuiGraphics.blit`, que recortava a textura em vez de escalar a imagem inteira.
+
+Feito:
+
+- Removido `assets/minecraft/textures/gui/options_background.png` do projeto/jar.
+- `.gitignore` voltou a ignorar `assets/minecraft/**` inteiro como referencia local.
+- `build.gradle` voltou a excluir `assets/minecraft/**` do jar.
+- `build.gradle` agora passa `--mixin.config magicworld.mixins.json` nas run configs, alem do registro no manifest/mods.toml.
+- `MagicWorldTitleScreen.drawLogo` usa o overload correto de `GuiGraphics.blit` para escalar a logo inteira 512x171.
+- Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
+- Validado com `./gradlew.bat runClient --stacktrace`: cliente carregou ate timeout, sem crash; log mostra `--mixin.config magicworld.mixins.json` e `Compatibility level set to JAVA_17`.
+
+Proximo teste visual:
+
+- Tela inicial deve exibir logo novamente.
+- O background nao deve mais aparecer em quadradinhos/mosaico.
+- Menus/submenus de criacao de mundo devem depender do mixin carregado para cobrir `renderBackground`/`renderDirtBackground`.

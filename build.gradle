@@ -63,6 +63,7 @@ minecraft {
             workingDirectory project.file('run')
 
             jvmArgs '-Xms4G', '-Xmx8G'
+            args '--mixin.config', 'magicworld.mixins.json'
 
             // Recommended logging data for a userdev environment
             // The markers can be added/remove as needed separated by commas.
@@ -153,7 +154,7 @@ dependencies {
 // When "copyIdeResources" is enabled, this will also run before the game launches in IDE environments.
 // See https://docs.gradle.org/current/dsl/org.gradle.language.jvm.tasks.ProcessResources.html
 tasks.named('processResources', ProcessResources).configure {
-    exclude 'assets/minecraft/textures/gui/title/**'
+    exclude 'assets/minecraft/**'
     exclude 'assets/distanthorizons/**'
     exclude 'assets/iris/**'
     exclude 'assets/sodium/**'
