@@ -276,3 +276,24 @@ Teste manual necessario:
 - Corrigido `castleOrigin`/`castleCenter` para seguir a logica do NeoForge.
 - O jogador agora e teleportado para spawn seguro da propriedade ao fim da geracao e recebe respawn ali.
 - Build passou.
+## Criativo, cheats e aura pelo menu Magic World - 2026-06-05
+
+- O menu Magic World nao depende mais de clicar nos botoes vanilla por texto para modo/dificuldade.
+- Antes de criar o mundo, o codigo grava direto no `WorldCreationUiState`:
+  - modo criativo/sobrevivencia;
+  - dificuldade;
+  - cheats/comandos ligados;
+  - gamerules de teste.
+- Gamerules Magic World:
+  - `keepInventory=true`
+  - `drowningDamage=false`
+  - `fallDamage=false`
+  - `fireDamage=false`
+  - `freezeDamage=false`
+  - `doImmediateRespawn=true`
+  - `sendCommandFeedback=true`
+  - `commandBlockOutput=true`
+- O servidor tambem reaplica essas regras no login e ao fim da geracao.
+- Em modo criativo, o jogador entra em criativo e recebe permissao de comandos.
+- Aura ON protege contra lava/fogo, agua/afogamento, altura/queda, fome, preserva inventario, tenta voltar ao local da morte, quebra bloco com clique esquerdo e mata entidades em um golpe.
+- Build passou.

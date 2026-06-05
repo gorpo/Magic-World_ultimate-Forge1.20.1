@@ -13,6 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -27,6 +28,7 @@ import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BeetrootBlock;
 import net.minecraft.world.level.block.Blocks;
@@ -97,7 +99,7 @@ public class StarterPortalEvents {
             return;
         }
 
-        applyStartingGameMode(player);
+        applyMagicWorldServerSettings(player);
 
         CompoundTag data = player.getPersistentData();
         if (!MagicWorldWorldOptions.isStarterEstateEnabled()
@@ -195,6 +197,7 @@ public class StarterPortalEvents {
             }
             default -> {
                 player.getPersistentData().putBoolean(ESTATE_CREATED_KEY, true);
+                applyMagicWorldServerSettings(player);
                 teleportPlayerToEstateSpawn(player, level, task.base);
                 MagicWorldNetwork.sendInitialLoadProgress(player, 100, "Magic World carregado.", true);
                 player.sendSystemMessage(Component.literal("Magic World: casa, fazendas, portais e castelo carregados."));
@@ -203,10 +206,44 @@ public class StarterPortalEvents {
         }
     }
 
-    private static void applyStartingGameMode(ServerPlayer player) {
+    private static void applyMagicWorldServerSettings(ServerPlayer player) {
+        ServerLevel level = player.serverLevel();
+        applyMagicWorldGameRules(level.getGameRules(), player.server);
+        player.server.setDifficulty(toMinecraftDifficulty(MagicWorldWorldOptions.startingDifficulty()), false);
+
         if (MagicWorldWorldOptions.startingGameMode() == MagicWorldWorldOptions.StartingGameMode.CREATIVE) {
+            player.server.setDefaultGameType(GameType.CREATIVE);
+            player.server.getWorldData().setGameType(GameType.CREATIVE);
             player.setGameMode(GameType.CREATIVE);
         }
+
+        if (MagicWorldWorldOptions.isCommandsEnabled()) {
+            if (!player.server.getPlayerList().isOp(player.getGameProfile())) {
+                player.server.getPlayerList().op(player.getGameProfile());
+            }
+            player.server.getPlayerList().sendPlayerPermissionLevel(player);
+        }
+    }
+
+    private static void applyMagicWorldGameRules(GameRules rules, net.minecraft.server.MinecraftServer server) {
+        rules.getRule(GameRules.RULE_KEEPINVENTORY).set(true, server);
+        rules.getRule(GameRules.RULE_DROWNING_DAMAGE).set(false, server);
+        rules.getRule(GameRules.RULE_FALL_DAMAGE).set(false, server);
+        rules.getRule(GameRules.RULE_FIRE_DAMAGE).set(false, server);
+        rules.getRule(GameRules.RULE_FREEZE_DAMAGE).set(false, server);
+        rules.getRule(GameRules.RULE_DO_IMMEDIATE_RESPAWN).set(true, server);
+        rules.getRule(GameRules.RULE_SENDCOMMANDFEEDBACK).set(true, server);
+        rules.getRule(GameRules.RULE_COMMANDBLOCKOUTPUT).set(true, server);
+        rules.getRule(GameRules.RULE_LOGADMINCOMMANDS).set(true, server);
+    }
+
+    private static Difficulty toMinecraftDifficulty(MagicWorldWorldOptions.StartingDifficulty difficulty) {
+        return switch (difficulty) {
+            case PEACEFUL -> Difficulty.PEACEFUL;
+            case EASY -> Difficulty.EASY;
+            case HARD -> Difficulty.HARD;
+            default -> Difficulty.NORMAL;
+        };
     }
 
     private static BlockPos findEstateBase(ServerPlayer player) {

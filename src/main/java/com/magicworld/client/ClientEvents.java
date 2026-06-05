@@ -16,7 +16,10 @@ import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
+import net.minecraft.client.gui.screens.worldselection.WorldCreationUiState;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.level.GameRules;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.ScreenEvent;
@@ -79,7 +82,7 @@ public class ClientEvents {
                     relayoutMagicPanel(panel);
                     updateMagicTabButton(panel);
                     MagicWorldWorldOptions.setCommandsEnabled(true);
-                    forceCreateWorldAllowCommands(screen);
+                    applyMagicWorldUiState(screen);
                     syncAutomaticCommands(panel.vanillaWidgets());
                 }
             }
@@ -109,7 +112,7 @@ public class ClientEvents {
                 MagicWorldWorldOptions.setHardwareProfileIndex(3);
                 MagicWorldWorldOptions.setStartingGameMode(MagicWorldWorldOptions.StartingGameMode.SURVIVAL);
                 MagicWorldWorldOptions.setStartingDifficulty(MagicWorldWorldOptions.StartingDifficulty.NORMAL);
-                forceCreateWorldAllowCommands(createWorldScreen);
+                applyMagicWorldUiState(createWorldScreen);
             }
 
             if (event.getNewScreen() instanceof TitleScreen
@@ -125,7 +128,7 @@ public class ClientEvents {
             }
 
             List<AbstractWidget> vanillaWidgets = new ArrayList<>();
-            forceCreateWorldAllowCommands(screen);
+            applyMagicWorldUiState(screen);
             for (GuiEventListener listener : event.getListenersList()) {
                 if (listener instanceof AbstractWidget widget) {
                     vanillaWidgets.add(widget);
@@ -370,6 +373,7 @@ public class ClientEvents {
 
         private static void createWorldFromMagicTab(CreateWorldScreen screen, List<AbstractWidget> vanillaWidgets) {
             MagicWorldWorldOptions.setCommandsEnabled(true);
+            applyMagicWorldUiState(screen);
             syncWorldCreationOptions(vanillaWidgets);
             try {
                 Method onCreate = CreateWorldScreen.class.getDeclaredMethod("onCreate");
@@ -380,21 +384,40 @@ public class ClientEvents {
         }
 
         private static void syncWorldCreationOptions(List<AbstractWidget> vanillaWidgets) {
-            syncButtonByLabel(findButton(vanillaWidgets, "game mode", "modo de jogo"), MagicWorldWorldOptions.startingGameMode().labelMatches());
-            syncButtonByLabel(findButton(vanillaWidgets, "difficulty", "dificuldade"), MagicWorldWorldOptions.startingDifficulty().labelMatches());
             syncAutomaticCommands(vanillaWidgets);
         }
 
-        private static void forceCreateWorldAllowCommands(CreateWorldScreen screen) {
-            try {
-                var uiStateField = CreateWorldScreen.class.getDeclaredField("uiState");
-                uiStateField.setAccessible(true);
-                Object uiState = uiStateField.get(screen);
-                Method setAllowCommands = uiState.getClass().getDeclaredMethod("setAllowCommands", boolean.class);
-                setAllowCommands.setAccessible(true);
-                setAllowCommands.invoke(uiState, true);
-            } catch (ReflectiveOperationException ignored) {
-            }
+        private static void applyMagicWorldUiState(CreateWorldScreen screen) {
+            WorldCreationUiState uiState = screen.getUiState();
+            uiState.setAllowCheats(true);
+            uiState.setGameMode(MagicWorldWorldOptions.startingGameMode() == MagicWorldWorldOptions.StartingGameMode.CREATIVE
+                    ? WorldCreationUiState.SelectedGameMode.CREATIVE
+                    : WorldCreationUiState.SelectedGameMode.SURVIVAL);
+            uiState.setDifficulty(toMinecraftDifficulty(MagicWorldWorldOptions.startingDifficulty()));
+            uiState.setGameRules(magicWorldGameRules(uiState.getGameRules()));
+        }
+
+        private static Difficulty toMinecraftDifficulty(MagicWorldWorldOptions.StartingDifficulty difficulty) {
+            return switch (difficulty) {
+                case PEACEFUL -> Difficulty.PEACEFUL;
+                case EASY -> Difficulty.EASY;
+                case HARD -> Difficulty.HARD;
+                default -> Difficulty.NORMAL;
+            };
+        }
+
+        private static GameRules magicWorldGameRules(GameRules currentRules) {
+            GameRules rules = currentRules.copy();
+            rules.getRule(GameRules.RULE_KEEPINVENTORY).set(true, null);
+            rules.getRule(GameRules.RULE_DROWNING_DAMAGE).set(false, null);
+            rules.getRule(GameRules.RULE_FALL_DAMAGE).set(false, null);
+            rules.getRule(GameRules.RULE_FIRE_DAMAGE).set(false, null);
+            rules.getRule(GameRules.RULE_FREEZE_DAMAGE).set(false, null);
+            rules.getRule(GameRules.RULE_DO_IMMEDIATE_RESPAWN).set(true, null);
+            rules.getRule(GameRules.RULE_SENDCOMMANDFEEDBACK).set(true, null);
+            rules.getRule(GameRules.RULE_COMMANDBLOCKOUTPUT).set(true, null);
+            rules.getRule(GameRules.RULE_LOGADMINCOMMANDS).set(true, null);
+            return rules;
         }
 
         private static void syncAutomaticCommands(List<AbstractWidget> vanillaWidgets) {

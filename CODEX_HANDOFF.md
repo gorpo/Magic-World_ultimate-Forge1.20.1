@@ -412,3 +412,49 @@ Teste manual necessario:
 - Criar outro mapa novo.
 - Confirmar que casa, portal, fazendas e castelo aparecem juntos.
 - Confirmar que o jogador termina a geracao dentro/perto da casa.
+
+## Fix em 2026-06-05 - menu Magic World aplica criativo, cheats e aura completa
+
+Problema:
+
+- O botao `Modo: Criativo` e a dificuldade do menu Magic World nao estavam sendo aplicados de forma confiavel na criacao real do mundo.
+- O fluxo dependia de clicar/ler botoes vanilla por texto, o que podia falhar por idioma, aba ou estado visual.
+- O usuario precisa criar mundos de teste com criativo, comandos, cheats, keep inventory e aura/superpoderes ativos.
+
+Feito:
+
+- `ClientEvents` agora grava diretamente no `CreateWorldScreen.getUiState()` antes de chamar `onCreate()`:
+  - `setGameMode(CREATIVE/SURVIVAL)`;
+  - `setDifficulty(...)`;
+  - `setAllowCheats(true)`;
+  - `setGameRules(...)`.
+- Game rules aplicadas ja na criacao:
+  - `keepInventory=true`;
+  - `drowningDamage=false`;
+  - `fallDamage=false`;
+  - `fireDamage=false`;
+  - `freezeDamage=false`;
+  - `doImmediateRespawn=true`;
+  - `sendCommandFeedback=true`;
+  - `commandBlockOutput=true`;
+  - `logAdminCommands=true`.
+- Removida a dependencia de alternar botao vanilla de modo/dificuldade por texto.
+- `StarterPortalEvents` reforca as mesmas regras no servidor no login e no fim da geracao da propriedade.
+- Se `Modo: Criativo`, o servidor define default game type e o jogador entra em criativo.
+- Se comandos estao ligados, o jogador recebe OP/permissao de comando no server local.
+- `AuraEvents` permanece ativo com:
+  - protecao contra fogo/lava, queda, afogamento e congelamento;
+  - sem fome/sem falta de ar;
+  - keep inventory reforcado por gamerule;
+  - retorno para local da morte;
+  - quebra de bloco com clique esquerdo;
+  - matar entidade em um golpe.
+- Validado com `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+
+Teste manual:
+
+- Criar novo mundo pelo painel Magic World com `Modo: Criativo`, dificuldade desejada e `Aura: ON`.
+- Confirmar que entra em criativo.
+- Confirmar `/gamemode`, `/tp` ou outro comando no chat.
+- Testar lava, agua, queda, morte/respawn e inventario.
+- Testar quebrar bloco e atacar entidade com aura.
