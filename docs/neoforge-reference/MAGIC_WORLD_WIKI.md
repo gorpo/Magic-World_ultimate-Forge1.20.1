@@ -1,4 +1,4 @@
-﻿# Wiki Tecnica MagicWorld
+# Wiki Tecnica MagicWorld
 
 ## Escopo
 

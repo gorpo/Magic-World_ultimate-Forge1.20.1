@@ -1,4 +1,4 @@
-﻿# Codex Handoff - MagicWorld Final
+# Codex Handoff - MagicWorld Final
 
 Data: 2026-06-04
 Branch de trabalho: V3.0

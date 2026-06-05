@@ -122,3 +122,18 @@ Manter:
 - IDE SDK: Java 17
 - Gradle JVM: Java 17
 - `java.toolchain.languageVersion`: 17
+
+## Fix runClient - 2026-06-05
+
+Problema:
+
+- Minecraft falhava ao iniciar com `ParsingException: Invalid bare key: ?#`.
+
+Causa:
+
+- Arquivo `mods.toml` tinha BOM UTF-8 no primeiro caractere, gerado durante rename/script.
+
+Correcao:
+
+- Removido BOM de `mods.toml` e demais arquivos textuais afetados.
+- `runClient` voltou a carregar o cliente sem crash inicial.

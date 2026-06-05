@@ -1,4 +1,4 @@
-﻿# Magic World Ultimate
+# Magic World Ultimate
 
 <p align="center">
   <img src="screenshots/banner_mod_github.png" alt="Magic World Ultimate" width="900" />

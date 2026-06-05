@@ -1,4 +1,4 @@
-﻿# Sistema De Port - Forge 1.20.1
+# Sistema De Port - Forge 1.20.1
 
 Este diretorio contem o sistema para portar Magic World Ultimate de NeoForge 26.1.2 para Minecraft 1.20.1 Forge.
 

@@ -1,4 +1,4 @@
-﻿# Codex Handoff - Inicio Port Neoforge
+# Codex Handoff - Inicio Port Neoforge
 
 Atualizado em 2026-06-05.
 
@@ -148,3 +148,11 @@ Testar visualmente no Minecraft:
 - Usuario voltou as configuracoes do IntelliJ para Java 17.
 - Esta e a configuracao recomendada para Forge 1.20.1.
 - Gradle confirmado com JVM 17.0.19 e `java.toolchain.languageVersion = 17`.
+
+## Fix em 2026-06-05 - crash no runClient por BOM em mods.toml
+
+- O erro `ParsingException: Invalid bare key: ?#` vinha de BOM UTF-8 no inicio de `src/main/resources/META-INF/mods.toml`.
+- Removido BOM dos arquivos textuais de recursos/configs/docs afetados.
+- `mods.toml` agora inicia com `#` real, sem caractere oculto.
+- `./gradlew.bat runClient --stacktrace` deixou de falhar com non-zero exit; o cliente carregou ate logs de ResourceManager, receitas e advancements.
+- Nao houve crash report novo apos a correcao.

@@ -1,4 +1,4 @@
-﻿# Magic World Ultimate — NeoForge 26.1.2
+# Magic World Ultimate — NeoForge 26.1.2
 
 <div align="center">
   <img src="./screenshots/banner_principal.png" alt="Banner principal do Magic World Ultimate" width="100%">
