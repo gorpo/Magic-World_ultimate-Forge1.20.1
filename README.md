@@ -1,4 +1,4 @@
-# Magic World Ultimate
+﻿# Magic World Ultimate
 
 <p align="center">
   <img src="screenshots/banner_mod_github.png" alt="Magic World Ultimate" width="900" />
@@ -42,7 +42,7 @@ O MagicWorld foi feito para parecer um mundo de fantasia completo. Para a experi
   </tr>
 </table>
 
-## 🎬 Magic World Preview
+## ðŸŽ¬ Magic World Preview
 
 <p align="center">
   <a href="https://youtu.be/CSA4T5G2GI8" target="_blank">
@@ -52,7 +52,7 @@ O MagicWorld foi feito para parecer um mundo de fantasia completo. Para a experi
 
 <p align="center">
   <a href="https://youtu.be/CSA4T5G2GI8" target="_blank">
-    <img src="https://img.shields.io/badge/▶%20Assistir%20no%20YouTube-red?style=for-the-badge" alt="Assistir no YouTube">
+    <img src="https://img.shields.io/badge/â–¶%20Assistir%20no%20YouTube-red?style=for-the-badge" alt="Assistir no YouTube">
   </a>
 </p>
 
@@ -169,28 +169,28 @@ Os previews abaixo sao usados dentro do proprio menu. Eles ajudam a escolher rap
 
 <table>
   <tr>
-    <td align="center"><img src="src/main/resources/assets/examplemod/textures/gui/previews/biome_teleport.png" width="96"><br>Biomas</td>
-    <td align="center"><img src="src/main/resources/assets/examplemod/textures/gui/previews/dimension_menu.png" width="96"><br>Dimensoes</td>
-    <td align="center"><img src="src/main/resources/assets/examplemod/textures/gui/previews/weather_control.png" width="96"><br>Clima</td>
-    <td align="center"><img src="src/main/resources/assets/examplemod/textures/gui/previews/time_control.png" width="96"><br>Tempo</td>
-    <td align="center"><img src="src/main/resources/assets/examplemod/textures/gui/previews/portal_menu.png" width="96"><br>Portais</td>
-    <td align="center"><img src="src/main/resources/assets/examplemod/textures/gui/previews/world_events.png" width="96"><br>Eventos</td>
+    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/biome_teleport.png" width="96"><br>Biomas</td>
+    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/dimension_menu.png" width="96"><br>Dimensoes</td>
+    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/weather_control.png" width="96"><br>Clima</td>
+    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/time_control.png" width="96"><br>Tempo</td>
+    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/portal_menu.png" width="96"><br>Portais</td>
+    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/world_events.png" width="96"><br>Eventos</td>
   </tr>
   <tr>
-    <td align="center"><img src="src/main/resources/assets/examplemod/textures/gui/previews/mob_spawner.png" width="96"><br>Mobs</td>
-    <td align="center"><img src="src/main/resources/assets/examplemod/textures/gui/previews/boss_control.png" width="96"><br>Bosses</td>
-    <td align="center"><img src="src/main/resources/assets/examplemod/textures/gui/previews/premium_companion.png" width="96"><br>Pets</td>
-    <td align="center"><img src="src/main/resources/assets/examplemod/textures/gui/previews/premium_mounts.png" width="96"><br>Montarias</td>
-    <td align="center"><img src="src/main/resources/assets/examplemod/textures/gui/previews/premium_powers.png" width="96"><br>Poderes</td>
-    <td align="center"><img src="src/main/resources/assets/examplemod/textures/gui/previews/lucky_block.png" width="96"><br>Lucky Block</td>
+    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/mob_spawner.png" width="96"><br>Mobs</td>
+    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/boss_control.png" width="96"><br>Bosses</td>
+    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/premium_companion.png" width="96"><br>Pets</td>
+    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/premium_mounts.png" width="96"><br>Montarias</td>
+    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/premium_powers.png" width="96"><br>Poderes</td>
+    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/lucky_block.png" width="96"><br>Lucky Block</td>
   </tr>
   <tr>
-    <td align="center"><img src="src/main/resources/assets/examplemod/textures/gui/previews/village_plains.png" width="96"><br>Vilas</td>
-    <td align="center"><img src="src/main/resources/assets/examplemod/textures/gui/previews/ancient_city.png" width="96"><br>Ancient City</td>
-    <td align="center"><img src="src/main/resources/assets/examplemod/textures/gui/previews/bastion_remnant.png" width="96"><br>Bastion</td>
-    <td align="center"><img src="src/main/resources/assets/examplemod/textures/gui/previews/end_city.png" width="96"><br>End City</td>
-    <td align="center"><img src="src/main/resources/assets/examplemod/textures/gui/previews/stronghold.png" width="96"><br>Stronghold</td>
-    <td align="center"><img src="src/main/resources/assets/examplemod/textures/gui/previews/troll_menu.png" width="96"><br>Troll Menu</td>
+    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/village_plains.png" width="96"><br>Vilas</td>
+    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/ancient_city.png" width="96"><br>Ancient City</td>
+    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/bastion_remnant.png" width="96"><br>Bastion</td>
+    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/end_city.png" width="96"><br>End City</td>
+    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/stronghold.png" width="96"><br>Stronghold</td>
+    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/troll_menu.png" width="96"><br>Troll Menu</td>
   </tr>
 </table>
 

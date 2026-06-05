@@ -1,0 +1,19 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "magicworld:draconic_aether"
+      }
+    ],
+    "humanoid_baby": [
+      {
+        "texture": "magicworld:draconic_aether"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "magicworld:draconic_aether"
+      }
+    ]
+  }
+}

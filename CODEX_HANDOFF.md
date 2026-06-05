@@ -1,4 +1,4 @@
-# Codex Handoff - Inicio Port Neoforge
+﻿# Codex Handoff - Inicio Port Neoforge
 
 Atualizado em 2026-06-05.
 
@@ -66,13 +66,13 @@ Nao portar nesta etapa:
 - `tmp` tem conteudo local grande e pode ajudar no port, mas nao deve ir para GitHub.
 - `pacote_distribuivel` tem cerca de 1.6 GB e nao deve ir para GitHub.
 - A wiki NeoForge e referencia de destino, nao estado atual do Forge.
-- A base Forge atual ainda usa `mod_id=examplemod` e pacote `com.example.examplemod`.
+- A base Forge atual ainda usa `mod_id=magicworld` e pacote `com.magicworld`.
 
 ## Proximo passo imediato
 
 Portar somente as telas/menus iniciais e backgrounds:
 
-1. Copiar assets estaticos de GUI do NeoForge para `src/main/resources/assets/examplemod/textures/gui/`.
+1. Copiar assets estaticos de GUI do NeoForge para `src/main/resources/assets/magicworld/textures/gui/`.
 2. Criar/adaptar classes Forge 1.20.1 para:
    - tela de titulo customizada;
    - botoes/tema visual;
@@ -84,8 +84,8 @@ Portar somente as telas/menus iniciais e backgrounds:
 
 ## Bloco concluido em 2026-06-05 - background e logo iniciais
 
-- Copiado `screenshots/title_background_static_2560x1440_final.png` para `src/main/resources/assets/examplemod/textures/gui/title/title_background_static.png`.
-- Copiado `screenshots/logo_full.png` para `src/main/resources/assets/examplemod/textures/gui/title/logo_full.png`.
+- Copiado `screenshots/title_background_static_2560x1440_final.png` para `src/main/resources/assets/magicworld/textures/gui/title/title_background_static.png`.
+- Copiado `screenshots/logo_full.png` para `src/main/resources/assets/magicworld/textures/gui/title/logo_full.png`.
 - Criado `MagicWorldStaticBackground` para desenhar o fundo estatico em modo cover 16:9.
 - Criado `MagicWorldTitleScreen` para substituir a tela vanilla `TitleScreen`:
   - usa o background estatico;
@@ -123,3 +123,22 @@ Testar visualmente no Minecraft:
 - Confirmar se a logo ficou pequena o suficiente.
 - Confirmar se os botoes customizados aparecem alinhados e clicaveis.
 - Se aprovado, portar os botoes rapidos/menus adicionais do NeoForge na proxima etapa.
+
+## Bloco concluido em 2026-06-05 - rename para magicworld e Java
+
+- Renomeado o pacote Java de `com.example.examplemod` para `com.magicworld`.
+- Classe principal renomeada de `ExampleMod` para `MagicWorld`.
+- `mod_id` alterado de `examplemod` para `magicworld`.
+- `mod_group_id` alterado para `com.magicworld`.
+- Namespace de recursos movido de `assets/examplemod` para `assets/magicworld`.
+- Namespace de dados movido de `data/examplemod` para `data/magicworld`.
+- Referencias JSON, lang, recipes, modelos, README e codigo atualizadas para `magicworld`.
+- Confirmado que nao restam ocorrencias de `examplemod` nos arquivos fonte/recursos/docs checados.
+- IntelliJ pode usar Java 21 como SDK da IDE, mas o Gradle deve continuar com `java.toolchain.languageVersion = 17` para compatibilidade com Minecraft Forge 1.20.1 e jogadores usando runtime Java 17.
+- Pastas auxiliares `assets/distanthorizons`, `assets/iris`, `assets/sodium` e `assets/minecraft` foram tratadas como referencia local: ignoradas no Git e excluidas do empacotamento por enquanto.
+- Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
+
+## Proximo passo
+
+- Testar o jogo no IntelliJ usando a configuracao Java 21 da IDE, confirmando que o Gradle ainda compila/roda o mod com toolchain Java 17.
+- Se o IntelliJ tentar compilar fora do Gradle e reclamar de language level, ajustar apenas a configuracao do modulo/Gradle JVM, nao o target do mod.

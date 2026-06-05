@@ -92,3 +92,23 @@ Pendente:
 
 - Validar no jogo se o layout ficou igual ao esperado.
 - Portar os botoes rapidos/menus extras do NeoForge se o layout principal estiver aprovado.
+
+## Rename e Java - 2026-06-05
+
+Decisao tecnica:
+
+- O projeto pode ser aberto no IntelliJ com SDK Java 21.
+- O artefato Forge 1.20.1 deve continuar compilando com target/toolchain Java 17.
+- Motivo: Minecraft Forge 1.20.1 e o runtime padrao da versao usam Java 17; compilar para Java 21 pode quebrar o carregamento do mod para jogadores.
+
+Rename feito:
+
+- `examplemod` foi substituido por `magicworld` em codigo, configs, assets, data e docs do projeto.
+- Pacote Java atual: `com.magicworld`.
+- Classe principal atual: `MagicWorld`.
+- Mod id atual: `magicworld`.
+
+Pastas auxiliares:
+
+- `assets/distanthorizons`, `assets/iris`, `assets/sodium` e `assets/minecraft` ficam como referencia local por enquanto.
+- Elas nao devem ir para o Git nem para o jar nesta etapa.

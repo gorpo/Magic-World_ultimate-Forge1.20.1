@@ -33,3 +33,9 @@ forge*changelog.txt
 /installer/
 /screenshots/
 /run/
+
+# local reference assets copied from NeoForge/support mods
+/src/main/resources/assets/distanthorizons/
+/src/main/resources/assets/iris/
+/src/main/resources/assets/sodium/
+/src/main/resources/assets/minecraft/
