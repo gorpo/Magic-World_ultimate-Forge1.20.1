@@ -142,3 +142,9 @@ Testar visualmente no Minecraft:
 
 - Testar o jogo no IntelliJ usando a configuracao Java 21 da IDE, confirmando que o Gradle ainda compila/roda o mod com toolchain Java 17.
 - Se o IntelliJ tentar compilar fora do Gradle e reclamar de language level, ajustar apenas a configuracao do modulo/Gradle JVM, nao o target do mod.
+
+## Ajuste em 2026-06-05 - IntelliJ voltou para Java 17
+
+- Usuario voltou as configuracoes do IntelliJ para Java 17.
+- Esta e a configuracao recomendada para Forge 1.20.1.
+- Gradle confirmado com JVM 17.0.19 e `java.toolchain.languageVersion = 17`.

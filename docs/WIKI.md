@@ -112,3 +112,13 @@ Pastas auxiliares:
 
 - `assets/distanthorizons`, `assets/iris`, `assets/sodium` e `assets/minecraft` ficam como referencia local por enquanto.
 - Elas nao devem ir para o Git nem para o jar nesta etapa.
+
+## IntelliJ Java 17 - 2026-06-05
+
+O IntelliJ foi configurado de volta para Java 17. Essa e a configuracao recomendada para este projeto Forge 1.20.1.
+
+Manter:
+
+- IDE SDK: Java 17
+- Gradle JVM: Java 17
+- `java.toolchain.languageVersion`: 17
