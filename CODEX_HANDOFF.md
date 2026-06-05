@@ -477,3 +477,33 @@ Teste manual:
 - Reiniciar o client.
 - Abrir selecao de mundos e clicar em apagar um mundo.
 - A tela de confirmacao deve usar o background Magic World, sem fundo de terra vanilla.
+
+## Bloco em 2026-06-05 - loading com logo e reforco do entorno NeoForge
+
+Pedido:
+
+- Colocar a logo Magic World na tela de loading inicial e trocar o texto solto por uma barra de carregamento visualmente coerente com o layout.
+- Reforcar o port do terreno NeoForge porque o primeiro import trouxe casa/castelo, mas perdeu chao, decoracao, iluminacao, casas de trabalhadores, villagers e acabamento dos portais.
+
+Feito:
+
+- `InitialLoadNoticeScreen` agora desenha `title_logo.png` acima da mensagem de loading.
+- A barra de progresso passou a usar duas cores do layout Magic World: azul/ciano e dourado.
+- O painel de loading ficou maior e com moldura dupla para combinar com a tela inicial.
+- `StarterPortalEvents` recebeu um primeiro port controlado dos complementos do NeoForge:
+  - assentamento dos trabalhadores da plantacao com casas maiores, deposito/rancho, camas, bau, iluminacao e villagers nomeados;
+  - assentamento dos cuidadores das fazendas com casas, plantacao de comida dos animais e villagers nomeados;
+  - caminhos/estradas principais saindo da casa e entre estruturas;
+  - iluminacao reforcada nas ruas, entorno da propriedade, portais e castelo;
+  - decoracao extra na praca dos portais com beacons magicos, campfires e vidro roxo;
+  - residentes adicionais do castelo com nomes/profissoes visuais, estacoes de trabalho, camas, baus e pequenos abrigos quando o ponto esta ao ar livre.
+- Mantida a casa importada que o usuario aprovou visualmente na frente.
+- Mantido fora deste bloco o port bruto das entidades custom e IA completa do NeoForge.
+- Validado com `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+
+Teste manual necessario:
+
+1. Reiniciar o client.
+2. Criar mundo novo pelo menu Magic World com fazendas, portal, castelo e aura ligados.
+3. Conferir se aparecem os caminhos, luzes, casas do canto das plantacoes, cuidadores das fazendas, moradores do castelo e decoracao ao redor dos portais.
+4. Mandar screenshots dos pontos ainda vazios para o segundo ajuste fino do terreno.

@@ -309,3 +309,21 @@ Teste manual:
 
 - Reiniciar o client e abrir a tela de apagar mundo.
 - Confirmar que nao aparece mais o fundo vanilla de terra.
+
+## Loading com logo e reforco do terreno - 2026-06-05
+
+- A tela de loading inicial agora exibe a logo Magic World e barra de progresso azul/dourada.
+- O entorno importado recebeu reforco parcial do codigo NeoForge:
+  - casas maiores dos trabalhadores da plantacao;
+  - rancho/deposito da plantacao;
+  - casas dos cuidadores das fazendas;
+  - villagers nomeados nesses pontos;
+  - caminhos e iluminacao de ruas;
+  - decoracao extra na praca dos portais;
+  - residentes do castelo com estacoes, camas e baus.
+- A casa importada foi preservada; o foco foi o entorno que tinha ficado vazio.
+- Build passou com `./gradlew.bat build --stacktrace`.
+
+Observacao:
+
+- Este bloco nao e o port bruto completo de `StarterPortalEvents` NeoForge. Ainda podem faltar detalhes finos de decoracao/IA, que devem ser ajustados por screenshot apos criar mundo novo.
