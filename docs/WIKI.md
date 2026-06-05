@@ -262,3 +262,9 @@ Teste manual necessario:
 - Criar mundo novo com todos os toggles ligados.
 - Confirmar casa/castelo/fazendas/portais/aura.
 - Se o terreno ficar pesado demais ou demorar demais na geracao, ajustar os passos de limpeza/colocacao de estrutura antes de portar mais detalhes.
+## Loading sem mapa de chunks - 2026-06-05
+
+- Removido o quadrado central vanilla da `LevelLoadingScreen`.
+- O mixin `MagicWorldLevelLoadingScreenMixin` cancela apenas `renderChunks(...)`.
+- A porcentagem e o background Magic World continuam aparecendo.
+- Build passou com `./gradlew.bat build --stacktrace`.

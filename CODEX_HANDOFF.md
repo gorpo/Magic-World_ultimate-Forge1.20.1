@@ -362,3 +362,23 @@ Proximos blocos se aprovado:
 1. Portar acabamentos finos do NeoForge que ainda ficaram fora: aldeoes trabalhadores com IA de cuidado real, patrulhas do castelo, ambience maior e reparos de decoracao flutuante.
 2. Portar entidades/itens custom necessarios, um pacote por vez.
 3. Substituir o marcador leve do dragao pelo sistema correto apenas quando a entidade custom estiver portada e estavel.
+
+## Fix em 2026-06-05 - remover quadrado central do loading de chunks
+
+Problema:
+
+- A tela de loading de mundo ainda mostrava o quadrado central vanilla de progresso de chunks sobre o background Magic World.
+
+Feito:
+
+- Criado `MagicWorldLevelLoadingScreenMixin`.
+- O mixin redireciona a chamada `LevelLoadingScreen.renderChunks(...)` para no-op.
+- Mantem a tela `LevelLoadingScreen`, o background Magic World e a porcentagem/texto.
+- Remove somente o mapa quadrado central de chunks.
+- `magicworld.mixins.json` atualizado com o novo mixin.
+- Validado com `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+
+Teste manual:
+
+- Reiniciar o client e criar/carregar mundo.
+- A tela deve mostrar o background Magic World e porcentagem, sem o quadrado central.

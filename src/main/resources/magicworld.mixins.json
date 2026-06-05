@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_17",
   "client": [
     "MagicWorldCreateWorldScreenBackgroundMixin",
+    "MagicWorldLevelLoadingScreenMixin",
     "MagicWorldSelectWorldScreenBackgroundMixin",
     "MagicWorldScreenBackgroundMixin",
     "MagicWorldTabButtonMixin",
