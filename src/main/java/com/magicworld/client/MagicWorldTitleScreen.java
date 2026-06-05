@@ -1,6 +1,9 @@
 package com.magicworld.client;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.AccessibilityOptionsScreen;
+import net.minecraft.client.gui.screens.LanguageSelectScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.OptionsScreen;
@@ -67,6 +70,21 @@ public class MagicWorldTitleScreen extends Screen {
                 Component.literal("SAIR"),
                 () -> minecraft.stop()
         ));
+
+        int smallY = height - 28;
+        int smallX = width / 2 - 24;
+        addRenderableWidget(Button.builder(
+                        Component.literal("L"),
+                        button -> minecraft.setScreen(new LanguageSelectScreen(this, minecraft.options, minecraft.getLanguageManager()))
+                )
+                .bounds(smallX, smallY, 20, 20)
+                .build());
+        addRenderableWidget(Button.builder(
+                        Component.literal("A"),
+                        button -> minecraft.setScreen(new AccessibilityOptionsScreen(this, minecraft.options))
+                )
+                .bounds(smallX + 28, smallY, 20, 20)
+                .build());
     }
 
     @Override
@@ -134,6 +152,6 @@ public class MagicWorldTitleScreen extends Screen {
         int bottom = height - 30;
         graphics.drawString(font, "Forge 47.4.10", left, bottom, 0xFFFFFFFF);
         graphics.drawString(font, "Minecraft 1.20.1", left, bottom + 10, 0xFFFFFFFF);
-        graphics.drawString(font, "Magic World", left, bottom + 20, 0xFFFFFFFF);
+        graphics.drawString(font, "Magic World 1.0.0.1", left, bottom + 20, 0xFFFFFFFF);
     }
 }

@@ -137,3 +137,34 @@ Correcao:
 
 - Removido BOM de `mods.toml` e demais arquivos textuais afetados.
 - `runClient` voltou a carregar o cliente sem crash inicial.
+
+## Downgrade controlado NeoForge -> Forge 1.20.1 - 2026-06-05
+
+Regra desta fase:
+
+- Primeiro portar somente telas antes do mapa: tela inicial, menus iniciais, criacao de mundo e loadings.
+- Nao trazer sistemas de mundo, entidades, rede, mixins de compat ou dependencias externas no mesmo bloco.
+- Usar `docs/neoforge-reference/` como referencia, mas adaptar APIs para Forge 1.20.1.
+
+Aplicado agora:
+
+- Memoria Gradle/runClient ajustada para 8 GB (`-Xmx8G`) com inicio em 4 GB (`-Xms4G`).
+- Versao do mod definida como `1.0.0.1`.
+- Title screen mostra `Magic World 1.0.0.1` no canto inferior esquerdo.
+- Botoes pequenos de idioma e acessibilidade voltaram ao title screen.
+- Criacao de mundo recebeu botao e painel `Magic World`, inspirado no projeto NeoForge.
+- Painel atual inclui Portal, Castelo, Fazendas, Aura, PC, Dificuldade, Modo, Criar Mundo e Voltar.
+- Background estatico foi aplicado tambem a telas de criacao/selecao de mundo e `LevelLoadingScreen`.
+- `./gradlew.bat build` passou com sucesso.
+
+Pendente para teste visual:
+
+- Confirmar se o background cobre a tela de loading de mapa vista pelo usuario.
+- Confirmar se o painel Magic World aparece na criacao de mundo e se o botao `Voltar` restaura a tela vanilla.
+- Confirmar se idioma/acessibilidade aparecem em tamanho e posicao aceitaveis.
+
+Proximos blocos planejados:
+
+1. Ajustar overlay/mixin se algum loading vanilla ainda ignorar o background.
+2. Portar comportamento real dos botoes da aba Magic World, um sistema por vez.
+3. Portar menus centrais e compat somente depois dos menus iniciais estarem aprovados.

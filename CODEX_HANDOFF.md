@@ -156,3 +156,30 @@ Testar visualmente no Minecraft:
 - `mods.toml` agora inicia com `#` real, sem caractere oculto.
 - `./gradlew.bat runClient --stacktrace` deixou de falhar com non-zero exit; o cliente carregou ate logs de ResourceManager, receitas e advancements.
 - Nao houve crash report novo apos a correcao.
+
+## Ajuste em 2026-06-05 - memoria, versao e aba Magic World na criacao de mundo
+
+Feito:
+
+- `gradle.properties` alterado para `org.gradle.jvmargs=-Xmx8G`.
+- `build.gradle` passou a aplicar `jvmArgs '-Xms4G', '-Xmx8G'` nas run configs do ForgeGradle.
+- `mod_version` alterado para `1.0.0.1`.
+- Tela inicial agora exibe `Magic World 1.0.0.1` no canto inferior esquerdo.
+- Restaurados botoes pequenos de idioma (`L`) e acessibilidade (`A`) na tela inicial.
+- `MagicWorldWorldOptions` expandido com opcoes vindas do NeoForge: portal, castelo, fazendas, aura, comandos, perfil de PC, modo e dificuldade inicial.
+- Criado `MagicWorldGraphicsProfile` leve para sustentar o menu de perfil de PC nesta etapa.
+- `ClientEvents` recebeu painel Magic World na tela `CreateWorldScreen`:
+  - botao `Magic World` na criacao de mundo;
+  - painel com Portal, Castelo, Fazendas, Aura, PC, Dificuldade, Modo, Criar Mundo e Voltar;
+  - comandos/cheats sao forçados quando opcoes Magic World exigem comandos;
+  - botao Criar Mundo chama o fluxo vanilla por reflexao, depois de sincronizar modo/dificuldade/comandos.
+- Background estatico foi ampliado para telas de selecao/criacao de mundo, opcoes, multiplayer, packs, mods e `LevelLoadingScreen`.
+- Validado com `./gradlew.bat build`: BUILD SUCCESSFUL em Java 17.
+
+Plano de downgrade controlado a partir daqui:
+
+1. Manter o escopo atual em telas antes do mapa ate o usuario aprovar visualmente.
+2. Se o background do loading vanilla ainda nao cobrir tudo, portar uma solucao especifica de overlay/mixin compativel com Forge 1.20.1.
+3. Depois portar os sistemas ligados aos botoes da aba Magic World: portal/casa inicial, castelos, fazendas, aura e perfis graficos reais.
+4. So depois portar menus centrais, compat de Sodium/Iris/Distant Horizons e mixins, em blocos pequenos e sempre compilando.
+5. Nao copiar `com.magicworld` inteiro do NeoForge sem adaptacao; cada classe precisa passar por downgrade NeoForge -> Forge 1.20.1.

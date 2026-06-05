@@ -62,6 +62,8 @@ minecraft {
         configureEach {
             workingDirectory project.file('run')
 
+            jvmArgs '-Xms4G', '-Xmx8G'
+
             // Recommended logging data for a userdev environment
             // The markers can be added/remove as needed separated by commas.
             // "SCAN": For mods scan.
