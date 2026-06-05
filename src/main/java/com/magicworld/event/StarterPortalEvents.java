@@ -195,6 +195,7 @@ public class StarterPortalEvents {
             }
             default -> {
                 player.getPersistentData().putBoolean(ESTATE_CREATED_KEY, true);
+                teleportPlayerToEstateSpawn(player, level, task.base);
                 MagicWorldNetwork.sendInitialLoadProgress(player, 100, "Magic World carregado.", true);
                 player.sendSystemMessage(Component.literal("Magic World: casa, fazendas, portais e castelo carregados."));
                 TASKS.remove(player.getUUID());
@@ -239,12 +240,13 @@ public class StarterPortalEvents {
     }
 
     private static BlockPos castleCenter(BlockPos base) {
-        return new BlockPos(base.getX() + CASTLE_X_OFFSET, base.getY(), base.getZ() + CASTLE_Z_OFFSET);
+        return castleOrigin(base).offset(CASTLE_SIZE_X / 2, 0, CASTLE_SIZE_Z / 2);
     }
 
     private static BlockPos castleOrigin(BlockPos base) {
-        BlockPos center = castleCenter(base);
-        return center.offset(-(CASTLE_SIZE_X / 2), 0, -(CASTLE_SIZE_Z / 2));
+        // Igual ao NeoForge: a ancora do castelo fica no lado oeste da estrutura,
+        // nao no centro. Subtrair metade do X fazia a limpeza apagar a casa.
+        return base.offset(CASTLE_X_OFFSET, 0, CASTLE_Z_OFFSET - (CASTLE_SIZE_Z / 2));
     }
 
     private static BlockPos compactPortalPlazaCenter(BlockPos base) {
@@ -741,6 +743,31 @@ public class StarterPortalEvents {
                 player.getYRot(),
                 player.getXRot()
         );
+    }
+
+    private static void teleportPlayerToEstateSpawn(ServerPlayer player, ServerLevel level, BlockPos base) {
+        BlockPos spawn = findEstateSpawn(level, base);
+        player.setRespawnPosition(Level.OVERWORLD, spawn, player.getYRot(), true, false);
+        player.teleportTo(
+                level,
+                spawn.getX() + 0.5D,
+                spawn.getY(),
+                spawn.getZ() + 0.5D,
+                Set.of(),
+                player.getYRot(),
+                player.getXRot()
+        );
+    }
+
+    private static BlockPos findEstateSpawn(ServerLevel level, BlockPos base) {
+        BlockPos preferred = base.offset(0, 1, 0);
+        BlockPos safe = findSafeInteriorFloor(level, preferred, 18, 10);
+        if (safe != null) {
+            return safe;
+        }
+
+        int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, base.getX(), base.getZ());
+        return new BlockPos(base.getX(), y, base.getZ());
     }
 
     private static void buildReturnPortalPlatform(ServerLevel level, BlockPos center, FunctionalPortalKind kind) {

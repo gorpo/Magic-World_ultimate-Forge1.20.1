@@ -268,3 +268,11 @@ Teste manual necessario:
 - O mixin `MagicWorldLevelLoadingScreenMixin` cancela apenas `renderChunks(...)`.
 - A porcentagem e o background Magic World continuam aparecendo.
 - Build passou com `./gradlew.bat build --stacktrace`.
+## Fix posicionamento castelo/propriedade - 2026-06-05
+
+- O primeiro teste de mundo novo mostrou apenas o castelo.
+- Causa: o Forge estava posicionando o castelo como se o offset fosse centro; no NeoForge ele e uma ancora lateral.
+- A limpeza do castelo apagava casa, portal e fazendas.
+- Corrigido `castleOrigin`/`castleCenter` para seguir a logica do NeoForge.
+- O jogador agora e teleportado para spawn seguro da propriedade ao fim da geracao e recebe respawn ali.
+- Build passou.

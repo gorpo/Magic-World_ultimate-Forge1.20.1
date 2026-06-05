@@ -382,3 +382,33 @@ Teste manual:
 
 - Reiniciar o client e criar/carregar mundo.
 - A tela deve mostrar o background Magic World e porcentagem, sem o quadrado central.
+
+## Fix em 2026-06-05 - castelo apagava casa, portal e fazendas
+
+Problema confirmado pelo teste manual:
+
+- Em mapa novo apareceu apenas o castelo.
+- Casa importada, fazendas, portais e area plana da propriedade nao apareciam.
+- O jogador tambem nao nascia/ficava na casa.
+
+Causa:
+
+- O calculo do castelo no Forge tratava `CASTLE_X_OFFSET`/`CASTLE_Z_OFFSET` como centro.
+- No NeoForge esse ponto e a ancora lateral/oeste do castelo.
+- Ao subtrair metade do X, a limpeza grande do castelo passava por cima da propriedade e apagava casa, portal e fazendas.
+
+Feito:
+
+- `castleOrigin(base)` agora replica a logica do NeoForge:
+  - X usa a ancora lateral sem subtrair metade da largura;
+  - Z centraliza pela metade da profundidade.
+- `castleCenter(base)` agora deriva do origin corrigido.
+- Ao finalizar a geracao, o jogador e teleportado para um ponto seguro perto da casa.
+- O respawn do jogador e definido nesse ponto da propriedade.
+- Validado com `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+
+Teste manual necessario:
+
+- Criar outro mapa novo.
+- Confirmar que casa, portal, fazendas e castelo aparecem juntos.
+- Confirmar que o jogador termina a geracao dentro/perto da casa.
