@@ -270,3 +270,30 @@ Feito:
 - `magicworld.mixins.json` atualizado para carregar o novo mixin.
 - Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
 - Validado com `./gradlew.bat runClient --stacktrace`: cliente carregou ate timeout, sem erro de mixin/crash.
+
+## Fix em 2026-06-05 - tela preparando mundo e abas com fundo vanilla
+
+Problema:
+
+- A tela rapida `Preparando a criacao do mundo...` ainda mostrava o dirt vanilla.
+- A barra superior/abas `Jogo`, `Mundo` e `Mais` na criacao de mundo ainda usavam fundo/textura vanilla.
+- A tela `Selecionar mundo` tambem precisava remover o fundo proprio da lista para deixar o background Magic World aparecer.
+
+Feito:
+
+- `MagicWorldScreenBackgrounds` agora inclui `GenericDirtMessageScreen` e `ProgressScreen`, cobrindo telas transitorias de loading/mensagem.
+- Criado `MagicWorldSelectWorldScreenBackgroundMixin`:
+  - desativa `WorldSelectionList.setRenderBackground(false)`;
+  - desativa `WorldSelectionList.setRenderTopAndBottom(false)`;
+  - desenha o background Magic World no inicio da renderizacao da selecao de mundos.
+- `MagicWorldCreateWorldScreenBackgroundMixin` agora redesenha o background antes dos widgets da `CreateWorldScreen`, para cobrir a faixa que ficava por baixo das abas.
+- Criado `MagicWorldTabNavigationBarMixin` para remover o preenchimento preto e o separador vanilla da barra de abas.
+- Criado `MagicWorldTabButtonMixin` para substituir a textura vanilla `textures/gui/tab_button.png` por um recorte do background estatico Magic World, mantendo moldura, texto e sublinhado da aba selecionada.
+- `magicworld.mixins.json` atualizado com os novos mixins.
+- Validado com `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+
+Pendente para teste visual:
+
+- Reabrir o client para confirmar que `Preparando a criacao do mundo...` usa o background Magic World.
+- Confirmar se as abas da criacao de mundo agora aparecem sem dirt vanilla.
+- Se alguma aba ainda precisar do visual exato NeoForge, comparar o widget de abas do projeto NeoForge antes de novos ajustes.

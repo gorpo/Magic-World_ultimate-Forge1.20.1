@@ -5,7 +5,10 @@
   "compatibilityLevel": "JAVA_17",
   "client": [
     "MagicWorldCreateWorldScreenBackgroundMixin",
-    "MagicWorldScreenBackgroundMixin"
+    "MagicWorldSelectWorldScreenBackgroundMixin",
+    "MagicWorldScreenBackgroundMixin",
+    "MagicWorldTabButtonMixin",
+    "MagicWorldTabNavigationBarMixin"
   ],
   "injectors": {
     "defaultRequire": 1

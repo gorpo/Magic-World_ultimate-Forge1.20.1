@@ -210,3 +210,16 @@ Regra mantida:
 - O botao fica oculto nas abas `Mundo` e `Mais`.
 - Adicionado mixin especifico para `CreateWorldScreen.renderDirtBackground`, cobrindo a subtela que ainda ficava sem fundo.
 - Build e runClient sem crash.
+## Fix final de fundos iniciais - 2026-06-05
+
+- `GenericDirtMessageScreen` e `ProgressScreen` entraram na lista de telas com background estatico, cobrindo a mensagem `Preparando a criacao do mundo...`.
+- `SelectWorldScreen` recebeu mixin proprio para remover o fundo da lista de mundos e desenhar o background antes da lista/widgets.
+- `CreateWorldScreen` redesenha o background antes dos widgets para evitar faixa vanilla por baixo das abas.
+- `TabNavigationBar` nao desenha mais preenchimento preto nem separador vanilla nesta etapa.
+- `TabButton` nao usa mais `textures/gui/tab_button.png`; cada aba desenha um recorte do background Magic World com moldura/texto por cima.
+- Build passou com `./gradlew.bat build --stacktrace`.
+
+Pendente:
+
+- Teste visual no jogo apos reiniciar o client.
+- Confirmar se as abas estao boas com o recorte do background ou se devem copiar exatamente o estilo NeoForge.

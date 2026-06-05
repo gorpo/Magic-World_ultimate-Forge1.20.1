@@ -1,7 +1,9 @@
 package com.magicworld.client;
 
 import net.minecraft.client.gui.screens.LevelLoadingScreen;
+import net.minecraft.client.gui.screens.GenericDirtMessageScreen;
 import net.minecraft.client.gui.screens.OptionsScreen;
+import net.minecraft.client.gui.screens.ProgressScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
@@ -20,6 +22,8 @@ public final class MagicWorldScreenBackgrounds {
 
         return screen instanceof CreateWorldScreen
                 || screen instanceof SelectWorldScreen
+                || screen instanceof GenericDirtMessageScreen
+                || screen instanceof ProgressScreen
                 || screen instanceof JoinMultiplayerScreen
                 || screen instanceof OptionsScreen
                 || screen instanceof PackSelectionScreen
