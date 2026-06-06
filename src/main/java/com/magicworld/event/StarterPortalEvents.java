@@ -993,32 +993,254 @@ public class StarterPortalEvents {
     }
 
     private static BlockPos witchCovenAnchor(BlockPos base) {
-        // Print atual: jogador em X 67 / Z -4 olhando para a mata em X 58 / Z -5.
-        // A base historica do mapa de testes e X -60 / Z 30; o portao fica 4 blocos a leste da ancora.
-        return base.offset(114, 0, -35);
+        // Print atual: centro marcado pelo usuario em Block X 55 / Z 3.
+        // Base historica do mapa de testes: X -60 / Z 30.
+        return base.offset(115, 0, -27);
     }
 
     private static void buildWitchCovenHouse(ServerLevel level, BlockPos base) {
-        BlockPos anchor = witchCovenAnchor(base);
-        int floorY = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, anchor.getX(), anchor.getZ()) - 2;
-        BlockPos gateAnchor = new BlockPos(anchor.getX(), floorY, anchor.getZ());
-        BlockPos origin = gateAnchor.offset(-34, 0, -12);
-        int width = 28;
-        int depth = 24;
-        int height = 6;
-        int doorZ = depth / 2;
-        int fenceWest = -4;
-        int fenceEast = width + 10;
-        int fenceNorth = -6;
-        int fenceSouth = depth + 6;
+        BlockPos markedCenter = witchCovenAnchor(base);
+        int floorY = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, markedCenter.getX(), markedCenter.getZ()) - 2;
+        BlockPos center = new BlockPos(markedCenter.getX(), floorY, markedCenter.getZ());
+        BlockPos origin = center.offset(-6, 0, -6);
+        int houseSize = 12;
+        int fenceWest = -2;
+        int fenceEast = 13;
+        int fenceNorth = -2;
+        int fenceSouth = 13;
+        int doorZ = houseSize / 2;
+        int height = 5;
 
-        forceLoadAreaBetween(level, origin.offset(fenceWest - 6, 0, fenceNorth - 6), origin.offset(fenceEast + 8, 0, fenceSouth + 8));
-        prepareWitchCovenClearing(level, origin, fenceWest, fenceEast, fenceNorth, fenceSouth, height + 12);
-        buildWitchCovenFence(level, origin, fenceWest, fenceEast, fenceNorth, fenceSouth, doorZ);
-        buildWitchCovenShell(level, origin, width, depth, height, doorZ);
-        buildWitchCovenInterior(level, origin, width, depth, height);
-        decorateWitchCovenExterior(level, origin, width, depth, doorZ, fenceWest, fenceEast, fenceNorth, fenceSouth);
-        populateWitchCoven(level, origin, width, depth);
+        forceLoadAreaBetween(level, origin.offset(fenceWest - 2, 0, fenceNorth - 2), origin.offset(fenceEast + 2, 0, fenceSouth + 2));
+        prepareCompactWitchCovenClearing(level, origin, fenceWest, fenceEast, fenceNorth, fenceSouth, height + 8);
+        buildCompactWitchCovenFence(level, origin, fenceWest, fenceEast, fenceNorth, fenceSouth, doorZ);
+        buildCompactWitchCovenShell(level, origin, houseSize, height, doorZ);
+        buildCompactWitchCovenInterior(level, origin, houseSize, height);
+        decorateCompactWitchCoven(level, origin, houseSize, doorZ, fenceWest, fenceEast, fenceNorth, fenceSouth);
+        populateCompactWitchCoven(level, origin, houseSize);
+    }
+
+    private static void prepareCompactWitchCovenClearing(
+            ServerLevel level,
+            BlockPos origin,
+            int fenceWest,
+            int fenceEast,
+            int fenceNorth,
+            int fenceSouth,
+            int clearHeight
+    ) {
+        for (int x = fenceWest; x <= fenceEast; x++) {
+            for (int z = fenceNorth; z <= fenceSouth; z++) {
+                BlockPos floor = origin.offset(x, 0, z);
+                for (int y = -6; y < 0; y++) {
+                    level.setBlock(floor.offset(0, y, 0), Blocks.DIRT.defaultBlockState(), 2);
+                }
+                level.setBlock(floor, witchCovenYardBlock(x, z), 2);
+                for (int y = 1; y <= clearHeight; y++) {
+                    BlockPos clear = floor.above(y);
+                    if (!level.getBlockState(clear).isAir()) {
+                        if (level.getBlockEntity(clear) instanceof Container container) {
+                            container.clearContent();
+                        }
+                        level.setBlock(clear, Blocks.AIR.defaultBlockState(), 2);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void buildCompactWitchCovenFence(
+            ServerLevel level,
+            BlockPos origin,
+            int fenceWest,
+            int fenceEast,
+            int fenceNorth,
+            int fenceSouth,
+            int doorZ
+    ) {
+        for (int x = fenceWest; x <= fenceEast; x++) {
+            level.setBlock(origin.offset(x, 1, fenceNorth), Blocks.DARK_OAK_FENCE.defaultBlockState(), 2);
+            level.setBlock(origin.offset(x, 1, fenceSouth), Blocks.DARK_OAK_FENCE.defaultBlockState(), 2);
+        }
+        for (int z = fenceNorth; z <= fenceSouth; z++) {
+            level.setBlock(origin.offset(fenceWest, 1, z), Blocks.DARK_OAK_FENCE.defaultBlockState(), 2);
+            if (z == doorZ) {
+                level.setBlock(origin.offset(fenceEast, 1, z), Blocks.DARK_OAK_FENCE_GATE.defaultBlockState()
+                        .setValue(HorizontalDirectionalBlock.FACING, Direction.EAST), 2);
+            } else {
+                level.setBlock(origin.offset(fenceEast, 1, z), Blocks.DARK_OAK_FENCE.defaultBlockState(), 2);
+            }
+        }
+        placeWitchWarningSign(level, origin.offset(fenceEast, 1, doorZ).north());
+    }
+
+    private static void buildCompactWitchCovenShell(ServerLevel level, BlockPos origin, int houseSize, int height, int doorZ) {
+        int max = houseSize - 1;
+        for (int x = 0; x < houseSize; x++) {
+            for (int z = 0; z < houseSize; z++) {
+                boolean edge = x == 0 || x == max || z == 0 || z == max;
+                boolean door = x == max && z == doorZ;
+                BlockPos floor = origin.offset(x, 0, z);
+                level.setBlock(floor.below(), Blocks.DIRT.defaultBlockState(), 2);
+                level.setBlock(floor, witchCovenFloorBlock(x, z), 2);
+                for (int y = 1; y <= height; y++) {
+                    BlockPos pos = floor.above(y);
+                    if (edge && !(door && y <= 2)) {
+                        level.setBlock(pos, witchCovenWallBlock(x, y, z), 2);
+                    } else {
+                        level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
+                    }
+                }
+            }
+        }
+
+        placeWitchDoor(level, origin.offset(max, 1, doorZ), Direction.EAST);
+        for (int x = -1; x <= houseSize; x++) {
+            for (int z = -1; z <= houseSize; z++) {
+                boolean roofEdge = x == -1 || x == houseSize || z == -1 || z == houseSize;
+                level.setBlock(origin.offset(x, height + 1, z), roofEdge
+                        ? Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, roofFacingForEdge(x, z, max, max))
+                        : Blocks.DEEPSLATE_TILES.defaultBlockState(), 2);
+            }
+        }
+
+        for (int z : new int[] {3, 8}) {
+            level.setBlock(origin.offset(0, 3, z), Blocks.PURPLE_STAINED_GLASS_PANE.defaultBlockState(), 2);
+            level.setBlock(origin.offset(max, 3, z), Blocks.PURPLE_STAINED_GLASS_PANE.defaultBlockState(), 2);
+        }
+        for (int x : new int[] {3, 8}) {
+            level.setBlock(origin.offset(x, 3, 0), Blocks.PURPLE_STAINED_GLASS_PANE.defaultBlockState(), 2);
+            level.setBlock(origin.offset(x, 3, max), Blocks.PURPLE_STAINED_GLASS_PANE.defaultBlockState(), 2);
+        }
+        buildCompactWitchFireplace(level, origin.offset(2, 1, max - 2), height);
+    }
+
+    private static void buildCompactWitchCovenInterior(ServerLevel level, BlockPos origin, int houseSize, int height) {
+        placeBed(level, origin.offset(2, 1, 2), Direction.SOUTH);
+        placeBed(level, origin.offset(5, 1, 2), Direction.SOUTH);
+        placeBed(level, origin.offset(8, 1, 2), Direction.SOUTH);
+
+        BlockPos table = origin.offset(6, 1, 7);
+        for (int dx = -1; dx <= 1; dx++) {
+            level.setBlock(table.offset(dx, 0, 0), Blocks.DARK_OAK_FENCE.defaultBlockState(), 2);
+            level.setBlock(table.offset(dx, 1, 0), dx == 0 ? Blocks.PURPLE_CARPET.defaultBlockState() : Blocks.BLACK_CARPET.defaultBlockState(), 2);
+        }
+        level.setBlock(table.north(), Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH), 2);
+        level.setBlock(table.south(), Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH), 2);
+
+        level.setBlock(origin.offset(3, 1, 9), Blocks.CAULDRON.defaultBlockState(), 2);
+        level.setBlock(origin.offset(4, 1, 9), Blocks.BREWING_STAND.defaultBlockState(), 2);
+        level.setBlock(origin.offset(5, 1, 9), Blocks.ENCHANTING_TABLE.defaultBlockState(), 2);
+        level.setBlock(origin.offset(6, 1, 10), Blocks.BOOKSHELF.defaultBlockState(), 2);
+        level.setBlock(origin.offset(7, 1, 10), Blocks.BOOKSHELF.defaultBlockState(), 2);
+        level.setBlock(origin.offset(8, 1, 10), Blocks.LECTERN.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH), 2);
+
+        BlockPos potions = origin.offset(10, 1, 2);
+        BlockPos magic = origin.offset(10, 1, 5);
+        BlockPos gear = origin.offset(10, 1, 8);
+        placeChest(level, potions, Direction.WEST);
+        placeChest(level, magic, Direction.WEST);
+        placeChest(level, gear, Direction.WEST);
+        fillCompactWitchChests(level, potions, magic, gear);
+
+        for (BlockPos light : new BlockPos[] {
+                origin.offset(3, height, 3), origin.offset(8, height, 3),
+                origin.offset(3, height, 8), origin.offset(8, height, 8)
+        }) {
+            level.setBlock(light, Blocks.SOUL_LANTERN.defaultBlockState(), 2);
+        }
+        for (BlockPos web : new BlockPos[] {
+                origin.offset(1, 4, 1), origin.offset(10, 4, 1),
+                origin.offset(1, 4, 10), origin.offset(10, 4, 10)
+        }) {
+            level.setBlock(web, Blocks.COBWEB.defaultBlockState(), 2);
+        }
+    }
+
+    private static void fillCompactWitchChests(ServerLevel level, BlockPos potions, BlockPos magic, BlockPos gear) {
+        putItems(level, potions,
+                potion(Potions.HEALING), potion(Potions.STRONG_HEALING), potion(Potions.REGENERATION),
+                potion(Potions.STRONG_REGENERATION), potion(Potions.STRENGTH), potion(Potions.FIRE_RESISTANCE),
+                potion(Potions.NIGHT_VISION), potion(Potions.WATER_BREATHING), potion(Potions.INVISIBILITY));
+        putItems(level, magic,
+                new ItemStack(MagicWorld.VARINHA_MAGICA.get()), new ItemStack(Items.TOTEM_OF_UNDYING, 8),
+                new ItemStack(Items.EXPERIENCE_BOTTLE, 64), new ItemStack(Items.ENDER_PEARL, 32),
+                new ItemStack(Items.BLAZE_POWDER, 64), new ItemStack(Items.GHAST_TEAR, 32),
+                new ItemStack(Items.SPIDER_EYE, 32), new ItemStack(Items.FERMENTED_SPIDER_EYE, 32),
+                new ItemStack(Items.AMETHYST_SHARD, 64), new ItemStack(Items.ECHO_SHARD, 16));
+        putItems(level, gear,
+                new ItemStack(MagicWorld.DRACONIC_AETHER_HELMET.get()),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_CHESTPLATE.get()),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_LEGGINGS.get()),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_BOOTS.get()),
+                new ItemStack(Items.NETHERITE_SWORD), new ItemStack(Items.NETHERITE_AXE),
+                new ItemStack(Items.BOW), new ItemStack(Items.CROSSBOW),
+                new ItemStack(Items.SHIELD), new ItemStack(Items.ARROW, 64));
+    }
+
+    private static void buildCompactWitchFireplace(ServerLevel level, BlockPos fireplace, int height) {
+        level.setBlock(fireplace, Blocks.CAMPFIRE.defaultBlockState(), 2);
+        level.setBlock(fireplace.north(), Blocks.BRICKS.defaultBlockState(), 2);
+        level.setBlock(fireplace.south(), Blocks.BRICKS.defaultBlockState(), 2);
+        for (int y = 1; y <= height + 4; y++) {
+            level.setBlock(fireplace.above(y), y % 2 == 0
+                    ? Blocks.BRICKS.defaultBlockState()
+                    : Blocks.CRACKED_STONE_BRICKS.defaultBlockState(), 2);
+        }
+        level.setBlock(fireplace.above(height + 5), Blocks.CAMPFIRE.defaultBlockState(), 2);
+    }
+
+    private static void decorateCompactWitchCoven(
+            ServerLevel level,
+            BlockPos origin,
+            int houseSize,
+            int doorZ,
+            int fenceWest,
+            int fenceEast,
+            int fenceNorth,
+            int fenceSouth
+    ) {
+        BlockPos door = origin.offset(houseSize - 1, 1, doorZ);
+        level.setBlock(door.relative(Direction.EAST).below(), Blocks.MOSSY_COBBLESTONE.defaultBlockState(), 2);
+        level.setBlock(door.relative(Direction.EAST, 2).below(), Blocks.COARSE_DIRT.defaultBlockState(), 2);
+        for (BlockPos pos : new BlockPos[] {
+                origin.offset(12, 1, 3), origin.offset(12, 1, 9),
+                origin.offset(1, 1, 12), origin.offset(4, 1, 12)
+        }) {
+            level.setBlock(pos, Blocks.HAY_BLOCK.defaultBlockState(), 2);
+        }
+        for (BlockPos pos : new BlockPos[] {
+                origin.offset(12, 1, 4), origin.offset(12, 1, 8),
+                origin.offset(1, 1, -1), origin.offset(12, 1, 12)
+        }) {
+            level.setBlock(pos, Blocks.JACK_O_LANTERN.defaultBlockState(), 2);
+        }
+        for (BlockPos pos : new BlockPos[] {
+                origin.offset(1, 1, -1), origin.offset(12, 1, -1),
+                origin.offset(1, 1, 12), origin.offset(12, 1, 12)
+        }) {
+            placeWitchLanternPost(level, pos.below());
+        }
+        for (BlockPos pos : new BlockPos[] {
+                origin.offset(2, 1, -1), origin.offset(9, 1, 12),
+                origin.offset(12, 1, 2), origin.offset(12, 1, 10)
+        }) {
+            level.setBlock(pos, Blocks.POTTED_BROWN_MUSHROOM.defaultBlockState(), 2);
+        }
+        for (BlockPos pos : new BlockPos[] {
+                origin.offset(fenceWest, 2, fenceNorth), origin.offset(fenceEast, 2, fenceNorth),
+                origin.offset(fenceWest, 2, fenceSouth), origin.offset(fenceEast, 2, fenceSouth)
+        }) {
+            level.setBlock(pos, Blocks.COBWEB.defaultBlockState(), 2);
+        }
+    }
+
+    private static void populateCompactWitchCoven(ServerLevel level, BlockPos origin, int houseSize) {
+        spawnFriendlyWitch(level, origin.offset(4, 1, 7), "Bruxa Curandeira");
+        spawnFriendlyWitch(level, origin.offset(7, 1, 7), "Bruxa Alquimista");
+        spawnFriendlyWitch(level, origin.offset(9, 1, 9), "Bruxa da Mata");
+        spawnNamed(level, EntityType.BAT, origin.offset(3, 4, 5), "Morcego da Chamine");
+        spawnNamed(level, EntityType.BAT, origin.offset(8, 4, 8), "Morcego da Biblioteca");
     }
 
     private static void prepareWitchCovenClearing(
@@ -3908,16 +4130,14 @@ public class StarterPortalEvents {
             return;
         }
         setPortalCooldown(player);
-        boolean active = !player.getPersistentData().getBoolean(PREMIUM_UNLOCKED_KEY);
-        player.getPersistentData().putBoolean(PREMIUM_UNLOCKED_KEY, active);
+        boolean wasActive = player.getPersistentData().getBoolean(PREMIUM_UNLOCKED_KEY);
+        player.getPersistentData().putBoolean(PREMIUM_UNLOCKED_KEY, true);
 
-        if (active) {
+        if (!wasActive) {
             player.sendSystemMessage(Component.literal("Magic World: experiencia premium ativada."));
-            player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 20 * 60, 0));
-            player.addEffect(new MobEffectInstance(MobEffects.LUCK, 20 * 60, 0));
-        } else {
-            player.sendSystemMessage(Component.literal("Magic World: experiencia premium desativada."));
         }
+        player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 20 * 60, 0));
+        player.addEffect(new MobEffectInstance(MobEffects.LUCK, 20 * 60, 0));
 
         if (player.level() instanceof ServerLevel level) {
             MagicWorld.effects(level, marker);

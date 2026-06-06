@@ -1667,3 +1667,25 @@ Validacao:
 - Fix: `witchCovenAnchor(base)` agora retorna `base.offset(114,0,-35)`. Como o gate e construido em `anchor + 4X`, o portao fica aproximadamente no alvo `X 58 / Z -5` usando base historica `X -60 / Z 30`.
 - Mantido ajuste de altura anterior: `floorY = heightmap - 2`.
 - Validacao executada: `./gradlew.bat compileJava --stacktrace` = BUILD SUCCESSFUL.
+
+## Handoff 2026-06-06 - casa das bruxas compacta 12x12
+- Pedido: reduzir a casa das bruxas enorme para `12x12`, cercado `16x16`, mantendo tematica/itens/bruxas e usando a marcacao do print.
+- Coordenada do print: usuario no centro em `Block 55 67 3`; alvo/marker visivel em `59 67 3`.
+- `witchCovenAnchor(base)` agora e o centro da casa, `base.offset(115,0,-27)` com base historica `X -60 / Z 30`.
+- `buildWitchCovenHouse` deixou de chamar o gerador grande e agora usa gerador compacto: casa `12x12`, cercado `16x16`, limpeza somente dentro do cercado.
+- Footprint esperado no mapa de teste: casa `X 49..60 / Z -3..8`; cercado `X 47..62 / Z -5..10`.
+- Conteudo compacto mantido: 3 camas, 3 witches amigaveis, baus de pocoes/magia/equipamentos, cauldron, brewing stand, enchanting table, lareira/chamine, teias, morcegos, feno, jack o lanterns, placa e luzes.
+- Validacao parcial: `./gradlew.bat compileJava --stacktrace` = BUILD SUCCESSFUL.
+
+## Handoff 2026-06-06 - premium/altura/icone DH
+- Usuario perguntou por que aparecia `experiencia premium desativada`: causa era o toggle em `activatePremiumPortal`, que invertia `PREMIUM_UNLOCKED_KEY` a cada acionamento do portal.
+- Fix: `activatePremiumPortal` agora e idempotente; seta `PREMIUM_UNLOCKED_KEY=true`, mostra mensagem de ativacao apenas se ainda nao estava ativo e nunca envia mensagem de desativacao.
+- Casa das bruxas compacta: `floorY` ajustado para `heightmap - 2`, mantendo a casa 1 bloco mais baixa.
+- Icone inferior esquerdo visto nas opcoes de video/shaders: `hideDistantHorizonsInjectedWidgets` agora esconde widgets por classe e por label relacionados a Distant Horizons/Horizontes Distantes.
+- Validacao parcial: `./gradlew.bat compileJava --stacktrace` = BUILD SUCCESSFUL.
+
+## Handoff 2026-06-06 - Distant Horizons continua usavel
+- Usuario confirmou que quer Distant Horizons ativo/usavel nos menus.
+- Regra ajustada: ocultar somente widgets pequenos ou sem texto relacionados a Distant Horizons; botoes grandes/textuais continuam visiveis e usaveis.
+- O mod/compat continua ativo; a alteracao remove apenas o icone flutuante inferior esquerdo visto no print.
+- Validacao: `./gradlew.bat compileJava --stacktrace` = BUILD SUCCESSFUL.

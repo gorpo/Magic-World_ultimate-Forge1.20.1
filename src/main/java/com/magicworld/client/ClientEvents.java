@@ -788,7 +788,15 @@ public class ClientEvents {
                 }
 
                 String widgetClass = widget.getClass().getName().toLowerCase();
-                if (widgetClass.startsWith("com.seibel.distanthorizons.")) {
+                String label = normalize(widget.getMessage().getString());
+                boolean distantHorizonsWidget = widgetClass.startsWith("com.seibel.distanthorizons.")
+                        || widgetClass.contains("distanthorizons")
+                        || widgetClass.contains("distant_horizons")
+                        || label.contains("distant horizons")
+                        || label.contains("distanthorizons")
+                        || label.contains("horizontes distantes");
+                boolean floatingIcon = widget.getWidth() <= 64 || label.isBlank();
+                if (distantHorizonsWidget && floatingIcon) {
                     widget.visible = false;
                     widget.active = false;
                 }

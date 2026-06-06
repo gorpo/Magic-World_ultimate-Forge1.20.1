@@ -976,3 +976,24 @@ Validacao e processo:
 - `witchCovenAnchor(base)` foi corrigido para `base.offset(114,0,-35)`; como o portao e colocado 4 blocos a leste da ancora, o portao cai perto de `X 58 / Z -5` quando a base historica e `X -60 / Z 30`.
 - A casa continua um bloco mais baixa (`heightmap - 2`) e se estende para oeste dentro da mata.
 - Validacao: `./gradlew.bat compileJava --stacktrace` passou.
+
+## Registro 2026-06-06 - casa das bruxas compacta 12x12
+- O usuario reportou que a casa das bruxas ficou enorme demais e marcou o espaco correto no print.
+- Coordenada do print: centro marcado em `Block 55 67 3`; target visivel em `59 67 3`.
+- A ancora `witchCovenAnchor(base)` agora representa o centro da casa, usando `base.offset(115,0,-27)` para bater no centro `X 55 / Z 3` quando a base historica e `X -60 / Z 30`.
+- A casa ativa passou para footprint `12x12`: aproximadamente `X 49..60 / Z -3..8` nesse mapa de teste.
+- O cercado ativo passou para `16x16`: aproximadamente `X 47..62 / Z -5..10`, sem limpeza/decoracao fora desse volume para nao sobrepor fazendas ou outras estruturas.
+- A tematica foi mantida em versao compacta: 3 camas, 3 bruxas amigaveis, baus com pocoes/itens magicos/equipamentos, mesa, cadeiras, caldeirao, brewing stand, enchanting table, livros, lareira, chamine, teias, morcegos, feno, jack o lanterns, placa e iluminacao.
+- Validacao parcial: `./gradlew.bat compileJava --stacktrace` passou.
+
+## Registro 2026-06-06 - ajustes premium, altura e icone DH
+- A mensagem `Magic World: experiencia premium desativada.` aparecia porque o portal premium era um toggle: cada acionamento alternava ligado/desligado.
+- `activatePremiumPortal` deixou de alternar para desligado; agora sempre mantem `MagicWorldForgePremiumUnlocked=true`, mostra `experiencia premium ativada` somente na primeira ativacao e reaplica efeitos sem mensagem de desativacao.
+- A casa das bruxas compacta voltou a usar `floorY = heightmap - 2`, baixando todo o conjunto 1 bloco para alinhar melhor com a rua/terreno frontal.
+- O icone/atalho inferior esquerdo de Distant Horizons/compat grafica nas telas de opcoes agora e escondido por classe e por texto (`distant horizons`, `distanthorizons`, `horizontes distantes`).
+- Validacao parcial: `./gradlew.bat compileJava --stacktrace` passou.
+
+## Registro 2026-06-06 - manter Distant Horizons usavel
+- Ajuste na regra anterior: o Distant Horizons nao foi desativado e nao deve perder acesso por menus/botoes normais.
+- `hideDistantHorizonsInjectedWidgets` agora oculta apenas widgets pequenos ou sem texto relacionados a Distant Horizons, removendo o icone flutuante inferior esquerdo sem esconder botoes grandes/usaveis.
+- Validacao: `./gradlew.bat compileJava --stacktrace` passou.
