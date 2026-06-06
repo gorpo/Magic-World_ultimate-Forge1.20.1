@@ -1277,3 +1277,60 @@ Validacao:
 - `git diff --check`: sem erros.
 - Falta ainda nesta entrega: commit e push.
 - Cliente nao foi aberto; nao executar `runClient`.
+
+## Casa NBT no fim da rua durante o loading - 2026-06-06 14:41:27 -03:00
+
+Pedido atual:
+
+- Usar `tmp/extracted/starter_house_1.nbt`, que tambem ja existe rastreado em `src/main/resources/data/magicworld/structures/starter_house_1.nbt`.
+- Posicionar a casa dentro das quatro coordenadas enviadas no fim da rua.
+- Frente/porta principal/area frontal viradas para o lado da rua.
+- A casa precisa estar dentro do loading criado pelo mod, sem gerar depois do loading.
+
+Implementado:
+
+- `CURRENT_ESTATE_REPAIR_VERSION` elevado para `15`.
+- Adicionado `STARTER_ROAD_END_HOUSE = magicworld:starter_house_1`.
+- O NBT tem tamanho `[20, 15, 30]`.
+- Portas lidas do NBT:
+  - principal em `[12,3,17]`, `facing=south`;
+  - secundaria em `[12,3,23]`, `facing=west`.
+- Como a rua fica no lado `+Z/south`, a estrutura e colocada sem rotacao.
+- Origem relativa usada: `starterRoadEndHouseOrigin(base) = base.offset(217,-4,-148)`.
+- Volume esperado no mundo atual dos prints: aproximadamente `X 157..176`, `Y 70..84`, `Z -118..-89`.
+- `handleEstateTask` ganhou etapa propria:
+  - step `5`, progresso `94`, mensagem `Carregando casa do fim da rua...`;
+  - chama `buildStarterRoadEndHouse` antes de marcar `ESTATE_CREATED_KEY` e antes do progresso `100%`.
+- `repairExistingEstate` tambem chama `buildStarterRoadEndHouse` como fallback para saves ja existentes.
+- A chamada indireta dentro de `buildImportedEstateFarms` foi removida para evitar duplicidade e dependencia de fazendas.
+- A rotina prepara plateu/suporte, coloca o template e adiciona caminho ate a rua, postes, azaleias e animais decorativos nomeados.
+
+Validacao atual:
+
+- `./gradlew.bat compileJava --stacktrace`: BUILD SUCCESSFUL.
+- Ainda falta nesta entrega: `./gradlew.bat build --stacktrace`, `git diff --check`, commit e push.
+- Cliente nao foi aberto; nao executar `runClient`.
+
+## Correcao visual do menu antes do commit - 2026-06-06 14:48:13 -03:00
+
+Bug reportado:
+
+- Ao abrir o cliente, o menu principal apareceu com blocos preto/magenta de textura ausente.
+- O log `run/logs/latest.log` apontou `FileNotFoundException` para:
+  - `magicworld:textures/gui/title/title_background_static.png`;
+  - `magicworld:textures/gui/title/logo_full.png`.
+
+Implementado:
+
+- `MagicWorldStaticBackground` agora usa os assets que existem no pacote atual:
+  - `magicworld:textures/gui/title_background_static.png`;
+  - `magicworld:textures/gui/title_logo.png`.
+- As dimensoes da logo foram ajustadas para `512x171`, compatíveis com `title_logo.png`.
+- Esta correcao evita o fallback preto/magenta antes do commit online.
+
+Validacao:
+
+- `./gradlew.bat compileJava --stacktrace`: BUILD SUCCESSFUL.
+- `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+- `git diff --check`: sem erros; apenas avisos esperados de CRLF no Windows.
+- Cliente nao foi aberto pelo Codex; o usuario testa o cliente.

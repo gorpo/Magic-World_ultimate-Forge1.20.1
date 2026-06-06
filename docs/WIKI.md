@@ -788,3 +788,26 @@ Validacao e processo:
 - Petalas rosas sao aplicadas apenas em chao de grama livre perto dessas arvores.
 - Validado com `compileJava`, `build` e `git diff --check`; todos passaram.
 - O Codex valida somente com Gradle e nao abre o cliente.
+
+## Casa NBT no fim da rua - 2026-06-06 14:41:27 -03:00
+
+- O reparo foi elevado para a versao `15`.
+- A estrutura `starter_house_1.nbt`, ja presente em `src/main/resources/data/magicworld/structures`, agora e posicionada no fim da rua dentro das quatro coordenadas enviadas.
+- A casa entra como etapa propria do loading inicial em `94%`, com a mensagem `Carregando casa do fim da rua...`.
+- O reparo existente chama a mesma rotina apenas como fallback para saves antigos.
+- O volume usado fica em torno de `X 157..176`, `Y 70..84`, `Z -118..-89` no mundo atual observado nos prints.
+- A origem relativa usada e `base.offset(217,-4,-148)`.
+- A porta principal do NBT tem `facing=south`; por isso a casa e colocada sem rotacao, deixando a frente/area frontal virada para a rua.
+- Antes da colocacao, a area recebe platô de suporte e limpeza local controlada.
+- Depois da colocacao, a frente recebe caminho de smooth stone/polished andesite ate a rua, postes de luz, azaleias e animais decorativos nomeados.
+- Validado com `compileJava`, `build` e `git diff --check`; todos passaram.
+- O Codex valida somente com Gradle e nao abre o cliente.
+
+## Correcao visual do menu principal - 2026-06-06 14:48:13 -03:00
+
+- Antes do commit online, o usuario reportou menu principal com textura ausente preto/magenta.
+- O log do cliente apontou falta de `magicworld:textures/gui/title/title_background_static.png` e `magicworld:textures/gui/title/logo_full.png`.
+- `MagicWorldStaticBackground` foi ajustado para usar os assets existentes `textures/gui/title_background_static.png` e `textures/gui/title_logo.png`.
+- A logo do menu agora usa as dimensoes `512x171`, correspondentes ao arquivo existente.
+- Validado com `compileJava`, `build` e `git diff --check`; todos passaram.
+- O Codex valida somente com Gradle e nao abre o cliente.

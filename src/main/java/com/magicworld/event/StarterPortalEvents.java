@@ -82,6 +82,7 @@ public class StarterPortalEvents {
 
     private static final ResourceLocation IMPORTED_HOUSE = new ResourceLocation(MagicWorld.MODID, "imported_house");
     private static final ResourceLocation IMPORTED_CASTLE = new ResourceLocation(MagicWorld.MODID, "imported_castle");
+    private static final ResourceLocation STARTER_ROAD_END_HOUSE = new ResourceLocation(MagicWorld.MODID, "starter_house_1");
 
     private static final int START_DELAY_TICKS = 40;
     private static final int STEP_DELAY_TICKS = 80;
@@ -103,7 +104,7 @@ public class StarterPortalEvents {
     private static final int IMPORTED_HOUSE_MAX_Z = HOUSE_ORIGIN_Z + IMPORTED_HOUSE_SIZE_Z;
     private static final int CASTLE_SIZE_X = 265;
     private static final int CASTLE_SIZE_Z = 221;
-    private static final int CURRENT_ESTATE_REPAIR_VERSION = 14;
+    private static final int CURRENT_ESTATE_REPAIR_VERSION = 15;
     private static final int GLOBAL_VILLAGER_WORK_RADIUS = 384;
 
     private static final Map<UUID, EstateTask> TASKS = new HashMap<>();
@@ -234,7 +235,12 @@ public class StarterPortalEvents {
                     buildImportedCastle(level, castleOrigin(task.base));
                     decorateCastleStarterLife(level, castleCenter(task.base));
                 }
-                TASKS.put(player.getUUID(), new EstateTask(task.base, 5, FINAL_DELAY_TICKS));
+                TASKS.put(player.getUUID(), new EstateTask(task.base, 5, STEP_DELAY_TICKS));
+            }
+            case 5 -> {
+                MagicWorldNetwork.sendInitialLoadProgress(player, 94, "Carregando casa do fim da rua...", false);
+                buildStarterRoadEndHouse(level, task.base);
+                TASKS.put(player.getUUID(), new EstateTask(task.base, 6, FINAL_DELAY_TICKS));
             }
             default -> {
                 restoreStoneTreasureMineHouse(level, task.base);
@@ -349,6 +355,7 @@ public class StarterPortalEvents {
         restoreImportedHouseTemplate(level, base);
         finishImportedHouseContents(level, base);
         removeLooseDroppedItemsAroundImportedHouse(level, base);
+        buildStarterRoadEndHouse(level, base);
         restoreStoneTreasureMineHouse(level, base);
         restoreAnimalPens(level, base);
         if (MagicWorldWorldOptions.isCastlesEnabled()) {
@@ -624,6 +631,71 @@ public class StarterPortalEvents {
                 || state.is(Blocks.GRAVEL)
                 || state.is(Blocks.SAND)
                 || state.is(Blocks.CLAY);
+    }
+
+    private static BlockPos starterRoadEndHouseOrigin(BlockPos base) {
+        return base.offset(217, -4, -148);
+    }
+
+    private static void buildStarterRoadEndHouse(ServerLevel level, BlockPos base) {
+        BlockPos origin = starterRoadEndHouseOrigin(base);
+        Optional<StructureTemplate> optional = level.getStructureManager().get(STARTER_ROAD_END_HOUSE);
+        if (optional.isEmpty()) {
+            return;
+        }
+
+        StructureTemplate template = optional.get();
+        Vec3i size = template.getSize();
+        clearStructureVolume(level, origin, size, 2, true);
+        prepareStarterRoadEndHousePlateau(level, origin, size);
+        template.placeInWorld(
+                level,
+                origin,
+                origin,
+                new StructurePlaceSettings().setIgnoreEntities(true).setKnownShape(true),
+                RandomSource.create(level.getSeed() ^ origin.asLong()),
+                2
+        );
+        decorateStarterRoadEndHouseFront(level, origin);
+    }
+
+    private static void prepareStarterRoadEndHousePlateau(ServerLevel level, BlockPos origin, Vec3i size) {
+        for (int x = -2; x <= size.getX() + 2; x++) {
+            for (int z = -2; z <= size.getZ() + 2; z++) {
+                BlockPos ground = origin.offset(x, 2, z);
+                for (int y = -6; y <= 1; y++) {
+                    level.setBlock(origin.offset(x, y, z), Blocks.DIRT.defaultBlockState(), 2);
+                }
+                level.setBlock(ground, Blocks.GRASS_BLOCK.defaultBlockState(), 2);
+            }
+        }
+    }
+
+    private static void decorateStarterRoadEndHouseFront(ServerLevel level, BlockPos origin) {
+        BlockPos frontDoor = origin.offset(12, 3, 17);
+        buildHousePathToFarm(level, frontDoor, Direction.SOUTH, 13);
+        for (int step = 1; step <= 5; step++) {
+            BlockPos center = filledGroundAt(level, frontDoor.relative(Direction.SOUTH, step));
+            level.setBlock(center, Blocks.SMOOTH_STONE.defaultBlockState(), 2);
+            level.setBlock(center.east(), Blocks.POLISHED_ANDESITE.defaultBlockState(), 2);
+            level.setBlock(center.west(), Blocks.POLISHED_ANDESITE.defaultBlockState(), 2);
+        }
+        for (BlockPos lamp : new BlockPos[] {
+                frontDoor.offset(-4, -1, 4), frontDoor.offset(4, -1, 4),
+                frontDoor.offset(-7, -1, 10), frontDoor.offset(7, -1, 10)
+        }) {
+            placeLampPost(level, lamp);
+        }
+        for (BlockPos plant : new BlockPos[] {
+                frontDoor.offset(-3, 0, 3), frontDoor.offset(3, 0, 3),
+                frontDoor.offset(-5, 0, 6), frontDoor.offset(5, 0, 6)
+        }) {
+            if (level.getBlockState(plant).isAir() && level.getBlockState(plant.below()).isSolid()) {
+                level.setBlock(plant, Blocks.FLOWERING_AZALEA.defaultBlockState(), 2);
+            }
+        }
+        spawnNamed(level, EntityType.PARROT, frontDoor.offset(-3, 1, 5), "Ave da Casa do Fim da Rua");
+        spawnNamed(level, EntityType.CAT, frontDoor.offset(3, 1, 5), "Gato da Casa do Fim da Rua");
     }
 
     private static void buildImportedCastle(ServerLevel level, BlockPos origin) {
