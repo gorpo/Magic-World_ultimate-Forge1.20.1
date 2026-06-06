@@ -1689,3 +1689,16 @@ Validacao:
 - Regra ajustada: ocultar somente widgets pequenos ou sem texto relacionados a Distant Horizons; botoes grandes/textuais continuam visiveis e usaveis.
 - O mod/compat continua ativo; a alteracao remove apenas o icone flutuante inferior esquerdo visto no print.
 - Validacao: `./gradlew.bat compileJava --stacktrace` = BUILD SUCCESSFUL.
+
+## Handoff 2026-06-06 - casa das bruxas rotacao e morro
+- Pedido: virar a casa das bruxas 180 graus e mover 10 blocos mais proxima/adentrando o morro.
+- `witchCovenAnchor(base)` agora retorna `base.offset(125,0,-27)`, 10 blocos a +X em relacao ao centro anterior.
+- Fachada invertida: porta/portao compactos agora ficam no lado oeste (`Direction.WEST`), antes estavam no lado leste.
+- Tamanho e altura mantidos: casa `12x12`, cercado `16x16`, `floorY = heightmap - 2`.
+- Validacao: `./gradlew.bat compileJava --stacktrace` = BUILD SUCCESSFUL.
+
+## Handoff 2026-06-06 - casa fim da rua -1Y e entrada mina
+- Casa do fim da rua: `starterRoadEndHouseOrigin(base)` agora e `base.offset(-5,0,-74)`, baixando 1 bloco em relacao ao ajuste anterior.
+- Mina: entrada no centro da casa da mina estava sendo fechada pelo reforco depois de a ladder ser criada.
+- Fix: chamada `reopenTreasureMineEntrance(level, center)` apos `reinforceStoneTreasureMineHouseShell`; ela recoloca ladder no bloco central, remove o bloco acima e garante stone bricks de apoio ao sul para conectar com as ladders abaixo.
+- Validacao: `./gradlew.bat compileJava --stacktrace` = BUILD SUCCESSFUL.

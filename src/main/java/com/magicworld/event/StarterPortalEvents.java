@@ -657,7 +657,7 @@ public class StarterPortalEvents {
     }
 
     private static BlockPos starterRoadEndHouseOrigin(BlockPos base) {
-        return base.offset(-5, 1, -74);
+        return base.offset(-5, 0, -74);
     }
 
     private static void buildStarterRoadEndHouse(ServerLevel level, BlockPos base) {
@@ -995,7 +995,7 @@ public class StarterPortalEvents {
     private static BlockPos witchCovenAnchor(BlockPos base) {
         // Print atual: centro marcado pelo usuario em Block X 55 / Z 3.
         // Base historica do mapa de testes: X -60 / Z 30.
-        return base.offset(115, 0, -27);
+        return base.offset(125, 0, -27);
     }
 
     private static void buildWitchCovenHouse(ServerLevel level, BlockPos base) {
@@ -1063,15 +1063,15 @@ public class StarterPortalEvents {
             level.setBlock(origin.offset(x, 1, fenceSouth), Blocks.DARK_OAK_FENCE.defaultBlockState(), 2);
         }
         for (int z = fenceNorth; z <= fenceSouth; z++) {
-            level.setBlock(origin.offset(fenceWest, 1, z), Blocks.DARK_OAK_FENCE.defaultBlockState(), 2);
+            level.setBlock(origin.offset(fenceEast, 1, z), Blocks.DARK_OAK_FENCE.defaultBlockState(), 2);
             if (z == doorZ) {
-                level.setBlock(origin.offset(fenceEast, 1, z), Blocks.DARK_OAK_FENCE_GATE.defaultBlockState()
-                        .setValue(HorizontalDirectionalBlock.FACING, Direction.EAST), 2);
+                level.setBlock(origin.offset(fenceWest, 1, z), Blocks.DARK_OAK_FENCE_GATE.defaultBlockState()
+                        .setValue(HorizontalDirectionalBlock.FACING, Direction.WEST), 2);
             } else {
-                level.setBlock(origin.offset(fenceEast, 1, z), Blocks.DARK_OAK_FENCE.defaultBlockState(), 2);
+                level.setBlock(origin.offset(fenceWest, 1, z), Blocks.DARK_OAK_FENCE.defaultBlockState(), 2);
             }
         }
-        placeWitchWarningSign(level, origin.offset(fenceEast, 1, doorZ).north());
+        placeWitchWarningSign(level, origin.offset(fenceWest, 1, doorZ).north());
     }
 
     private static void buildCompactWitchCovenShell(ServerLevel level, BlockPos origin, int houseSize, int height, int doorZ) {
@@ -1079,7 +1079,7 @@ public class StarterPortalEvents {
         for (int x = 0; x < houseSize; x++) {
             for (int z = 0; z < houseSize; z++) {
                 boolean edge = x == 0 || x == max || z == 0 || z == max;
-                boolean door = x == max && z == doorZ;
+                boolean door = x == 0 && z == doorZ;
                 BlockPos floor = origin.offset(x, 0, z);
                 level.setBlock(floor.below(), Blocks.DIRT.defaultBlockState(), 2);
                 level.setBlock(floor, witchCovenFloorBlock(x, z), 2);
@@ -1094,7 +1094,7 @@ public class StarterPortalEvents {
             }
         }
 
-        placeWitchDoor(level, origin.offset(max, 1, doorZ), Direction.EAST);
+        placeWitchDoor(level, origin.offset(0, 1, doorZ), Direction.WEST);
         for (int x = -1; x <= houseSize; x++) {
             for (int z = -1; z <= houseSize; z++) {
                 boolean roofEdge = x == -1 || x == houseSize || z == -1 || z == houseSize;
@@ -1200,9 +1200,9 @@ public class StarterPortalEvents {
             int fenceNorth,
             int fenceSouth
     ) {
-        BlockPos door = origin.offset(houseSize - 1, 1, doorZ);
-        level.setBlock(door.relative(Direction.EAST).below(), Blocks.MOSSY_COBBLESTONE.defaultBlockState(), 2);
-        level.setBlock(door.relative(Direction.EAST, 2).below(), Blocks.COARSE_DIRT.defaultBlockState(), 2);
+        BlockPos door = origin.offset(0, 1, doorZ);
+        level.setBlock(door.relative(Direction.WEST).below(), Blocks.MOSSY_COBBLESTONE.defaultBlockState(), 2);
+        level.setBlock(door.relative(Direction.WEST, 2).below(), Blocks.COARSE_DIRT.defaultBlockState(), 2);
         for (BlockPos pos : new BlockPos[] {
                 origin.offset(12, 1, 3), origin.offset(12, 1, 9),
                 origin.offset(1, 1, 12), origin.offset(4, 1, 12)
@@ -3242,6 +3242,13 @@ public class StarterPortalEvents {
 
         decorateMineHouse(level, center);
         reinforceStoneTreasureMineHouseShell(level, center);
+        reopenTreasureMineEntrance(level, center);
+    }
+
+    private static void reopenTreasureMineEntrance(ServerLevel level, BlockPos center) {
+        level.setBlock(center, Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.NORTH), 2);
+        level.setBlock(center.above(), Blocks.AIR.defaultBlockState(), 2);
+        level.setBlock(center.relative(Direction.SOUTH), Blocks.STONE_BRICKS.defaultBlockState(), 2);
     }
 
     private static void reinforceStoneTreasureMineHouseShell(ServerLevel level, BlockPos center) {

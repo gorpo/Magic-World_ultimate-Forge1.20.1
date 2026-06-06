@@ -997,3 +997,18 @@ Validacao e processo:
 - Ajuste na regra anterior: o Distant Horizons nao foi desativado e nao deve perder acesso por menus/botoes normais.
 - `hideDistantHorizonsInjectedWidgets` agora oculta apenas widgets pequenos ou sem texto relacionados a Distant Horizons, removendo o icone flutuante inferior esquerdo sem esconder botoes grandes/usaveis.
 - Validacao: `./gradlew.bat compileJava --stacktrace` passou.
+
+## Registro 2026-06-06 - casa das bruxas rotacao e morro
+- Pedido: virar a casa das bruxas 180 graus e mover 10 blocos mais para dentro do morro.
+- `witchCovenAnchor(base)` foi deslocado de `base.offset(115,0,-27)` para `base.offset(125,0,-27)`, movendo a casa compacta 10 blocos no eixo +X.
+- A entrada compacta foi invertida: porta e portao passaram do lado leste para o lado oeste, com `Direction.WEST`.
+- Tamanho mantido: casa `12x12`, cercado `16x16`, altura `heightmap - 2`.
+- Validacao: `./gradlew.bat compileJava --stacktrace` passou.
+
+## Registro 2026-06-06 - casa fim da rua -1Y e entrada da mina
+- Pedido: a casa do fim da rua ainda precisava baixar 1 bloco para ficar no nivel da rua.
+- `starterRoadEndHouseOrigin(base)` foi ajustado de `base.offset(-5,1,-74)` para `base.offset(-5,0,-74)`.
+- Pedido: remover o bloco exato que fechava a entrada da mina e colocar escada no primeiro bloco para conectar as demais.
+- Causa encontrada: `decorateMineHouse` criava a ladder no shaft, mas `reinforceStoneTreasureMineHouseShell` sobrescrevia o primeiro bloco da entrada com polished deepslate/cobbled deepslate.
+- Foi adicionada `reopenTreasureMineEntrance` depois do reforco, recolocando a ladder no bloco central, limpando o bloco acima e garantindo apoio de stone bricks atras.
+- Validacao: `./gradlew.bat compileJava --stacktrace` passou.
