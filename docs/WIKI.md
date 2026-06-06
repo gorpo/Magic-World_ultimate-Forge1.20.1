@@ -701,3 +701,25 @@ Este registro documenta o conjunto completo preparado para o commit de conclusao
 - Casas de trabalhadores receberam reforco visual: blocos acima das portas, novas janelas quando ha parede, postes externos, luzes e plantas.
 - Build final executado: `./gradlew.bat build --stacktrace`.
 - Resultado: `BUILD SUCCESSFUL`.
+
+## Menu grafico: aba real, tema completo e rolagem circular - 2026-06-06 13:17:59 -03:00
+
+- Corrigida a causa do Distant Horizons nao aparecer: a versao anterior desenhava um botao externo, nao uma aba do Embeddium.
+- `Horizontes Distantes` agora e uma aba real criada em `createShaderPackButton`.
+- A aba entra no mesmo grupo real do Oculus/Iris e aparece imediatamente abaixo de `Pacote de sombreadores...`.
+- O grupo e escolhido dinamicamente: `oculus` quando Oculus esta carregado, com fallback para `iris`.
+- O icone Magic World agora fica dentro da entrada `Horizontes Distantes`; o icone solto do rodape foi removido.
+- Ao selecionar a entrada, a tela de configuracao do Distant Horizons e aberta e o menu Embeddium nao tenta construir uma pagina vazia.
+- A rolagem na pagina direita agora troca de aba ao ultrapassar o topo/fim e usa ciclo infinito da ultima aba para a primeira e vice-versa.
+- A troca circular executa tambem a acao de abas externas, como shaders e Distant Horizons.
+- O fundo estatico Magic World e desenhado antes do frame em toda renderizacao e recebe overlay azul-escuro, ocultando o jogo atras.
+- O tema do NeoForge foi adaptado para os componentes reais do Embeddium 1.20.1:
+  - fundos globais azul-escuros;
+  - hover, selecao, sliders, linhas e contornos ciano;
+  - estado desabilitado personalizado;
+  - cabecalhos `Magic World` e `Magic World Shaders` com icones Magic World;
+  - suporte/doacao ocultos.
+- Auditorados os cinco mixins de menu do projeto NeoForge. O Forge antigo nao possui o mesmo `SodiumConfigBuilder`; por isso o tema equivalente foi aplicado diretamente em `FlatButtonWidget.Style`, controles e frames do Embeddium.
+- Regra de validacao mantida: o Codex nao executa `runClient`; somente Gradle. O usuario testa visualmente no cliente.
+- `./gradlew.bat compileJava --stacktrace`: BUILD SUCCESSFUL.
+- `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.

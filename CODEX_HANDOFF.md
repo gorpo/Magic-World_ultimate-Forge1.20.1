@@ -1098,3 +1098,40 @@ Teste manual esperado:
 - Testar rolagem circular nas abas do menu grafico.
 - Entrar no save existente e conferir que a mensagem do reparo versao 7 aparece uma vez.
 - Conferir frente da casa/muro restaurados, rua elevada na linha da casa e ausencia de itens de baus voando.
+
+## Correcao definitiva do menu grafico - 2026-06-06 13:17:59 -03:00
+
+Regra operacional obrigatoria:
+
+- Nao executar `runClient`.
+- O usuario realiza o teste visual e funcional no cliente.
+- O Codex valida somente com Gradle.
+
+Diagnostico corrigido:
+
+- A implementacao anterior nao criava uma aba real do Embeddium. Ela desenhava um widget externo e, quando nao encontrava o `TabFrame`, deixava somente um icone solto no rodape.
+- No Embeddium `0.3.31`, o ponto correto e `EmbeddiumVideoOptionsScreen#createShaderPackButton`.
+- Com Oculus carregado, o grupo real dos shaders e `oculus`, nao `iris`.
+
+Implementacao atual:
+
+- Removido completamente o widget externo do Distant Horizons e seu tratamento manual de clique/render.
+- Criada uma aba Embeddium real `Horizontes Distantes`, inserida depois de `Pacote de sombreadores...` no mesmo grupo Oculus/Iris.
+- A aba abre a tela do Distant Horizons pela acao oficial de selecao e possui o icone Magic World dentro da propria entrada.
+- O fundo estatico Magic World agora e desenhado no inicio do render principal e tambem substitui o background do Embeddium, ocultando o jogo atras.
+- O tema global dos botoes do Embeddium recebeu paineis azul-escuros, hover ciano, estados desabilitados personalizados, sliders ciano, linhas e destaques ciano.
+- A rolagem circular detecta inicio/fim da pagina direita, avanca/retorna entre abas com `floorMod`, volta da ultima para a primeira e executa corretamente a acao de abas externas.
+- `Support Sodium`/doacao continua oculto, desabilitado, sem texto e fora da tela.
+
+Auditoria do NeoForge:
+
+- Revisados `SodiumConfigBuilderMagicWorldMixin`, `SodiumVideoSettingsScreenMagicWorldLayoutMixin`, `SodiumDonationButtonCompatMixin`, `SodiumExternalPageEntryMagicWorldMixin` e `IrisConfigMagicWorldMixin`.
+- O Forge/Embeddium antigo nao possui o mesmo construtor global do Sodium novo; o resultado equivalente foi aplicado nos componentes reais desta versao.
+- O prefixo de pagina externa do Sodium novo nao existe no `TabFrame` deste Embeddium.
+- O Oculus usa o grupo dinamico `oculus`; ele permanece renomeado para `Magic World Shaders`.
+
+Validacao executada ate este registro:
+
+- `./gradlew.bat compileJava --stacktrace`: BUILD SUCCESSFUL.
+- `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+- Cliente nao foi aberto.

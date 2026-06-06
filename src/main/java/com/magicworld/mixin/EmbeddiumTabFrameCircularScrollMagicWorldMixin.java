@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
 
 @Mixin(targets = "org.embeddedt.embeddium.gui.frame.tab.TabFrame", remap = false)
 public abstract class EmbeddiumTabFrameCircularScrollMagicWorldMixin {
@@ -62,16 +63,33 @@ public abstract class EmbeddiumTabFrameCircularScrollMagicWorldMixin {
             List<?> tabs = new ArrayList<>(collection);
             int current = tabs.indexOf(selected);
             int direction = delta < 0.0D ? 1 : -1;
-            Object next = tabs.get(Math.floorMod(current + direction, tabs.size()));
-            Method setTab = this.getClass().getMethod(
-                    "setTab",
-                    Class.forName("org.embeddedt.embeddium.gui.frame.tab.Tab")
-            );
-            setTab.invoke(this, next);
-            callback.setReturnValue(true);
+            int start = current >= 0 ? current : 0;
+
+            for (int attempt = 1; attempt <= tabs.size(); attempt++) {
+                Object next = tabs.get(Math.floorMod(start + direction * attempt, tabs.size()));
+                if (magicworld$activateTab(next)) {
+                    Method setTab = this.getClass().getMethod(
+                            "setTab",
+                            Class.forName("org.embeddedt.embeddium.gui.frame.tab.Tab")
+                    );
+                    setTab.invoke(this, next);
+                }
+                callback.setReturnValue(true);
+                return;
+            }
         } catch (ReflectiveOperationException ignored) {
             // Optional Embeddium internals differ between versions.
         }
+    }
+
+    @Unique
+    private static boolean magicworld$activateTab(Object tab) throws ReflectiveOperationException {
+        Method onSelectFunction = tab.getClass().getMethod("onSelectFunction");
+        Object value = onSelectFunction.invoke(tab);
+        if (value instanceof Supplier<?> supplier) {
+            return Boolean.TRUE.equals(supplier.get());
+        }
+        return true;
     }
 
     @Unique
