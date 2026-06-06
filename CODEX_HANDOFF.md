@@ -1365,6 +1365,33 @@ Validacao:
 - `git diff --check`: sem erros; apenas avisos esperados de CRLF no Windows.
 - Cliente nao foi aberto pelo Codex.
 
+## Seeds no menu Magic World - 2026-06-06 15:30:59 -03:00
+
+Pedido atual:
+
+- Na tela de criacao de mundo, manter `Modo: Normal` abaixo de `Dificuldade`, no mesmo tamanho.
+- Adicionar a esquerda um campo manual de seed e um dropdown de seeds predefinidas.
+- A primeira opcao do dropdown deve ser nula: `Selecione a seed`.
+- Se escolher preset, usar preset; se nao escolher preset e digitar seed manual, usar manual; se ambos vazios, deixar o Minecraft gerar seed aleatoria.
+- Criar documento ensinando como adicionar mais seeds.
+
+Implementado:
+
+- `MagicWorldWorldOptions` ganhou estado para `customSeed` e `presetSeedIndex`.
+- `ClientEvents` aplica `WorldCreationUiState.setSeed(...)` com a prioridade preset > manual > aleatoria.
+- A aba `Magic World` recebeu `EditBox` para `Seed manual`.
+- Foi criado dropdown customizado com 10 seeds nomeadas mais a opcao nula.
+- O dropdown e renderizado por ultimo no painel para a lista abrir por cima dos botoes.
+- `Modo` fica na coluna direita, abaixo de `Dificuldade`, com a mesma largura.
+- Criado `docs/SEEDS_MAGIC_WORLD.md` com instrucoes para adicionar/remover seeds.
+
+Validacao:
+
+- `./gradlew.bat compileJava --stacktrace`: BUILD SUCCESSFUL.
+- `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+- `git diff --check`: sem erros; apenas avisos esperados de CRLF no Windows.
+- Cliente nao foi aberto pelo Codex; o usuario testa o cliente.
+
 ## Santuario magico do fim da rua - 2026-06-06 15:05:02 -03:00
 
 Pedido atual:

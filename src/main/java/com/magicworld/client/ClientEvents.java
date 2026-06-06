@@ -6,6 +6,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -31,8 +32,10 @@ import net.minecraftforge.fml.common.Mod;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.WeakHashMap;
+import java.util.function.IntConsumer;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientEvents {
@@ -62,6 +65,22 @@ public class ClientEvents {
         private static final int MAGIC_PANEL_GAP = 8;
         private static final int MAGIC_PANEL_BUTTON_HEIGHT = 20;
         private static final int MAGIC_PANEL_HEIGHT = 260;
+        private static final SeedPreset[] MAGIC_SEED_PRESETS = {
+                new SeedPreset("Selecione a seed", ""),
+                new SeedPreset("Magic World", "2048005618087379093"),
+                new SeedPreset("Paraiso", "69420070680859076"),
+                new SeedPreset("Magnific", "2048005618087379093"),
+                new SeedPreset("Biomas Pertos", "8500081009970950196"),
+                new SeedPreset("Vale Cerejeira", "6823084440019132920"),
+                new SeedPreset("Ilha das Vilas", "2218715947278290213"),
+                new SeedPreset("Montanhas Magicas", "460628901"),
+                new SeedPreset("Cidade Antiga", "4189766944005904899"),
+                new SeedPreset("Bosque e Mansao", "-845619040004837621"),
+                new SeedPreset("Cerejeiras Raras", "65434353559200")
+        };
+
+        private record SeedPreset(String label, String seed) {
+        }
 
         @SubscribeEvent
         public static void onClientTick(TickEvent.ClientTickEvent event) {
@@ -114,6 +133,8 @@ public class ClientEvents {
                 MagicWorldWorldOptions.setHardwareProfileIndex(3);
                 MagicWorldWorldOptions.setStartingGameMode(MagicWorldWorldOptions.StartingGameMode.SURVIVAL);
                 MagicWorldWorldOptions.setStartingDifficulty(MagicWorldWorldOptions.StartingDifficulty.NORMAL);
+                MagicWorldWorldOptions.setCustomSeed("");
+                MagicWorldWorldOptions.setPresetSeedIndex(0, MAGIC_SEED_PRESETS.length);
                 applyMagicWorldUiState(createWorldScreen);
             }
 
@@ -162,6 +183,28 @@ public class ClientEvents {
             int left = layout.left();
             int top = layout.top();
             int buttonsTop = layout.buttonsTop();
+            final boolean[] syncingSeedBox = {false};
+
+            EditBox customSeedBox = new EditBox(
+                    Minecraft.getInstance().font,
+                    gridX(left, buttonWidth, gap, 0),
+                    gridY(buttonsTop, buttonHeight, gap, 2),
+                    buttonWidth,
+                    buttonHeight,
+                    Component.literal("Seed manual")
+            );
+            customSeedBox.setHint(Component.literal("Seed manual"));
+            customSeedBox.setValue(MagicWorldWorldOptions.customSeed());
+            customSeedBox.setResponder(seed -> {
+                if (syncingSeedBox[0]) {
+                    return;
+                }
+                MagicWorldWorldOptions.setCustomSeed(seed);
+                if (!seed.trim().isEmpty()) {
+                    MagicWorldWorldOptions.setPresetSeedIndex(0, MAGIC_SEED_PRESETS.length);
+                }
+                applyMagicWorldUiState(screen);
+            });
 
             List<AbstractWidget> magicWidgets = List.of(
                     new MagicCreateWorldLineCover(0, layout.lineCoverY(), screen.width, 8),
@@ -215,11 +258,12 @@ public class ClientEvents {
                             .bounds(gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 1), buttonWidth, buttonHeight)
                             .tooltip(Tooltip.create(Component.literal("Escolhe a dificuldade inicial.")))
                             .build(),
+                    customSeedBox,
                     Button.builder(gameModeButtonLabel(), pressed -> {
                                 MagicWorldWorldOptions.nextStartingGameMode();
                                 pressed.setMessage(gameModeButtonLabel());
                             })
-                            .bounds(left, gridY(buttonsTop, buttonHeight, gap, 2), gridWidth, buttonHeight)
+                            .bounds(gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 2), buttonWidth, buttonHeight)
                             .tooltip(Tooltip.create(Component.literal("Escolhe modo normal ou criativo.")))
                             .build(),
                     Button.builder(Component.literal("Criar Mundo"), pressed -> createWorldFromMagicTab(screen, vanillaWidgets))
@@ -227,7 +271,24 @@ public class ClientEvents {
                             .build(),
                     Button.builder(Component.literal("Voltar"), pressed -> showMagicPanel(screen, false))
                             .bounds(left + (gridWidth - gap) / 2 + gap, gridY(buttonsTop, buttonHeight, gap, 3), (gridWidth - gap) / 2, buttonHeight)
-                            .build()
+                            .build(),
+                    new MagicSeedDropdown(
+                            gridX(left, buttonWidth, gap, 1),
+                            gridY(buttonsTop, buttonHeight, gap, 2),
+                            buttonWidth,
+                            buttonHeight,
+                            Arrays.asList(MAGIC_SEED_PRESETS),
+                            selected -> {
+                                if (selected > 0) {
+                                    syncingSeedBox[0] = true;
+                                    MagicWorldWorldOptions.setCustomSeed("");
+                                    customSeedBox.setValue("");
+                                    syncingSeedBox[0] = false;
+                                }
+                                MagicWorldWorldOptions.setPresetSeedIndex(selected, MAGIC_SEED_PRESETS.length);
+                                applyMagicWorldUiState(screen);
+                            }
+                    )
             );
 
             MAGIC_CREATE_WORLD_PANELS.put(screen, new MagicCreateWorldPanel(screen, vanillaWidgets, magicTabButton, magicWidgets));
@@ -274,6 +335,13 @@ public class ClientEvents {
             }
 
             MagicCreateWorldPanel panel = MAGIC_CREATE_WORLD_PANELS.get(screen);
+            if (panel != null && isMagicPanelVisible(panel) && panel.magicWidgets().size() > 14
+                    && panel.magicWidgets().get(14) instanceof MagicSeedDropdown dropdown
+                    && dropdown.mouseClicked(event.getMouseX(), event.getMouseY(), event.getButton())) {
+                event.setCanceled(true);
+                return;
+            }
+
             if (panel != null && isMagicPanelVisible(panel) && event.getMouseY() < magicPanelLayout(screen).top()) {
                 showMagicPanel(screen, false);
             }
@@ -331,7 +399,7 @@ public class ClientEvents {
         }
 
         private static void relayoutMagicPanel(MagicCreateWorldPanel panel) {
-            if (panel.magicWidgets().size() < 13) {
+            if (panel.magicWidgets().size() < 15) {
                 return;
             }
 
@@ -359,9 +427,11 @@ public class ClientEvents {
             setBounds(panel.magicWidgets().get(7), gridX(left, buttonWidth, gap, 1), gridY(buttonsTop, buttonHeight, gap, 1), buttonWidth, buttonHeight);
             setBounds(panel.magicWidgets().get(8), gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 0), buttonWidth, buttonHeight);
             setBounds(panel.magicWidgets().get(9), gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 1), buttonWidth, buttonHeight);
-            setBounds(panel.magicWidgets().get(10), left, gridY(buttonsTop, buttonHeight, gap, 2), gridWidth, buttonHeight);
-            setBounds(panel.magicWidgets().get(11), left, gridY(buttonsTop, buttonHeight, gap, 3), (gridWidth - gap) / 2, buttonHeight);
-            setBounds(panel.magicWidgets().get(12), left + (gridWidth - gap) / 2 + gap, gridY(buttonsTop, buttonHeight, gap, 3), (gridWidth - gap) / 2, buttonHeight);
+            setBounds(panel.magicWidgets().get(10), gridX(left, buttonWidth, gap, 0), gridY(buttonsTop, buttonHeight, gap, 2), buttonWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(11), gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 2), buttonWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(12), left, gridY(buttonsTop, buttonHeight, gap, 3), (gridWidth - gap) / 2, buttonHeight);
+            setBounds(panel.magicWidgets().get(13), left + (gridWidth - gap) / 2 + gap, gridY(buttonsTop, buttonHeight, gap, 3), (gridWidth - gap) / 2, buttonHeight);
+            setBounds(panel.magicWidgets().get(14), gridX(left, buttonWidth, gap, 1), gridY(buttonsTop, buttonHeight, gap, 2), buttonWidth, buttonHeight);
         }
 
         private static void setBounds(AbstractWidget widget, int x, int y, int width, int height) {
@@ -403,6 +473,15 @@ public class ClientEvents {
                     : WorldCreationUiState.SelectedGameMode.SURVIVAL);
             uiState.setDifficulty(toMinecraftDifficulty(MagicWorldWorldOptions.startingDifficulty()));
             uiState.setGameRules(magicWorldGameRules(uiState.getGameRules()));
+            uiState.setSeed(selectedMagicSeed());
+        }
+
+        private static String selectedMagicSeed() {
+            int presetIndex = MagicWorldWorldOptions.presetSeedIndex();
+            if (presetIndex > 0 && presetIndex < MAGIC_SEED_PRESETS.length) {
+                return MAGIC_SEED_PRESETS[presetIndex].seed();
+            }
+            return MagicWorldWorldOptions.customSeed();
         }
 
         private static Difficulty toMinecraftDifficulty(MagicWorldWorldOptions.StartingDifficulty difficulty) {
@@ -683,6 +762,96 @@ public class ClientEvents {
                     widget.visible = false;
                     widget.active = false;
                 }
+            }
+        }
+
+        private static final class MagicSeedDropdown extends AbstractWidget {
+            private final Font font = Minecraft.getInstance().font;
+            private final List<SeedPreset> presets;
+            private final IntConsumer onSelect;
+            private boolean expanded;
+
+            private MagicSeedDropdown(int x, int y, int width, int height, List<SeedPreset> presets, IntConsumer onSelect) {
+                super(x, y, width, height, Component.literal("Selecione a seed"));
+                this.presets = List.copyOf(presets);
+                this.onSelect = onSelect;
+            }
+
+            @Override
+            protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+                int borderColor = expanded ? 0xFFFFE6A6 : 0x88D9A441;
+                graphics.fill(getX(), getY(), getX() + getWidth(), getY() + getHeight(), 0xCC101820);
+                graphics.renderOutline(getX(), getY(), getWidth(), getHeight(), borderColor);
+                graphics.drawString(font, selectedLabel(), getX() + 6, getY() + 6, 0xFFE8F2FF, false);
+                graphics.drawString(font, "v", getX() + getWidth() - 12, getY() + 6, 0xFFFFE6A6, false);
+
+                if (!expanded) {
+                    return;
+                }
+
+                int rowHeight = getHeight();
+                int listTop = getY() + getHeight() + 2;
+                for (int i = 0; i < presets.size(); i++) {
+                    int rowTop = listTop + i * rowHeight;
+                    boolean hovered = mouseX >= getX()
+                            && mouseX < getX() + getWidth()
+                            && mouseY >= rowTop
+                            && mouseY < rowTop + rowHeight;
+                    int background = hovered ? 0xEE243B4D : 0xEE101820;
+                    graphics.fill(getX(), rowTop, getX() + getWidth(), rowTop + rowHeight, background);
+                    graphics.renderOutline(getX(), rowTop, getWidth(), rowHeight, 0x6639D9FF);
+                    int textColor = i == MagicWorldWorldOptions.presetSeedIndex() ? 0xFFFFE6A6 : 0xFFE8F2FF;
+                    graphics.drawString(font, presets.get(i).label(), getX() + 6, rowTop + 6, textColor, false);
+                }
+            }
+
+            @Override
+            public boolean mouseClicked(double mouseX, double mouseY, int button) {
+                if (!visible || !active || button != 0) {
+                    return false;
+                }
+
+                boolean insideButton = mouseX >= getX()
+                        && mouseX < getX() + getWidth()
+                        && mouseY >= getY()
+                        && mouseY < getY() + getHeight();
+                if (insideButton) {
+                    expanded = !expanded;
+                    return true;
+                }
+
+                if (expanded) {
+                    int rowHeight = getHeight();
+                    int listTop = getY() + getHeight() + 2;
+                    boolean insideList = mouseX >= getX()
+                            && mouseX < getX() + getWidth()
+                            && mouseY >= listTop
+                            && mouseY < listTop + presets.size() * rowHeight;
+                    if (insideList) {
+                        int index = (int) ((mouseY - listTop) / rowHeight);
+                        if (index >= 0 && index < presets.size()) {
+                            expanded = false;
+                            onSelect.accept(index);
+                            return true;
+                        }
+                    }
+                    expanded = false;
+                    return true;
+                }
+
+                return false;
+            }
+
+            private String selectedLabel() {
+                int index = MagicWorldWorldOptions.presetSeedIndex();
+                if (index < 0 || index >= presets.size()) {
+                    return presets.get(0).label();
+                }
+                return presets.get(index).label();
+            }
+
+            @Override
+            protected void updateWidgetNarration(NarrationElementOutput narration) {
             }
         }
 

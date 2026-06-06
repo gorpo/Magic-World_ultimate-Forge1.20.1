@@ -53,6 +53,8 @@ public final class MagicWorldWorldOptions {
     private static int hardwareProfileIndex = 3;
     private static StartingGameMode startingGameMode = StartingGameMode.SURVIVAL;
     private static StartingDifficulty startingDifficulty = StartingDifficulty.NORMAL;
+    private static String customSeed = "";
+    private static int presetSeedIndex = 0;
 
     private MagicWorldWorldOptions() {
     }
@@ -164,5 +166,34 @@ public final class MagicWorldWorldOptions {
 
     public static void setStartingDifficulty(StartingDifficulty difficulty) {
         startingDifficulty = difficulty;
+    }
+
+    public static String customSeed() {
+        return customSeed;
+    }
+
+    public static void setCustomSeed(String seed) {
+        customSeed = seed == null ? "" : seed.trim();
+    }
+
+    public static int presetSeedIndex() {
+        return presetSeedIndex;
+    }
+
+    public static void setPresetSeedIndex(int index, int presetCount) {
+        if (presetCount <= 0) {
+            presetSeedIndex = 0;
+            return;
+        }
+        presetSeedIndex = Math.max(0, Math.min(index, presetCount - 1));
+    }
+
+    public static int nextPresetSeedIndex(int presetCount) {
+        if (presetCount <= 0) {
+            presetSeedIndex = 0;
+            return presetSeedIndex;
+        }
+        presetSeedIndex = (presetSeedIndex + 1) % presetCount;
+        return presetSeedIndex;
     }
 }

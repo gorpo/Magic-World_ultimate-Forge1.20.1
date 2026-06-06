@@ -760,6 +760,17 @@ Validacao e processo:
 - Validado com `compileJava`, `build` e `git diff --check`; todos passaram.
 - O Codex valida somente com Gradle e nao abre o cliente.
 
+## Seeds no menu Magic World - 2026-06-06 15:30:59 -03:00
+
+- A aba `Magic World` da tela de criacao de mundo agora tem campo `Seed manual` e dropdown de seeds predefinidas.
+- O botao `Modo: Normal/Criativo` foi movido para baixo de `Dificuldade` e usa a mesma largura dos demais botoes da coluna direita.
+- A prioridade aplicada e: seed predefinida selecionada, depois seed manual, depois seed aleatoria padrao do Minecraft.
+- A primeira opcao do dropdown e `Selecione a seed`, com valor vazio, para nao forcar seed.
+- A lista inicial tem 10 seeds nomeadas, incluindo as quatro informadas pelo usuario.
+- O guia para adicionar novas seeds foi criado em `docs/SEEDS_MAGIC_WORLD.md`.
+- Validado com `compileJava`, `build` e `git diff --check`; todos passaram.
+- O Codex valida somente com Gradle e nao abre o cliente.
+
 ## Santuario magico do fim da rua - 2026-06-06 15:05:02 -03:00
 
 - O reparo foi elevado para a versao `18`, para aplicar no proximo login de saves ja criados.
