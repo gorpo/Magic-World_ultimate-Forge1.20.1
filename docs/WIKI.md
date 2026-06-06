@@ -501,3 +501,13 @@ Teste pendente:
 Teste pendente:
 
 - Abrir `ESC > MagicWorld > Menu secreto do Minecraft` e conferir se as abas e acoes funcionam.
+
+## Correcao layout pause Mods/MagicWorld - 2026-06-06
+
+- `Mods` e `MagicWorld` agora sao inseridos abaixo do LAN/Opcoes como botoes largos.
+- Todos os botoes vanilla abaixo sao deslocados para baixo, evitando sobreposicao.
+- Build passou com `./gradlew.bat build`.
+
+Teste pendente:
+
+- Abrir o pause menu e validar alinhamento/espacamento visual.

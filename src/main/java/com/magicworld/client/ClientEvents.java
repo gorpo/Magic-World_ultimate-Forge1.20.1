@@ -602,7 +602,6 @@ public class ClientEvents {
             AbstractWidget optionsButton = findPauseButton(widgets, "options", "opcoes", "opcoes...");
             AbstractWidget modsButton = findPauseButton(widgets, "mods");
             AbstractWidget lanButton = findPauseButton(widgets, "open to lan", "abrir em lan", "lan");
-            AbstractWidget quitButton = findPauseButton(widgets, "save and quit", "disconnect", "salvar e sair", "sair para");
             AbstractWidget magicButton = findPauseButton(widgets, "magicworld", "magic world");
             AbstractWidget anchorButton = lanButton != null ? lanButton : optionsButton;
 
@@ -610,15 +609,22 @@ public class ClientEvents {
                 return;
             }
 
-            int buttonWidth = quitButton != null
-                    ? Math.max(quitButton.getWidth(), anchorButton.getWidth())
-                    : anchorButton.getWidth();
+            int buttonWidth = Math.max(200, anchorButton.getWidth());
             int buttonHeight = anchorButton.getHeight();
             int buttonX = pauseScreen.width / 2 - buttonWidth / 2;
             int gap = Math.max(4, verticalGapNear(anchorButton, widgets));
             int modsY = anchorButton.getY() + anchorButton.getHeight() + gap;
             int magicY = modsY + buttonHeight + gap;
-            int quitY = magicY + buttonHeight + gap;
+            int insertedHeight = buttonHeight * 2 + gap * 2;
+
+            for (AbstractWidget widget : widgets) {
+                if (widget == modsButton || widget == magicButton || widget == anchorButton) {
+                    continue;
+                }
+                if (widget.getY() > anchorButton.getY()) {
+                    widget.setY(widget.getY() + insertedHeight);
+                }
+            }
 
             if (modsButton != null) {
                 modsButton.setWidth(buttonWidth);
@@ -642,12 +648,6 @@ public class ClientEvents {
                         .bounds(buttonX, magicY, buttonWidth, buttonHeight)
                         .tooltip(Tooltip.create(Component.literal("Abre os atalhos magicos do Magic World.")))
                         .build());
-            }
-
-            if (quitButton != null) {
-                quitButton.setWidth(buttonWidth);
-                quitButton.setX(buttonX);
-                quitButton.setY(quitY);
             }
         }
 

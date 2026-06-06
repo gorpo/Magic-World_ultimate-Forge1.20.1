@@ -865,3 +865,19 @@ Teste manual:
 - Entrar no mundo, apertar ESC, clicar `MagicWorld`.
 - Abrir `Menu secreto do Minecraft`.
 - Validar abas, rolagem, clique em itens e acoes principais.
+
+## Bloco em 2026-06-06 - correcao layout pause Mods/MagicWorld
+
+- Corrigido novamente `ClientEvents#tunePauseMenu`.
+- O ajuste anterior reposicionava `Mods`, `MagicWorld` e apenas o botao de sair, causando sobreposicao com botoes vanilla intermediarios.
+- Agora o codigo:
+  - usa o botao LAN/Opcoes como ancora;
+  - expande `Mods` e `MagicWorld` para largura de botao principal;
+  - coloca `Mods` em uma linha propria;
+  - coloca `MagicWorld` na linha abaixo;
+  - empurra todos os botoes que estavam abaixo da ancora, preservando a ordem visual original.
+- Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
+
+Teste manual:
+
+- Abrir ESC e conferir se `Mods`, `MagicWorld`, `Salvar e sair/Menu principal` e demais botoes nao se sobrepoem.
