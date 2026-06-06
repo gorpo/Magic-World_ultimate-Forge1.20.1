@@ -131,8 +131,8 @@ public class ClientEvents {
                 MagicWorldWorldOptions.setAuraEnabled(true);
                 MagicWorldWorldOptions.setCommandsEnabled(true);
                 MagicWorldWorldOptions.setHardwareProfileIndex(3);
-                MagicWorldWorldOptions.setStartingGameMode(MagicWorldWorldOptions.StartingGameMode.SURVIVAL);
-                MagicWorldWorldOptions.setStartingDifficulty(MagicWorldWorldOptions.StartingDifficulty.NORMAL);
+                MagicWorldWorldOptions.setStartingGameMode(MagicWorldWorldOptions.StartingGameMode.CREATIVE);
+                MagicWorldWorldOptions.setStartingDifficulty(MagicWorldWorldOptions.StartingDifficulty.EASY);
                 MagicWorldWorldOptions.setCustomSeed("");
                 MagicWorldWorldOptions.setPresetSeedIndex(0, MAGIC_SEED_PRESETS.length);
                 applyMagicWorldUiState(createWorldScreen);
@@ -324,6 +324,10 @@ public class ClientEvents {
                 if (panel != null) {
                     relayoutMagicPanel(panel);
                     updateMagicTabButton(panel);
+                    MagicSeedDropdown dropdown = seedDropdown(panel);
+                    if (dropdown != null && isMagicPanelVisible(panel) && dropdown.isExpanded()) {
+                        dropdown.renderExpandedOverlay(event.getGuiGraphics(), event.getMouseX(), event.getMouseY());
+                    }
                 }
             }
         }
@@ -335,8 +339,8 @@ public class ClientEvents {
             }
 
             MagicCreateWorldPanel panel = MAGIC_CREATE_WORLD_PANELS.get(screen);
-            if (panel != null && isMagicPanelVisible(panel) && panel.magicWidgets().size() > 14
-                    && panel.magicWidgets().get(14) instanceof MagicSeedDropdown dropdown
+            MagicSeedDropdown dropdown = panel == null ? null : seedDropdown(panel);
+            if (panel != null && isMagicPanelVisible(panel) && dropdown != null
                     && dropdown.mouseClicked(event.getMouseX(), event.getMouseY(), event.getButton())) {
                 event.setCanceled(true);
                 return;
@@ -347,10 +351,29 @@ public class ClientEvents {
             }
         }
 
+        @SubscribeEvent
+        public static void onMouseScrolled(ScreenEvent.MouseScrolled.Pre event) {
+            if (!(event.getScreen() instanceof CreateWorldScreen screen)) {
+                return;
+            }
+
+            MagicCreateWorldPanel panel = MAGIC_CREATE_WORLD_PANELS.get(screen);
+            MagicSeedDropdown dropdown = panel == null ? null : seedDropdown(panel);
+            if (panel != null && isMagicPanelVisible(panel) && dropdown != null
+                    && dropdown.mouseScrolled(event.getMouseX(), event.getMouseY(), event.getScrollDelta())) {
+                event.setCanceled(true);
+            }
+        }
+
         private static void showMagicPanel(CreateWorldScreen screen, boolean show) {
             MagicCreateWorldPanel panel = MAGIC_CREATE_WORLD_PANELS.get(screen);
             if (panel == null) {
                 return;
+            }
+
+            MagicSeedDropdown dropdown = seedDropdown(panel);
+            if (!show && dropdown != null) {
+                dropdown.collapse();
             }
 
             if (show) {
@@ -372,6 +395,13 @@ public class ClientEvents {
             }
 
             updateMagicTabButton(panel);
+        }
+
+        private static MagicSeedDropdown seedDropdown(MagicCreateWorldPanel panel) {
+            if (panel.magicWidgets().size() <= 14 || !(panel.magicWidgets().get(14) instanceof MagicSeedDropdown dropdown)) {
+                return null;
+            }
+            return dropdown;
         }
 
         private static void updateMagicTabButton(MagicCreateWorldPanel panel) {
@@ -770,6 +800,7 @@ public class ClientEvents {
             private final List<SeedPreset> presets;
             private final IntConsumer onSelect;
             private boolean expanded;
+            private int scrollOffset;
 
             private MagicSeedDropdown(int x, int y, int width, int height, List<SeedPreset> presets, IntConsumer onSelect) {
                 super(x, y, width, height, Component.literal("Selecione a seed"));
@@ -783,25 +814,52 @@ public class ClientEvents {
                 graphics.fill(getX(), getY(), getX() + getWidth(), getY() + getHeight(), 0xCC101820);
                 graphics.renderOutline(getX(), getY(), getWidth(), getHeight(), borderColor);
                 graphics.drawString(font, selectedLabel(), getX() + 6, getY() + 6, 0xFFE8F2FF, false);
-                graphics.drawString(font, "v", getX() + getWidth() - 12, getY() + 6, 0xFFFFE6A6, false);
+                graphics.drawString(font, expanded ? "^" : "v", getX() + getWidth() - 12, getY() + 6, 0xFFFFE6A6, false);
+            }
 
+            private void renderExpandedOverlay(GuiGraphics graphics, int mouseX, int mouseY) {
                 if (!expanded) {
                     return;
                 }
 
                 int rowHeight = getHeight();
-                int listTop = listTop(rowHeight);
-                for (int i = 0; i < presets.size(); i++) {
-                    int rowTop = listTop + i * rowHeight;
-                    boolean hovered = mouseX >= getX()
-                            && mouseX < getX() + getWidth()
+                int visibleRows = visibleRows(rowHeight);
+                int popupLeft = popupLeft();
+                int popupTop = popupTop(rowHeight);
+                int popupWidth = popupWidth();
+                int listLeft = popupListLeft();
+                int listTop = popupListTop(rowHeight);
+                int listWidth = popupWidth - 20;
+
+                graphics.fill(0, 0, Minecraft.getInstance().getWindow().getGuiScaledWidth(), Minecraft.getInstance().getWindow().getGuiScaledHeight(), 0xF6000000);
+                graphics.fill(popupLeft, popupTop, popupLeft + popupWidth, popupTop + 48 + visibleRows * rowHeight + 12, 0xFF050916);
+                graphics.renderOutline(popupLeft, popupTop, popupWidth, 48 + visibleRows * rowHeight + 12, 0xFFFFE6A6);
+                graphics.renderOutline(popupLeft + 4, popupTop + 4, popupWidth - 8, 48 + visibleRows * rowHeight + 4, 0xDD39D9FF);
+                graphics.drawCenteredString(font, Component.literal("Escolha uma seed"), popupLeft + popupWidth / 2, popupTop + 12, 0xFFFFE6A6);
+                graphics.drawCenteredString(font, Component.literal("Clique fora para fechar"), popupLeft + popupWidth / 2, popupTop + 24, 0xFF9AB8D8);
+
+                for (int row = 0; row < visibleRows; row++) {
+                    int i = scrollOffset + row;
+                    int rowTop = listTop + row * rowHeight;
+                    boolean hovered = mouseX >= listLeft
+                            && mouseX < listLeft + listWidth
                             && mouseY >= rowTop
                             && mouseY < rowTop + rowHeight;
-                    int background = hovered ? 0xEE243B4D : 0xEE101820;
-                    graphics.fill(getX(), rowTop, getX() + getWidth(), rowTop + rowHeight, background);
-                    graphics.renderOutline(getX(), rowTop, getWidth(), rowHeight, 0x6639D9FF);
+                    int background = hovered ? 0xFF243B4D : 0xFF101820;
+                    graphics.fill(listLeft, rowTop, listLeft + listWidth, rowTop + rowHeight, background);
+                    graphics.renderOutline(listLeft, rowTop, listWidth, rowHeight, 0xAA39D9FF);
                     int textColor = i == MagicWorldWorldOptions.presetSeedIndex() ? 0xFFFFE6A6 : 0xFFE8F2FF;
-                    graphics.drawString(font, presets.get(i).label(), getX() + 6, rowTop + 6, textColor, false);
+                    graphics.drawString(font, presets.get(i).label(), listLeft + 8, rowTop + 6, textColor, false);
+                }
+
+                if (presets.size() > visibleRows) {
+                    int barLeft = listLeft + listWidth - 5;
+                    int barTop = listTop + 2;
+                    int barHeight = visibleRows * rowHeight - 4;
+                    int thumbHeight = Math.max(12, barHeight * visibleRows / presets.size());
+                    int thumbTop = barTop + (barHeight - thumbHeight) * scrollOffset / Math.max(1, maxScrollOffset());
+                    graphics.fill(barLeft, barTop, barLeft + 2, barTop + barHeight, 0x6639D9FF);
+                    graphics.fill(barLeft - 1, thumbTop, barLeft + 3, thumbTop + thumbHeight, 0xFFD9A441);
                 }
             }
 
@@ -817,18 +875,24 @@ public class ClientEvents {
                         && mouseY < getY() + getHeight();
                 if (insideButton) {
                     expanded = !expanded;
+                    if (expanded) {
+                        keepSelectedVisible();
+                    }
                     return true;
                 }
 
                 if (expanded) {
                     int rowHeight = getHeight();
-                    int listTop = listTop(rowHeight);
-                    boolean insideList = mouseX >= getX()
-                            && mouseX < getX() + getWidth()
+                    int listLeft = popupListLeft();
+                    int listTop = popupListTop(rowHeight);
+                    int visibleRows = visibleRows(rowHeight);
+                    int listWidth = popupWidth() - 20;
+                    boolean insideList = mouseX >= listLeft
+                            && mouseX < listLeft + listWidth
                             && mouseY >= listTop
-                            && mouseY < listTop + presets.size() * rowHeight;
+                            && mouseY < listTop + visibleRows * rowHeight;
                     if (insideList) {
-                        int index = (int) ((mouseY - listTop) / rowHeight);
+                        int index = scrollOffset + (int) ((mouseY - listTop) / rowHeight);
                         if (index >= 0 && index < presets.size()) {
                             expanded = false;
                             onSelect.accept(index);
@@ -842,20 +906,22 @@ public class ClientEvents {
                 return false;
             }
 
-            private int listTop(int rowHeight) {
-                int preferredTop = getY() + getHeight() + 2;
-                int listHeight = presets.size() * rowHeight;
-                int screenBottom = Minecraft.getInstance().getWindow().getGuiScaledHeight() - 6;
-                if (preferredTop + listHeight <= screenBottom) {
-                    return preferredTop;
+            @Override
+            public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+                if (!expanded || presets.size() <= visibleRows(getHeight())) {
+                    return expanded;
                 }
 
-                int aboveTop = getY() - listHeight - 2;
-                if (aboveTop >= 6) {
-                    return aboveTop;
-                }
+                scrollOffset = clamp(scrollOffset - (int) Math.signum(delta), 0, maxScrollOffset());
+                return true;
+            }
 
-                return Math.max(6, screenBottom - listHeight);
+            private boolean isExpanded() {
+                return expanded;
+            }
+
+            private void collapse() {
+                expanded = false;
             }
 
             private String selectedLabel() {
@@ -864,6 +930,55 @@ public class ClientEvents {
                     return presets.get(0).label();
                 }
                 return presets.get(index).label();
+            }
+
+            private void keepSelectedVisible() {
+                int selected = MagicWorldWorldOptions.presetSeedIndex();
+                int visibleRows = visibleRows(getHeight());
+                if (selected < scrollOffset) {
+                    scrollOffset = selected;
+                } else if (selected >= scrollOffset + visibleRows) {
+                    scrollOffset = selected - visibleRows + 1;
+                }
+                scrollOffset = clamp(scrollOffset, 0, maxScrollOffset());
+            }
+
+            private int visibleRows(int rowHeight) {
+                int screenHeight = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+                int maxRows = Math.max(4, (screenHeight - 124) / Math.max(1, rowHeight));
+                return Math.min(presets.size(), Math.min(12, maxRows));
+            }
+
+            private int maxScrollOffset() {
+                return Math.max(0, presets.size() - visibleRows(getHeight()));
+            }
+
+            private int popupWidth() {
+                int screenWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
+                return Math.min(Math.max(getWidth() + 96, 260), Math.max(180, screenWidth - 36));
+            }
+
+            private int popupLeft() {
+                int screenWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
+                return screenWidth / 2 - popupWidth() / 2;
+            }
+
+            private int popupTop(int rowHeight) {
+                int screenHeight = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+                int panelHeight = 48 + visibleRows(rowHeight) * rowHeight + 12;
+                return Math.max(12, screenHeight / 2 - panelHeight / 2);
+            }
+
+            private int popupListLeft() {
+                return popupLeft() + 10;
+            }
+
+            private int popupListTop(int rowHeight) {
+                return popupTop(rowHeight) + 38;
+            }
+
+            private int clamp(int value, int min, int max) {
+                return Math.max(min, Math.min(max, value));
             }
 
             @Override

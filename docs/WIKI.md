@@ -65,13 +65,14 @@ Arquivos de referencia importados:
 
 ## Estado atual
 
-- Handoff antigo foi apagado e recriado para este novo port.
-- Wiki local foi recriada.
-- Documentacao NeoForge foi copiada para `docs/neoforge-reference/` como referencia.
-- Git local foi inicializado no branch `Inicio-Port-Neoforge`.
+- Branch atual: `Inicio-Port-Neoforge`, alinhado com `origin/Inicio-Port-Neoforge`.
 - Remoto configurado para `https://github.com/gorpo/Magic-World_ultimate-Forge1.20.1.git`.
-- Ainda falta portar codigo/telas desta etapa.
-- Ainda falta compilar, commitar e enviar o branch.
+- Handoff e wiki locais existem e devem continuar sendo atualizados ao fim de cada bloco.
+- Documentacao NeoForge esta em `docs/neoforge-reference/` apenas como referencia.
+- O escopo inicial de telas, menus, backgrounds e loading foi portado em blocos posteriores desta wiki.
+- HEAD atual na retomada de 2026-06-06: `6a0a554` (`Revisa dropdown de seeds do Magic World - 2026-06-06 15:42:01 -03:00`).
+- Validacao de retomada em 2026-06-06 15:52:33 -03:00: `./gradlew.bat build --stacktrace` com `BUILD SUCCESSFUL` e `git diff --check` sem erros.
+- O cliente Minecraft nao deve ser aberto pelo Codex; testes visuais continuam com o usuario.
 
 ## Atualizacao visual inicial - 2026-06-05
 
@@ -692,7 +693,7 @@ Este registro documenta o conjunto completo preparado para o commit de conclusao
 - Background do menu grafico ficou mais opaco para esconder melhor o jogo atras.
 - Botao/texto de suporte/doacao do Embeddium/Sodium agora e ocultado, desabilitado, sem label e movido para fora da tela.
 - Rolagem circular entre abas do Embeddium foi reforcada para usar tambem `getOffset()` da barra de rolagem quando o campo interno muda.
-- Reparo da propriedade elevado para versao 7, forçando nova execucao no proximo login de saves ja criados.
+- Reparo da propriedade elevado para versao 7, forÃƒÂ§ando nova execucao no proximo login de saves ja criados.
 - Frente da casa importada e protegida: estradas e caminhos agora ignoram o footprint da `imported_house.nbt`.
 - A casa importada e restaurada pelo NBT depois das rotinas de terreno/rua, preservando frente, muro e estrutura original.
 - Rua ao redor da casa foi elevada com bloco inteiro no nivel acima do tracado antigo, alinhando melhor com a linha da casa.
@@ -768,6 +769,32 @@ Validacao e processo:
 - Validado com `compileJava`, `build` e `git diff --check`; todos passaram.
 - O Codex valida somente com Gradle e nao abre o cliente.
 
+## Correcao do popup de seeds e Entity Culling - 2026-06-06 16:01:54 -03:00
+
+- O print mostrou a lista de seeds abrindo sobre textos, botoes e abas do painel `Magic World`.
+- O dropdown agora abre como popup central opaco, com overlay escuro, titulo proprio e fechamento ao clicar fora.
+- Em telas normais a lista mostra todas as seeds; em telas muito baixas limita linhas e permite rolagem.
+- `MagicWorldEntityCulling` foi portado para Forge 1.20.1 com cache por entidade/camera e raycast de oclusao.
+- `MagicWorldEntityCullingMixin` foi registrado em `magicworld.mixins.json`.
+- A dependencia direta em `PeacefulDragon` foi removida porque essa entidade ainda nao existe nesta base Forge.
+- Validado com `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+- `git diff --check`: sem erros; apenas avisos esperados de CRLF no Windows.
+- O Codex valida somente com Gradle e nao abre o cliente.
+
+## Correcao casa e santuario do fim da rua - 2026-06-06 16:10:00 -03:00
+
+- Os prints mostraram que a casa do fim da rua nao ficou completa no local esperado e que o santuario nao apareceu no sentido da rua olhando para o morro.
+- O save local `Novo mundo` registrava base real `MagicWorldForgeStarterEstateBaseX/Y/Z = 0/105/0` e jogador olhando para oeste (`yaw ~ -96`).
+- O reparo foi elevado para `CURRENT_ESTATE_REPAIR_VERSION = 19`, forcando reaplicacao no proximo login do save existente.
+- A casa `starter_house_1.nbt` continua no ponto definido anteriormente, mas agora a rotina forca carregamento dos chunks antes de limpar e posicionar a estrutura.
+- A limpeza de volumes agora esvazia containers antes de remover blocos, evitando drops de baus antigos durante reparos repetidos.
+- O santuario foi movido para o eixo oeste da estrada real, no sentido do print olhando para o morro: `roadEndMagicSanctuaryOrigin(base) = base.offset(-176,0,-8)`.
+- A rotina cria/estende uma estrada ate a entrada leste do santuario antes de construir o shell.
+- O santuario tambem forca carregamento de chunks da area antes da construcao.
+- Validado com `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+- `git diff --check`: sem erros; apenas avisos esperados de CRLF no Windows.
+- O Codex valida somente com Gradle e nao abre o cliente.
+
 ## Seeds no menu Magic World - 2026-06-06 15:30:59 -03:00
 
 - A aba `Magic World` da tela de criacao de mundo agora tem campo `Seed manual` e dropdown de seeds predefinidas.
@@ -782,11 +809,11 @@ Validacao e processo:
 ## Santuario magico do fim da rua - 2026-06-06 15:05:02 -03:00
 
 - O reparo foi elevado para a versao `18`, para aplicar no proximo login de saves ja criados.
-- O santuário usa o volume dos prints no final da rua, aproximadamente `X 236..281`, `Y 74+`, `Z -56..-39`.
+- O santuÃƒÂ¡rio usa o volume dos prints no final da rua, aproximadamente `X 236..281`, `Y 74+`, `Z -56..-39`.
 - A origem relativa usada e `base.offset(296,0,-86)`, com largura `45`, profundidade `17` e altura interna de `10`.
 - O loading inicial ganhou etapa propria em `97%`, mensagem `Carregando santuario magico do fim da rua...`, antes de marcar `100%`.
 - `repairExistingEstate` tambem chama a rotina, garantindo aplicacao em mundos ja existentes.
-- O espaço recebe piso colorido com quartz, andesite, purpur, amethyst e sea lanterns, paredes decoradas, teto iluminado, redstone blocks, redstone lamps e glowstone.
+- O espaÃƒÂ§o recebe piso colorido com quartz, andesite, purpur, amethyst e sea lanterns, paredes decoradas, teto iluminado, redstone blocks, redstone lamps e glowstone.
 - A parede leste e laterais recebem baus/barris preenchidos com o catalogo de itens registrados do jogo/mod.
 - Ha bau de varinhas magicas, bau premium, ferramentas de todos os tiers principais, estacoes de trabalho, mesa central de reuniao, sino, luzes, banners, paineis decorativos, plantas, armaduras em stands, allays, parrots e rabbits.
 - Validado com `compileJava`, `build` e `git diff --check`; todos passaram.
@@ -839,7 +866,7 @@ Validacao e processo:
 - O volume usado fica em torno de `X 157..176`, `Y 70..84`, `Z -118..-89` no mundo atual observado nos prints.
 - A origem relativa usada e `base.offset(217,-4,-148)`.
 - A porta principal do NBT tem `facing=south`; por isso a casa e colocada sem rotacao, deixando a frente/area frontal virada para a rua.
-- Antes da colocacao, a area recebe platô de suporte e limpeza local controlada.
+- Antes da colocacao, a area recebe platÃƒÂ´ de suporte e limpeza local controlada.
 - Depois da colocacao, a frente recebe caminho de smooth stone/polished andesite ate a rua, postes de luz, azaleias e animais decorativos nomeados.
 - Validado com `compileJava`, `build` e `git diff --check`; todos passaram.
 - O Codex valida somente com Gradle e nao abre o cliente.
@@ -855,7 +882,7 @@ Validacao e processo:
 
 ## Ajuste da casa grande nas coordenadas dos prints - 2026-06-06 14:52:19 -03:00
 
-- O reparo foi elevado para a versao `16`, forçando atualizacao no proximo login do save ja criado.
+- O reparo foi elevado para a versao `16`, forÃƒÂ§ando atualizacao no proximo login do save ja criado.
 - As coordenadas do print atual indicam o centro `55 74 -35` e alvo `55 73 -29`.
 - Esse ponto corresponde ao volume premium `X 46..64`, `Y 73+`, `Z -42..-28` quando a base da propriedade esta em `-60 74 30`.
 - A rotina da casa grande premium continua garantindo armazenamento, baus com itens premium, bau de varinhas, estacoes de trabalho, mesa, camas, armaduras, luzes, decoracao, ave e aldeoes profissionais.
@@ -865,3 +892,39 @@ Validacao e processo:
 - A zona de rua/muro nao e mais pulada nessa conversao, mas apenas troncos e folhas naturais sao trocados por cerejeira.
 - Validado com `compileJava`, `build` e `git diff --check`; todos passaram.
 - O Codex valida somente com Gradle e nao abre o cliente.
+
+## Cerejeiras restritas a casa principal e castelo - 2026-06-06 16:22:20 -03:00
+
+- O usuario confirmou que sempre gera mapa novo; esta alteracao nao aumentou CURRENT_ESTATE_REPAIR_VERSION e nao adiciona peso extra para forcar save atual.
+- A conversao antiga usava faixa ampla ao redor da casa importada; foi substituida por zonas fixas e curtas das estruturas do usuario.
+- Casa principal: converte somente o anel de ate 24 blocos ao redor do footprint da casa, cortado pelos limites da cerca da propriedade e excluindo o volume protegido da propria casa.
+- Castelo: converte somente o anel de ate 24 blocos ao redor do volume do castelo, excluindo o volume protegido do castelo.
+- Nao planta arvores novas: apenas troca troncos naturais com folhas proximas e folhas naturais ja existentes por cerejeira.
+- Troncos/folhas de jungle e mangrove tambem entram na conversao; madeira decorativa sem copa nao entra.
+- Petalas rosas agora sao colocadas apenas na mesma coluna permitida da arvore convertida, sem procurar blocos fora da zona autorizada.
+- A casa aplica a regra em decorateImportedHouseAddons; o castelo aplica logo depois de uildImportedCastle e decorateCastleStarterLife durante a geracao do mapa novo.
+- Validacao parcial: ./gradlew.bat compileJava --stacktrace passou; uild completo e git diff --check ainda serao rodados apos esta anotacao.
+- O Codex valida somente com Gradle e nao abre o cliente.
+
+## Correcao final do popup de seeds - 2026-06-06 16:29:12 -03:00
+
+- O print mostrou textos, botoes e tooltip sobrepondo a lista de selecao de seed.
+- MagicSeedDropdown nao desenha mais a lista aberta no render normal do widget; o widget normal agora mostra apenas o botao compacto.
+- A lista aberta passou a ser renderizada em ScreenEvent.Render.Post, ficando acima de botoes e tooltips do Minecraft/Forge.
+- O fundo da tela e a caixa da lista ficaram bem mais opacos (xF6000000 na mascara e xFF050916 no painel), removendo a leitura dupla do menu atras.
+- Cliques continuam sendo consumidos enquanto a lista esta aberta, inclusive clique fora para fechar.
+- Scroll agora e interceptado em ScreenEvent.MouseScrolled.Pre, impedindo outros widgets de rolarem por baixo da lista.
+- Ao fechar a aba Magic World, o dropdown aberto e recolhido automaticamente.
+- Validacao parcial: ./gradlew.bat compileJava --stacktrace passou; uild completo e git diff --check ainda serao rodados apos esta anotacao.
+- O Codex valida somente com Gradle e nao abre o cliente.
+
+## Registro 2026-06-06 - ajuste rapido antes do commit
+- Menu de criacao: padrao agora abre em modo Criativo e dificuldade Facil, mantendo botoes para o usuario trocar.
+- Loading inicial: logo reduzida, mensagem separada abaixo da logo e painel azul mais transparente.
+- Seed dropdown: lista renderizada como overlay no final do render para nao ficar sob widgets vanilla.
+- MagicWorldEntityCulling: portado do NeoForge para Forge via mixin client-side em EntityRenderer.shouldRender; desliga com propriedade magicworld.entity_culling=false.
+- Geracao nova: casa do fim da rua reposicionada para o fim da rua principal e sem plataforma extra de grama fora do footprint.
+- Geracao nova: santuario rebaixado 4 blocos, com entrada unica voltada para a casa, fora do volume do castelo e sem invadir a casa principal.
+- Geracao nova: entradas da casa grande perto dos currais limpas por dentro e por fora, mantendo iluminacao embutida.
+- Geracao nova: borda viva e arvores naturais dentro do terreno da casa principal passam para cerejeira; conversao fica limitada aos limites do terreno e ao perimetro do castelo.
+- Validacao: compileJava foi iniciado mas interrompido pelo usuario para priorizar commit/versionamento; precisa rodar depois.

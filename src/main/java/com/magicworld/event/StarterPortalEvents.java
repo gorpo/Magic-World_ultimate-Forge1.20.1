@@ -104,7 +104,7 @@ public class StarterPortalEvents {
     private static final int IMPORTED_HOUSE_MAX_Z = HOUSE_ORIGIN_Z + IMPORTED_HOUSE_SIZE_Z;
     private static final int CASTLE_SIZE_X = 265;
     private static final int CASTLE_SIZE_Z = 221;
-    private static final int CURRENT_ESTATE_REPAIR_VERSION = 18;
+    private static final int CURRENT_ESTATE_REPAIR_VERSION = 19;
     private static final int GLOBAL_VILLAGER_WORK_RADIUS = 384;
 
     private static final Map<UUID, EstateTask> TASKS = new HashMap<>();
@@ -134,7 +134,7 @@ public class StarterPortalEvents {
                 && data.getInt(ESTATE_REPAIR_VERSION_KEY) < CURRENT_ESTATE_REPAIR_VERSION) {
             repairExistingEstate(levelFor(player), estateBaseFromPlayer(player));
             data.putInt(ESTATE_REPAIR_VERSION_KEY, CURRENT_ESTATE_REPAIR_VERSION);
-            player.sendSystemMessage(Component.literal("Magic World: santuario do fim da rua, casas elevadas e cerejeiras atualizados."));
+            player.sendSystemMessage(Component.literal("Magic World: casa e santuario do fim da rua reposicionados e atualizados."));
         }
 
         if (!MagicWorldWorldOptions.isStarterEstateEnabled()
@@ -216,6 +216,7 @@ public class StarterPortalEvents {
                     prepareImportedEstateFoundation(level, task.base);
                     buildImportedEstateFarms(level, task.base);
                     spawnImportedStarterAnimals(level, task.base);
+                    convertMainHousePerimeterTreesToCherry(level, task.base);
                 }
                 TASKS.put(player.getUUID(), new EstateTask(task.base, 2, STEP_DELAY_TICKS));
             }
@@ -234,6 +235,7 @@ public class StarterPortalEvents {
                     MagicWorldNetwork.sendInitialLoadProgress(player, 86, "Carregando castelo importado...", false);
                     buildImportedCastle(level, castleOrigin(task.base));
                     decorateCastleStarterLife(level, castleCenter(task.base));
+                    convertCastlePerimeterTreesToCherry(level, task.base);
                 }
                 TASKS.put(player.getUUID(), new EstateTask(task.base, 5, STEP_DELAY_TICKS));
             }
@@ -640,7 +642,7 @@ public class StarterPortalEvents {
     }
 
     private static BlockPos starterRoadEndHouseOrigin(BlockPos base) {
-        return base.offset(217, -4, -148);
+        return base.offset(-12, -4, -106);
     }
 
     private static void buildStarterRoadEndHouse(ServerLevel level, BlockPos base) {
@@ -652,6 +654,7 @@ public class StarterPortalEvents {
 
         StructureTemplate template = optional.get();
         Vec3i size = template.getSize();
+        forceLoadStructureArea(level, origin, size.getX(), size.getZ(), 4);
         clearStructureVolume(level, origin, size, 2, true);
         prepareStarterRoadEndHousePlateau(level, origin, size);
         template.placeInWorld(
@@ -666,13 +669,12 @@ public class StarterPortalEvents {
     }
 
     private static void prepareStarterRoadEndHousePlateau(ServerLevel level, BlockPos origin, Vec3i size) {
-        for (int x = -2; x <= size.getX() + 2; x++) {
-            for (int z = -2; z <= size.getZ() + 2; z++) {
-                BlockPos ground = origin.offset(x, 2, z);
-                for (int y = -6; y <= 1; y++) {
+        for (int x = 0; x < size.getX(); x++) {
+            for (int z = 0; z < size.getZ(); z++) {
+                for (int y = -6; y < 0; y++) {
                     level.setBlock(origin.offset(x, y, z), Blocks.DIRT.defaultBlockState(), 2);
                 }
-                level.setBlock(ground, Blocks.GRASS_BLOCK.defaultBlockState(), 2);
+                level.setBlock(origin.offset(x, -1, z), Blocks.COBBLESTONE.defaultBlockState(), 2);
             }
         }
     }
@@ -705,17 +707,20 @@ public class StarterPortalEvents {
     }
 
     private static BlockPos roadEndMagicSanctuaryOrigin(BlockPos base) {
-        return base.offset(296, 0, -86);
+        return base.offset(-128, -4, -8);
     }
 
     private static void buildRoadEndMagicSanctuary(ServerLevel level, BlockPos base) {
         BlockPos origin = roadEndMagicSanctuaryOrigin(base);
-        int width = 45;
+        int width = 36;
         int depth = 17;
         int height = 10;
         int centerZ = depth / 2;
 
+        forceLoadAreaBetween(level, base.offset(-76, 0, -12), origin.offset(width + 8, 0, depth + 6));
+        buildRoadBetween(level, base, base.offset(-76, -1, 0), origin.offset(width, -1, centerZ));
         prepareRoadEndMagicSanctuaryShell(level, origin, width, depth, height, centerZ);
+        clearRoadEndSanctuaryEntrance(level, origin, width, centerZ);
         buildRoadEndSanctuaryStorage(level, origin, width, depth);
         buildRoadEndSanctuaryStations(level, origin, width, depth);
         buildRoadEndSanctuaryMeetingTable(level, origin, width, depth);
@@ -736,7 +741,7 @@ public class StarterPortalEvents {
             for (int z = 0; z <= depth; z++) {
                 BlockPos floor = origin.offset(x, 0, z);
                 boolean edge = x == 0 || x == width || z == 0 || z == depth;
-                boolean entrance = (z >= centerZ - 2 && z <= centerZ + 2) && (x == 0 || x == width);
+                boolean entrance = (z >= centerZ - 2 && z <= centerZ + 2) && x == width;
                 level.setBlock(floor.below(), Blocks.POLISHED_DEEPSLATE.defaultBlockState(), 2);
                 level.setBlock(floor, sanctuaryFloorBlock(x, z), 2);
                 for (int y = 1; y <= height; y++) {
@@ -763,11 +768,36 @@ public class StarterPortalEvents {
             }
         }
 
-        for (int x = 0; x <= width; x += 5) {
-            level.setBlock(origin.offset(x, 1, centerZ), Blocks.REDSTONE_BLOCK.defaultBlockState(), 2);
-            level.setBlock(origin.offset(x, 2, centerZ), Blocks.REDSTONE_LAMP.defaultBlockState(), 2);
-            level.setBlock(origin.offset(x, 3, centerZ), Blocks.SEA_LANTERN.defaultBlockState(), 2);
+        for (int x = 0; x < width; x += 5) {
+            level.setBlock(origin.offset(x, 3, centerZ), Blocks.REDSTONE_BLOCK.defaultBlockState(), 2);
+            level.setBlock(origin.offset(x, 4, centerZ), Blocks.REDSTONE_LAMP.defaultBlockState(), 2);
+            level.setBlock(origin.offset(x, 5, centerZ), Blocks.SEA_LANTERN.defaultBlockState(), 2);
         }
+    }
+
+    private static void clearRoadEndSanctuaryEntrance(ServerLevel level, BlockPos origin, int width, int centerZ) {
+        for (int dx = 1; dx <= 6; dx++) {
+            for (int dz = -2; dz <= 2; dz++) {
+                BlockPos floor = origin.offset(width + dx, 0, centerZ + dz);
+                level.setBlock(floor.below(), Blocks.DIRT.defaultBlockState(), 2);
+                level.setBlock(floor, Math.abs(dz) <= 1
+                        ? Blocks.SMOOTH_STONE.defaultBlockState()
+                        : Blocks.POLISHED_ANDESITE.defaultBlockState(), 2);
+                for (int y = 1; y <= 5; y++) {
+                    level.setBlock(floor.above(y), Blocks.AIR.defaultBlockState(), 2);
+                }
+            }
+        }
+
+        for (int dz = -2; dz <= 2; dz++) {
+            BlockPos mouth = origin.offset(width, 0, centerZ + dz);
+            for (int y = 1; y <= 5; y++) {
+                level.setBlock(mouth.above(y), Blocks.AIR.defaultBlockState(), 2);
+            }
+        }
+
+        level.setBlock(origin.offset(width + 1, 1, centerZ - 3), Blocks.SEA_LANTERN.defaultBlockState(), 2);
+        level.setBlock(origin.offset(width + 1, 1, centerZ + 3), Blocks.SEA_LANTERN.defaultBlockState(), 2);
     }
 
     private static BlockState sanctuaryFloorBlock(int x, int z) {
@@ -800,7 +830,11 @@ public class StarterPortalEvents {
 
     private static void buildRoadEndSanctuaryStorage(ServerLevel level, BlockPos origin, int width, int depth) {
         List<BlockPos> itemCatalogContainers = new ArrayList<>();
+        int centerZ = depth / 2;
         for (int z = 1; z < depth; z++) {
+            if (z >= centerZ - 3 && z <= centerZ + 3) {
+                continue;
+            }
             BlockPos chest = origin.offset(width - 1, 1, z);
             placeStorageChest(level, chest, Direction.WEST, Math.floorMod(z, 2) == 0);
             itemCatalogContainers.add(chest);
@@ -924,7 +958,10 @@ public class StarterPortalEvents {
                 Blocks.RED_BANNER.defaultBlockState(), Blocks.BLACK_BANNER.defaultBlockState()
         };
         for (int i = 0; i < banners.length; i++) {
-            level.setBlock(origin.offset(2 + i * 3, 1, 2), banners[i], 2);
+            int bannerX = 2 + i * 3;
+            if (bannerX < width) {
+                level.setBlock(origin.offset(bannerX, 1, 2), banners[i], 2);
+            }
         }
 
         for (int x = 3; x <= width - 3; x += 5) {
@@ -990,9 +1027,33 @@ public class StarterPortalEvents {
                 for (int y = minY; y <= maxY; y++) {
                     mutable.set(origin.getX() + x, y, origin.getZ() + z);
                     if (!level.getBlockState(mutable).isAir()) {
+                        if (level.getBlockEntity(mutable) instanceof Container container) {
+                            container.clearContent();
+                        }
                         level.setBlock(mutable, Blocks.AIR.defaultBlockState(), 2);
                     }
                 }
+            }
+        }
+    }
+
+    private static void forceLoadStructureArea(ServerLevel level, BlockPos origin, int width, int depth, int margin) {
+        forceLoadAreaBetween(
+                level,
+                origin.offset(-margin, 0, -margin),
+                origin.offset(width + margin, 0, depth + margin)
+        );
+    }
+
+    private static void forceLoadAreaBetween(ServerLevel level, BlockPos first, BlockPos second) {
+        int minChunkX = Math.floorDiv(Math.min(first.getX(), second.getX()), 16);
+        int maxChunkX = Math.floorDiv(Math.max(first.getX(), second.getX()), 16);
+        int minChunkZ = Math.floorDiv(Math.min(first.getZ(), second.getZ()), 16);
+        int maxChunkZ = Math.floorDiv(Math.max(first.getZ(), second.getZ()), 16);
+
+        for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
+            for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
+                level.getChunk(chunkX, chunkZ);
             }
         }
     }
@@ -1312,6 +1373,7 @@ public class StarterPortalEvents {
         placePremiumWorkCenterWindows(level, corner, width, depth);
         furnishPremiumAnimalWorkCenter(level, corner, width, depth);
         lightPremiumAnimalWorkCenter(level, corner, width, depth);
+        clearPremiumAnimalWorkCenterEntrances(level, corner, width, depth);
         populatePremiumAnimalWorkCenter(level, corner, base);
     }
 
@@ -1494,8 +1556,7 @@ public class StarterPortalEvents {
         for (BlockPos lamp : new BlockPos[] {
                 corner.offset(-3, 0, -3), corner.offset(width + 3, 0, -3),
                 corner.offset(-3, 0, depth + 3), corner.offset(width + 3, 0, depth + 3),
-                corner.offset(width / 2, 0, -3), corner.offset(width / 2, 0, depth + 3),
-                corner.offset(-3, 0, depth / 2), corner.offset(width + 3, 0, depth / 2)
+                corner.offset(width / 2, 0, -3), corner.offset(width / 2, 0, depth + 3)
         }) {
             placeLampPost(level, lamp);
         }
@@ -1507,6 +1568,44 @@ public class StarterPortalEvents {
             level.setBlock(corner.offset(-1, 1, z), Blocks.SEA_LANTERN.defaultBlockState(), 2);
             level.setBlock(corner.offset(width + 1, 1, z), Blocks.SEA_LANTERN.defaultBlockState(), 2);
         }
+    }
+
+    private static void clearPremiumAnimalWorkCenterEntrances(ServerLevel level, BlockPos corner, int width, int depth) {
+        int eastDoorZ = depth / 2;
+        BlockPos eastDoor = corner.offset(width, 1, eastDoorZ);
+        BlockPos westDoorNorth = corner.offset(0, 1, depth / 2 - 3);
+        BlockPos westDoorSouth = corner.offset(0, 1, depth / 2 + 3);
+
+        clearPremiumDoorAccess(level, eastDoor, Direction.EAST, 6);
+        clearPremiumDoorAccess(level, westDoorNorth, Direction.WEST, 6);
+        clearPremiumDoorAccess(level, westDoorSouth, Direction.WEST, 6);
+
+        placeHouseDoor(level, eastDoor, Direction.EAST);
+        placeHouseDoor(level, westDoorNorth, Direction.WEST);
+        placeHouseDoor(level, westDoorSouth, Direction.WEST);
+    }
+
+    private static void clearPremiumDoorAccess(ServerLevel level, BlockPos door, Direction facing, int outsideLength) {
+        Direction side = facing.getClockWise();
+        for (int step = -2; step <= outsideLength; step++) {
+            if (step == 0) {
+                continue;
+            }
+            for (int lateral = -1; lateral <= 1; lateral++) {
+                BlockPos center = door.relative(facing, step).relative(side, lateral);
+                BlockPos ground = center.below();
+                level.setBlock(ground.below(), Blocks.DIRT.defaultBlockState(), 2);
+                level.setBlock(ground, lateral == 0
+                        ? Blocks.SMOOTH_STONE.defaultBlockState()
+                        : Blocks.POLISHED_ANDESITE.defaultBlockState(), 2);
+                for (int y = 1; y <= 4; y++) {
+                    level.setBlock(ground.above(y), Blocks.AIR.defaultBlockState(), 2);
+                }
+            }
+        }
+
+        level.setBlock(door.relative(facing, 2).below(), Blocks.SEA_LANTERN.defaultBlockState(), 2);
+        level.setBlock(door.relative(facing, 4).below(), Blocks.SEA_LANTERN.defaultBlockState(), 2);
     }
 
     private static void populatePremiumAnimalWorkCenter(ServerLevel level, BlockPos corner, BlockPos base) {
@@ -2762,9 +2861,7 @@ public class StarterPortalEvents {
     }
 
     private static void placeEstateShrub(ServerLevel level, BlockPos ground, int xRel, int zRel) {
-        BlockState shrub = Math.floorMod(xRel + zRel, 4) == 0
-                ? Blocks.FLOWERING_AZALEA_LEAVES.defaultBlockState()
-                : Blocks.OAK_LEAVES.defaultBlockState();
+        BlockState shrub = Blocks.CHERRY_LEAVES.defaultBlockState();
         level.setBlock(ground.above(), shrub, 2);
         if (Math.floorMod(xRel - zRel, 5) == 0) {
             level.setBlock(ground.above(2), shrub, 2);
@@ -2774,11 +2871,9 @@ public class StarterPortalEvents {
     private static void placeEstateBorderTree(ServerLevel level, BlockPos ground, int xRel, int zRel) {
         int height = 3 + Math.floorMod(xRel + zRel, 2);
         for (int y = 1; y <= height; y++) {
-            level.setBlock(ground.above(y), Blocks.OAK_LOG.defaultBlockState(), 2);
+            level.setBlock(ground.above(y), Blocks.CHERRY_LOG.defaultBlockState(), 2);
         }
-        BlockState leaves = Math.floorMod(xRel - zRel, 3) == 0
-                ? Blocks.FLOWERING_AZALEA_LEAVES.defaultBlockState()
-                : Blocks.OAK_LEAVES.defaultBlockState();
+        BlockState leaves = Blocks.CHERRY_LEAVES.defaultBlockState();
         BlockPos crown = ground.above(height);
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             level.setBlock(crown.relative(direction), leaves, 2);
@@ -3405,7 +3500,7 @@ public class StarterPortalEvents {
         decorateImportedHouseDoors(level, base);
         expandImportedHouseWindows(level, base);
         decorateImportedHouseFrontFacade(level, base);
-        convertImportedHouseExteriorTreesToCherry(level, base);
+        convertMainHousePerimeterTreesToCherry(level, base);
 
         for (BlockPos preferred : new BlockPos[] {
                 base.offset(0, 1, 0), base.offset(10, 1, 0), base.offset(-10, 1, 0),
@@ -3477,28 +3572,73 @@ public class StarterPortalEvents {
         }
     }
 
-    private static void convertImportedHouseExteriorTreesToCherry(ServerLevel level, BlockPos base) {
-        int minX = HOUSE_ORIGIN_X - 64;
-        int maxX = IMPORTED_HOUSE_MAX_X + 64;
-        int minZ = HOUSE_ORIGIN_Z - 64;
-        int maxZ = IMPORTED_HOUSE_MAX_Z + 64;
+    private static void convertMainHousePerimeterTreesToCherry(ServerLevel level, BlockPos base) {
+        int minX = base.getX() + IMPORTED_ESTATE_FENCE_MIN_X;
+        int maxX = base.getX() + IMPORTED_ESTATE_FENCE_MAX_X;
+        int minZ = base.getZ() + IMPORTED_ESTATE_FENCE_MIN_Z;
+        int maxZ = base.getZ() + IMPORTED_ESTATE_FENCE_MAX_Z;
+        int excludedMinX = base.getX() + HOUSE_ORIGIN_X - BREATHING_MARGIN;
+        int excludedMaxX = base.getX() + IMPORTED_HOUSE_MAX_X + BREATHING_MARGIN;
+        int excludedMinZ = base.getZ() + HOUSE_ORIGIN_Z - BREATHING_MARGIN;
+        int excludedMaxZ = base.getZ() + IMPORTED_HOUSE_MAX_Z + BREATHING_MARGIN;
+
+        convertNaturalTreesToCherryInRing(level, minX, maxX, minZ, maxZ,
+                excludedMinX, excludedMaxX, excludedMinZ, excludedMaxZ);
+    }
+
+    private static void convertCastlePerimeterTreesToCherry(ServerLevel level, BlockPos base) {
+        int margin = 24;
+        BlockPos origin = castleOrigin(base);
+        int minX = origin.getX() - margin;
+        int maxX = origin.getX() + CASTLE_SIZE_X + margin;
+        int minZ = origin.getZ() - margin;
+        int maxZ = origin.getZ() + CASTLE_SIZE_Z + margin;
+        int excludedMinX = origin.getX() - BREATHING_MARGIN;
+        int excludedMaxX = origin.getX() + CASTLE_SIZE_X + BREATHING_MARGIN;
+        int excludedMinZ = origin.getZ() - BREATHING_MARGIN;
+        int excludedMaxZ = origin.getZ() + CASTLE_SIZE_Z + BREATHING_MARGIN;
+
+        convertNaturalTreesToCherryInRing(level, minX, maxX, minZ, maxZ,
+                excludedMinX, excludedMaxX, excludedMinZ, excludedMaxZ);
+    }
+
+    private static void convertNaturalTreesToCherryInRing(ServerLevel level,
+                                                          int minX,
+                                                          int maxX,
+                                                          int minZ,
+                                                          int maxZ,
+                                                          int excludedMinX,
+                                                          int excludedMaxX,
+                                                          int excludedMinZ,
+                                                          int excludedMaxZ) {
         BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
+        int minBuildY = level.getMinBuildHeight();
+        int maxBuildY = level.getMaxBuildHeight() - 1;
 
         for (int x = minX; x <= maxX; x++) {
             for (int z = minZ; z <= maxZ; z++) {
-                if (isInsideImportedHouseFootprint(x, z)) {
+                if (x >= excludedMinX && x <= excludedMaxX && z >= excludedMinZ && z <= excludedMaxZ) {
                     continue;
                 }
-                for (int y = -1; y <= 18; y++) {
-                    mutable.set(base.getX() + x, base.getY() + y, base.getZ() + z);
+                int surfaceY = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+                int scanMinY = Math.max(minBuildY, surfaceY - 12);
+                int scanMaxY = Math.min(maxBuildY, surfaceY + 48);
+                boolean convertedAny = false;
+                for (int y = scanMinY; y <= scanMaxY; y++) {
+                    mutable.set(x, y, z);
                     BlockState state = level.getBlockState(mutable);
                     if (isNaturalTreeLog(state) && hasNaturalLeavesNearby(level, mutable.immutable(), 4)) {
                         level.setBlock(mutable, Blocks.CHERRY_LOG.defaultBlockState(), 2);
+                        convertedAny = true;
                     } else if (isNaturalTreeLeaf(state)) {
                         level.setBlock(mutable, Blocks.CHERRY_LEAVES.defaultBlockState(), 2);
+                        convertedAny = true;
                     }
                 }
-                placeCherryPetalsNearHouseTree(level, base.offset(x, 0, z));
+                if (convertedAny) {
+                    placeCherryPetalsInAllowedTreeColumn(level, x, z, surfaceY,
+                            minX, maxX, minZ, maxZ, excludedMinX, excludedMaxX, excludedMinZ, excludedMaxZ);
+                }
             }
         }
     }
@@ -3508,7 +3648,9 @@ public class StarterPortalEvents {
                 || state.is(Blocks.SPRUCE_LOG)
                 || state.is(Blocks.BIRCH_LOG)
                 || state.is(Blocks.DARK_OAK_LOG)
-                || state.is(Blocks.ACACIA_LOG);
+                || state.is(Blocks.ACACIA_LOG)
+                || state.is(Blocks.JUNGLE_LOG)
+                || state.is(Blocks.MANGROVE_LOG);
     }
 
     private static boolean isNaturalTreeLeaf(BlockState state) {
@@ -3517,6 +3659,8 @@ public class StarterPortalEvents {
                 || state.is(Blocks.BIRCH_LEAVES)
                 || state.is(Blocks.DARK_OAK_LEAVES)
                 || state.is(Blocks.ACACIA_LEAVES)
+                || state.is(Blocks.JUNGLE_LEAVES)
+                || state.is(Blocks.MANGROVE_LEAVES)
                 || state.is(Blocks.FLOWERING_AZALEA_LEAVES)
                 || state.is(Blocks.AZALEA_LEAVES);
     }
@@ -3534,8 +3678,24 @@ public class StarterPortalEvents {
         return false;
     }
 
-    private static void placeCherryPetalsNearHouseTree(ServerLevel level, BlockPos approximateGround) {
-        BlockPos ground = findHighestFeatureSurface(level, approximateGround, 8);
+    private static void placeCherryPetalsInAllowedTreeColumn(ServerLevel level,
+                                                             int x,
+                                                             int z,
+                                                             int surfaceY,
+                                                             int minX,
+                                                             int maxX,
+                                                             int minZ,
+                                                             int maxZ,
+                                                             int excludedMinX,
+                                                             int excludedMaxX,
+                                                             int excludedMinZ,
+                                                             int excludedMaxZ) {
+        if (x < minX || x > maxX || z < minZ || z > maxZ
+                || (x >= excludedMinX && x <= excludedMaxX && z >= excludedMinZ && z <= excludedMaxZ)
+                || surfaceY <= level.getMinBuildHeight()) {
+            return;
+        }
+        BlockPos ground = new BlockPos(x, surfaceY - 1, z);
         if (!level.getBlockState(ground).is(Blocks.GRASS_BLOCK)
                 || !level.getBlockState(ground.above()).isAir()) {
             return;

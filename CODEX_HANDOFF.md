@@ -180,7 +180,7 @@ Feito:
 - `ClientEvents` recebeu painel Magic World na tela `CreateWorldScreen`:
   - botao `Magic World` na criacao de mundo;
   - painel com Portal, Castelo, Fazendas, Aura, PC, Dificuldade, Modo, Criar Mundo e Voltar;
-  - comandos/cheats sao forçados quando opcoes Magic World exigem comandos;
+  - comandos/cheats sao forÃƒÂ§ados quando opcoes Magic World exigem comandos;
   - botao Criar Mundo chama o fluxo vanilla por reflexao, depois de sincronizar modo/dificuldade/comandos.
 - Background estatico foi ampliado para telas de selecao/criacao de mundo, opcoes, multiplayer, packs, mods e `LevelLoadingScreen`.
 - Validado com `./gradlew.bat build`: BUILD SUCCESSFUL em Java 17.
@@ -717,7 +717,7 @@ Teste manual necessario:
 ## Bloco em 2026-06-05 - abrigos dos villagers do castelo no chao
 
 - Corrigido `spawnCastleResident(...)` em `StarterPortalEvents`.
-- Antes: se encontrasse um piso alto sem teto, aceitava a coordenada e `decorateCastleResidentStation(...)` criava abrigo/cama/mesa/baú no ar.
+- Antes: se encontrasse um piso alto sem teto, aceitava a coordenada e `decorateCastleResidentStation(...)` criava abrigo/cama/mesa/baÃƒÂº no ar.
 - Agora: se o ponto nao tem teto e existe chao caminhavel proximo bem abaixo, o resident/abrigo desce para esse chao antes da decoracao.
 - Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
 
@@ -730,7 +730,7 @@ Teste manual:
 
 - Corrigido entorno lateral/fundos da casa importada em `StarterPortalEvents`.
 - Criado `stabilizeImportedHousePerimeterTerrain(...)`.
-- A correção roda depois da casa ser colocada.
+- A correÃƒÂ§ÃƒÂ£o roda depois da casa ser colocada.
 - Ela preenche um anel ao redor da casa:
   - dentro dos limites da propriedade;
   - sem entrar no footprint da casa;
@@ -973,7 +973,7 @@ Teste visual pendente:
   - normaliza a rua frontal e adiciona acabamento lateral de slab;
   - preenche somente vazios de ar no nivel do solo, preservando agua e blocos existentes;
   - exclui a area da mina do preenchimento geral;
-  - reconstrói a casa da mina por ultimo.
+  - reconstrÃƒÂ³i a casa da mina por ultimo.
 - O NBT da casa Forge e NeoForge possui o mesmo SHA-256:
   - `160F27F53D3163CF32C4E4F854618C080DBD52E2564E22B486B48827187F491D`.
 - A casa da mina recebeu novamente paredes, janelas, telhado com escadas, entrada, decoracao, baus e armaduras internas.
@@ -1162,8 +1162,8 @@ Menu grafico:
 - Mixins dedicados, com alvos exatos, substituem selecao, foco, checkboxes e barra de rolagem pelo ciano `0xFF00D9FF`.
 - Botoes de suporte/doacao continuam ocultos.
 - Portado `MagicWorldClientCompat` do NeoForge para Forge 1.20.1:
-  - força `showDhOptionsButtonInMinecraftUi = false`;
-  - força `renderingApi = "OPEN_GL"`.
+  - forÃƒÂ§a `showDhOptionsButtonInMinecraftUi = false`;
+  - forÃƒÂ§a `renderingApi = "OPEN_GL"`.
 
 Propriedade e casas:
 
@@ -1325,7 +1325,7 @@ Implementado:
 - `MagicWorldStaticBackground` agora usa os assets que existem no pacote atual:
   - `magicworld:textures/gui/title_background_static.png`;
   - `magicworld:textures/gui/title_logo.png`.
-- As dimensoes da logo foram ajustadas para `512x171`, compatíveis com `title_logo.png`.
+- As dimensoes da logo foram ajustadas para `512x171`, compatÃƒÂ­veis com `title_logo.png`.
 - Esta correcao evita o fallback preto/magenta antes do commit online.
 
 Validacao:
@@ -1384,6 +1384,153 @@ Validacao:
 - `git diff --check`: sem erros; apenas avisos esperados de CRLF no Windows.
 - Cliente nao foi aberto pelo Codex.
 
+## Retomada e auditoria do port - 2026-06-06 15:52:33 -03:00
+
+Pedido atual:
+
+- Ler handoff e wiki para retomar o contexto do projeto.
+- Conferir ultimas alteracoes para prosseguir.
+- Comparar com o projeto NeoForge e identificar se falta portar algo para esta base Forge.
+
+Estado encontrado:
+
+- Branch atual: `Inicio-Port-Neoforge`, alinhado com `origin/Inicio-Port-Neoforge`.
+- Worktree estava limpo antes da atualizacao desta documentacao.
+- Ultimo commit: `6a0a554` (`Revisa dropdown de seeds do Magic World - 2026-06-06 15:42:01 -03:00`).
+- Ultimas entregas reais, em ordem do Git:
+  - `6a0a554`: revisao do dropdown de seeds para abrir para baixo/cima conforme espaco;
+  - `9b47857`: campo `Seed manual`, dropdown de seeds e `docs/SEEDS_MAGIC_WORLD.md`;
+  - `c4eaaa4`: santuario magico no fim da rua, loading em `97%` e reparo versao `18`;
+  - `dcc83be`: casa NBT no fim da rua durante loading e correcao dos paths de textura do menu.
+
+Auditoria NeoForge -> Forge:
+
+- Contagem Java: Forge atual tem 98 arquivos `.java`; NeoForge tambem tem 98.
+- Diferencas principais sao adaptacoes, nao copia pendente direta:
+  - mixins Sodium/Iris do NeoForge foram substituidos por mixins Embeddium/Oculus/Distant Horizons compativeis com Forge 1.20.1;
+  - `MagicWorldLoadingOverlayMixin` do NeoForge era vazio/intencional, enquanto o Forge usa `MagicWorldLevelLoadingScreenMixin`;
+  - `MagicWorldStaticBackground`, `MagicWorldScreenBackgrounds` e mixins especificos de criacao/selecao de mundo sao adaptacoes Forge 1.20.1.
+- Recursos NBT aparecem como `data/magicworld/structure/*.nbt` no NeoForge, mas no Forge 1.20.1 estao corretamente em `data/magicworld/structures/*.nbt`.
+- `dh_forge_icon.png` e `dh_forge_logo.png` do NeoForge nao aparecem referenciados no codigo Forge; o Forge atual usa assets em `assets/distanthorizons/` e `assets/magicworld/textures/gui/embeddium_magicworld_icon.png`.
+
+O que ainda falta portar do NeoForge, se o escopo for ampliado:
+
+- `PremiumPortalOptionsScreen` e `MagicWorldPortalVisualController`: fluxo premium de portal/resource pack/shader. Fora do escopo atual porque envolve resource/shader installers e compat visual.
+- `MagicWorldEntityCulling` e `MagicWorldEntityCullingMixin`: portados no bloco de 2026-06-06 16:01:54 -03:00.
+- `PeacefulDragon`, `PremiumEntityTags` e `StarterDragonManager`: dragao/entidade custom e gameplay. Fora do escopo atual.
+- `RenderSetupSamplerCompatMixin` e `IrisConfigMagicWorldMixin`: compatibilidade Iris/render moderna do NeoForge; nao ha port direto seguro para Forge 1.20.1/Oculus sem bloco dedicado.
+- `MagicWorldClient`: entrada client NeoForge especifica; nao e necessario portar como arquivo equivalente porque o Forge atual registra eventos/configuracoes por outro caminho.
+
+Conclusao:
+
+- Dentro do escopo autorizado atual (inicio do jogo, menus iniciais, criacao de mundo, backgrounds e loading), nao encontrei uma classe NeoForge critica ainda pendente.
+- As pendencias reais restantes sao de escopo maior: portal visual/resource/shader, culling/performance e entidades/gameplay custom.
+
+Validacao executada nesta retomada:
+
+- `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+- `git diff --check`: sem erros.
+- Cliente nao foi aberto pelo Codex.
+
+Proximo passo recomendado:
+
+- Se continuar no escopo atual: usuario deve testar visualmente no cliente a tela principal, criacao de mundo, dropdown de seeds, loading, casa do fim da rua e santuario.
+- Se abrir novo escopo de port: escolher um bloco isolado entre `portal visual/resource/shader`, `entidades/dragao`, ou `culling/performance`, sempre com downgrade Forge 1.20.1 manual e validacao Gradle.
+
+## Correcao dropdown seeds e port Entity Culling - 2026-06-06 16:01:54 -03:00
+
+Pedido atual:
+
+- Corrigir a sobreposicao do menu mostrada no print.
+- Trazer `MagicWorldEntityCulling` funcional para Forge.
+- Explicar os demais arquivos faltantes do NeoForge e sua necessidade.
+
+Implementado:
+
+- `MagicSeedDropdown` deixou de abrir a lista diretamente sobre o painel.
+- A lista de seeds agora abre como popup central opaco com overlay escuro, titulo, hint para clicar fora e selecao por linha.
+- Em telas normais o popup mostra todas as seeds; em telas baixas limita a quantidade de linhas e usa `mouseScrolled` para rolagem.
+- O clique fora do popup fecha a lista e continua impedindo clique acidental em `Criar Mundo`/`Voltar`.
+- Portado `src/main/java/com/magicworld/client/MagicWorldEntityCulling.java`.
+- Portado `src/main/java/com/magicworld/mixin/MagicWorldEntityCullingMixin.java`.
+- Registrado `MagicWorldEntityCullingMixin` em `src/main/resources/magicworld.mixins.json`.
+- A dependencia direta do NeoForge em `PeacefulDragon` foi removida do culling porque `PeacefulDragon` ainda nao existe no Forge atual.
+
+Como o Entity Culling funciona:
+
+- Mantem cache por entidade, celula de camera e celula da entidade.
+- Nunca culla o player, a entidade da camera, entidades montadas ou entidades com passageiros.
+- Mantem entidades proximas sempre visiveis.
+- Culla entidades pequenas muito distantes.
+- Para entidades mais distantes, faz raycast para centro/topo/pes e pontos laterais em entidades grandes; se todos estiverem bloqueados, pula a renderizacao.
+- Pode ser desligado com `-Dmagicworld.entity_culling=false`.
+
+Faltantes NeoForge apos este port e avaliacao:
+
+- `MagicWorldPortalVisualController`: aplica resource packs premium e shader Iris/Oculus, escreve configuracao de shader e recarrega packs. Necessidade: alta somente se o projeto for reativar portal premium/resource/shader; caso contrario manter fora para evitar instabilidade e recarregamentos inesperados.
+- `PremiumPortalOptionsScreen`: tela cliente para escolher ResourcePack, ShaderPack ou pacote completo ao usar portal premium. Necessidade: depende do item acima; sem o controller/rede do portal premium ela nao agrega valor.
+- `PeacefulDragon`: dragao pacifico customizado baseado no Ender Dragon, com rota ao redor da propriedade. Necessidade: baixa nesta fase; exige registro de entidade, renderer/teste de IA e pode pesar FPS/loading.
+- `StarterDragonManager`: spawn/limpeza do `PeacefulDragon`. Necessidade: baixa enquanto o dragao estiver fora.
+- `PremiumEntityTags`: helper simples para marcar animais premium por tag. Necessidade: baixa/media; so vale portar se menus/sistemas de animais premium usarem essas tags de novo.
+- `MagicWorldClient`: bootstrap client NeoForge e tela de config NeoForge. Necessidade: baixa; o Forge atual ja registra eventos por outro caminho.
+- `CubeMapMagicWorldDepthMixin`: altera FOV do panorama cubemap vanilla. Necessidade: baixa; o Forge atual usa background estatico, entao o panorama praticamente nao importa.
+- `MagicWorldLoadingOverlayMixin`: mixin vazio no NeoForge. Necessidade: nenhuma neste momento.
+- `RenderSetupSamplerCompatMixin`: compat de render moderno/Iris para samplers ausentes. Necessidade: baixa no Forge 1.20.1 atual; alvo `RenderSetup` e APIs usadas sao de versoes modernas e nao portam direto.
+- `IrisConfigMagicWorldMixin`: renomeia/tema configuracoes Iris dentro do Sodium moderno. Necessidade: baixa no Forge atual; ja ha adaptacao para Embeddium/Oculus e os nomes/classes diferem.
+- `SodiumConfigBuilderMagicWorldMixin`, `SodiumDonationButtonCompatMixin`, `SodiumExternalPageEntryMagicWorldMixin`, `SodiumVideoSettingsScreenMagicWorldLayoutMixin`: personalizacao Sodium/Iris do NeoForge. Necessidade: nenhuma como copia direta; foram substituidos por mixins Embeddium/Oculus especificos do Forge 1.20.1.
+
+Validacao executada:
+
+- `./gradlew.bat compileJava --stacktrace`: BUILD SUCCESSFUL.
+- `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+- `git diff --check`: sem erros; apenas avisos esperados de CRLF no Windows.
+- Cliente nao foi aberto pelo Codex.
+
+## Correcao casa e santuario do fim da rua - 2026-06-06 16:10:00 -03:00
+
+Pedido atual:
+
+- A casa do fim da rua nao esta no local do print 1.
+- O santuario criado mais cedo nao esta no sentido da rua/caverna do print 2.
+- Reposicionar/corrigir sem abrir o cliente pelo Codex.
+
+Diagnostico:
+
+- O save local `run/saves/Novo mundo` foi lido por NBT.
+- Base real do save: `MagicWorldForgeStarterEstateBaseX/Y/Z = 0/105/0`.
+- Posicao salva do jogador: aproximadamente `8.19 / 111.08 / -0.69`.
+- Rotacao salva: `yaw ~ -95.99`, ou seja, olhando para oeste.
+- A casa do fim da rua estava em area distante; sem carregar chunks explicitamente antes da colocacao, o NBT podia ficar parcialmente aplicado.
+- O santuario anterior estava em `base.offset(296,0,-86)`, lado leste/nordeste, contrario ao sentido oeste mostrado no print 2.
+
+Implementado:
+
+- `CURRENT_ESTATE_REPAIR_VERSION` elevado de `18` para `19`.
+- Mensagem de reparo atualizada para `Magic World: casa e santuario do fim da rua reposicionados e atualizados.`
+- `buildStarterRoadEndHouse` agora chama `forceLoadStructureArea` antes de limpar volume/posicionar `starter_house_1.nbt`.
+- `clearStructureVolume` agora limpa o conteudo de qualquer `Container` antes de trocar o bloco por ar, evitando drops de baus antigos no reparo.
+- `roadEndMagicSanctuaryOrigin(base)` foi movido para `base.offset(-176,0,-8)`, no eixo oeste da estrada real.
+- `buildRoadEndMagicSanctuary` agora:
+  - carrega os chunks da estrada/santuario antes de mexer na area;
+  - estende a estrada do oeste a partir de `base.offset(-76,-1,0)` ate a entrada leste do santuario;
+  - constrÃƒÂ³i o santuario depois da estrada, com o mesmo conteudo premium anterior.
+- Novos helpers:
+  - `forceLoadStructureArea`;
+  - `forceLoadAreaBetween`.
+
+Validacao:
+
+- `./gradlew.bat compileJava --stacktrace`: BUILD SUCCESSFUL.
+- `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+- `git diff --check`: sem erros; apenas avisos esperados de CRLF no Windows.
+- Cliente nao foi aberto pelo Codex.
+
+Teste esperado pelo usuario:
+
+- Entrar novamente no save existente para disparar o reparo versao `19`.
+- Conferir a casa do fim da rua no ponto antigo do print 1, agora com NBT completo.
+- Conferir o santuario no sentido oeste da rua/caverna mostrado no print 2.
+
 ## Seeds no menu Magic World - 2026-06-06 15:30:59 -03:00
 
 Pedido atual:
@@ -1430,9 +1577,9 @@ Implementado:
 
 - `CURRENT_ESTATE_REPAIR_VERSION` elevado para `18`.
 - `handleEstateTask` ganhou etapa `6` em `97%`, mensagem `Carregando santuario magico do fim da rua...`.
-- O santuário e construido antes do `ESTATE_CREATED_KEY` e antes do progresso `100%`.
+- O santuÃƒÂ¡rio e construido antes do `ESTATE_CREATED_KEY` e antes do progresso `100%`.
 - `repairExistingEstate` chama `buildRoadEndMagicSanctuary` para saves ja existentes.
-- O santuário tem shell proprio com piso colorido/iluminado, paredes decoradas, teto de calcite/amethyst, redstone blocks, redstone lamps, glowstone e sea lanterns.
+- O santuÃƒÂ¡rio tem shell proprio com piso colorido/iluminado, paredes decoradas, teto de calcite/amethyst, redstone blocks, redstone lamps, glowstone e sea lanterns.
 - A parede leste e as laterais recebem baus/barris preenchidos por `fillContainersWithAllRegisteredItems`.
 - Ha bau de varinhas, bau premium, bau de ferramentas, estacoes de trabalho, mesa central, sino, banners, paineis decorativos, plantas, armor stands para couro/malha/ferro/ouro/diamante/netherite/Draconic Aether, allays, parrots e rabbits.
 
@@ -1442,3 +1589,34 @@ Validacao:
 - `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
 - `git diff --check`: sem erros; apenas avisos esperados de CRLF no Windows.
 - Cliente nao foi aberto pelo Codex.
+
+## Cerejeiras restritas a casa principal e castelo - 2026-06-06 16:22:20 -03:00
+
+- O usuario confirmou que sempre gera mapa novo; esta alteracao nao aumentou CURRENT_ESTATE_REPAIR_VERSION e nao adiciona peso extra para forcar save atual.
+- A conversao antiga usava faixa ampla ao redor da casa importada; foi substituida por zonas fixas e curtas das estruturas do usuario.
+- Casa principal: converte somente o anel de ate 24 blocos ao redor do footprint da casa, cortado pelos limites da cerca da propriedade e excluindo o volume protegido da propria casa.
+- Castelo: converte somente o anel de ate 24 blocos ao redor do volume do castelo, excluindo o volume protegido do castelo.
+- Nao planta arvores novas: apenas troca troncos naturais com folhas proximas e folhas naturais ja existentes por cerejeira.
+- Troncos/folhas de jungle e mangrove tambem entram na conversao; madeira decorativa sem copa nao entra.
+- Petalas rosas agora sao colocadas apenas na mesma coluna permitida da arvore convertida, sem procurar blocos fora da zona autorizada.
+- A casa aplica a regra em decorateImportedHouseAddons; o castelo aplica logo depois de uildImportedCastle e decorateCastleStarterLife durante a geracao do mapa novo.
+- Validacao parcial: ./gradlew.bat compileJava --stacktrace passou; uild completo e git diff --check ainda serao rodados apos esta anotacao.
+- O Codex valida somente com Gradle e nao abre o cliente.
+
+## Correcao final do popup de seeds - 2026-06-06 16:29:12 -03:00
+
+- O print mostrou textos, botoes e tooltip sobrepondo a lista de selecao de seed.
+- MagicSeedDropdown nao desenha mais a lista aberta no render normal do widget; o widget normal agora mostra apenas o botao compacto.
+- A lista aberta passou a ser renderizada em ScreenEvent.Render.Post, ficando acima de botoes e tooltips do Minecraft/Forge.
+- O fundo da tela e a caixa da lista ficaram bem mais opacos (xF6000000 na mascara e xFF050916 no painel), removendo a leitura dupla do menu atras.
+- Cliques continuam sendo consumidos enquanto a lista esta aberta, inclusive clique fora para fechar.
+- Scroll agora e interceptado em ScreenEvent.MouseScrolled.Pre, impedindo outros widgets de rolarem por baixo da lista.
+- Ao fechar a aba Magic World, o dropdown aberto e recolhido automaticamente.
+- Validacao parcial: ./gradlew.bat compileJava --stacktrace passou; uild completo e git diff --check ainda serao rodados apos esta anotacao.
+- O Codex valida somente com Gradle e nao abre o cliente.
+
+## Handoff 2026-06-06 - commit de preservacao solicitado
+- Branch: Inicio-Port-Neoforge.
+- Usuario pediu commit/push imediato para nao perder versionamento antes de continuar testes.
+- Alteracoes incluidas: seed dropdown sem sobreposicao; EntityCulling portado; defaults Criativo/Facil; loading com logo menor e painel mais transparente; casa do fim da rua reposicionada e sem gramado extra; santuario rebaixado e com porta voltada para a casa; entradas da casa grande perto dos currais desobstruidas; cerejeiras restritas ao espaco do jogador/castelo.
+- Observacao: compileJava foi iniciado e interrompido pelo usuario nesta rodada; proxima sessao deve rodar ./gradlew.bat compileJava --stacktrace e depois ./gradlew.bat build --stacktrace.

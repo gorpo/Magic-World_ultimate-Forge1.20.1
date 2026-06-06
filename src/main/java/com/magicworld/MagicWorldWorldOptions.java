@@ -51,8 +51,8 @@ public final class MagicWorldWorldOptions {
     private static boolean auraEnabled = true;
     private static boolean commandsEnabled = true;
     private static int hardwareProfileIndex = 3;
-    private static StartingGameMode startingGameMode = StartingGameMode.SURVIVAL;
-    private static StartingDifficulty startingDifficulty = StartingDifficulty.NORMAL;
+    private static StartingGameMode startingGameMode = StartingGameMode.CREATIVE;
+    private static StartingDifficulty startingDifficulty = StartingDifficulty.EASY;
     private static String customSeed = "";
     private static int presetSeedIndex = 0;
 

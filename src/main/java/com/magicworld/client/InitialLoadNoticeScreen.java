@@ -48,22 +48,23 @@ public class InitialLoadNoticeScreen extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         int panelWidth = Math.min(420, width - 32);
-        int panelHeight = 174;
+        int panelHeight = 164;
         int left = width / 2 - panelWidth / 2;
-        int top = Math.max(18, height / 2 - 88);
+        int top = Math.max(18, height / 2 - panelHeight / 2);
         int progressLeft = left + 28;
-        int progressTop = top + 118;
         int progressWidth = panelWidth - 56;
         int filledWidth = progressWidth * currentProgress / 100;
-        int logoWidth = Math.min(300, Math.max(190, panelWidth - 104));
+        int logoWidth = Math.min(170, Math.max(120, panelWidth - 250));
         int logoHeight = logoWidth * MagicWorldStaticBackground.LOGO_HEIGHT / MagicWorldStaticBackground.LOGO_WIDTH;
         int logoX = width / 2 - logoWidth / 2;
-        int logoY = top + 18;
+        int logoY = top + 20;
+        int messageY = logoY + logoHeight + 18;
+        int progressTop = messageY + 24;
 
         MagicWorldStaticBackground.draw(graphics, width, height);
-        graphics.fill(0, 0, width, height, 0x66030611);
-        graphics.fill(left, top, left + panelWidth, top + panelHeight, 0xE8050916);
-        graphics.fill(left + 4, top + 4, left + panelWidth - 4, top + panelHeight - 4, 0xAA101B2B);
+        graphics.fill(0, 0, width, height, 0x33030611);
+        graphics.fill(left, top, left + panelWidth, top + panelHeight, 0xA8050916);
+        graphics.fill(left + 4, top + 4, left + panelWidth - 4, top + panelHeight - 4, 0x66101B2B);
         graphics.renderOutline(left, top, panelWidth, panelHeight, 0xAADDAD55);
         graphics.renderOutline(left + 5, top + 5, panelWidth - 10, panelHeight - 10, 0x55316B9F);
         graphics.blit(
@@ -79,7 +80,7 @@ public class InitialLoadNoticeScreen extends Screen {
                 MagicWorldStaticBackground.LOGO_WIDTH,
                 MagicWorldStaticBackground.LOGO_HEIGHT
         );
-        graphics.drawCenteredString(font, Component.literal(currentMessage), width / 2, top + 94, 0xFFBFD7FF);
+        graphics.drawCenteredString(font, Component.literal(currentMessage), width / 2, messageY, 0xFFBFD7FF);
 
         graphics.fill(progressLeft, progressTop, progressLeft + progressWidth, progressTop + 12, 0xFF070B13);
         graphics.renderOutline(progressLeft, progressTop, progressWidth, 12, 0xAADDAD55);

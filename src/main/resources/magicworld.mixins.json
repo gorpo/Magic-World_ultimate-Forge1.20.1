@@ -15,6 +15,7 @@
     "EmbeddiumVideoOptionsScreenMagicWorldMixin",
     "MagicWorldCreateWorldScreenBackgroundMixin",
     "MagicWorldLevelLoadingScreenMixin",
+    "MagicWorldEntityCullingMixin",
     "MagicWorldSelectWorldScreenBackgroundMixin",
     "MagicWorldScreenBackgroundMixin",
     "MagicWorldTabButtonMixin",
