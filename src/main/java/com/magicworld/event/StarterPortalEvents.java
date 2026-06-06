@@ -6,6 +6,7 @@ import com.magicworld.network.MagicWorldNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -102,7 +103,7 @@ public class StarterPortalEvents {
     private static final int IMPORTED_HOUSE_MAX_Z = HOUSE_ORIGIN_Z + IMPORTED_HOUSE_SIZE_Z;
     private static final int CASTLE_SIZE_X = 265;
     private static final int CASTLE_SIZE_Z = 221;
-    private static final int CURRENT_ESTATE_REPAIR_VERSION = 12;
+    private static final int CURRENT_ESTATE_REPAIR_VERSION = 14;
     private static final int GLOBAL_VILLAGER_WORK_RADIUS = 384;
 
     private static final Map<UUID, EstateTask> TASKS = new HashMap<>();
@@ -132,7 +133,7 @@ public class StarterPortalEvents {
                 && data.getInt(ESTATE_REPAIR_VERSION_KEY) < CURRENT_ESTATE_REPAIR_VERSION) {
             repairExistingEstate(levelFor(player), estateBaseFromPlayer(player));
             data.putInt(ESTATE_REPAIR_VERSION_KEY, CURRENT_ESTATE_REPAIR_VERSION);
-            player.sendSystemMessage(Component.literal("Magic World: aldeoes do castelo e alcance global atualizados."));
+            player.sendSystemMessage(Component.literal("Magic World: casa grande premium, guardioes e iluminacao reforcada atualizados."));
         }
 
         if (!MagicWorldWorldOptions.isStarterEstateEnabled()
@@ -439,6 +440,8 @@ public class StarterPortalEvents {
             villager.restrictTo(work, workRadius);
         }
 
+        spawnEstateGuardianVillagers(level, base);
+        clearHostilesNearGuardianVillagers(level, estate);
         for (Monster monster : level.getEntitiesOfClass(Monster.class, estate)) {
             monster.discard();
         }
@@ -460,6 +463,15 @@ public class StarterPortalEvents {
             case "Cozinheiro do Salao" -> VillagerProfession.BUTCHER;
             case "Tecelao da Ponte" -> VillagerProfession.SHEPHERD;
             case "Coureeiro da Cavalaria" -> VillagerProfession.LEATHERWORKER;
+            case "Guardiao Aldeao da Casa Grande", "Guardiao Aldeao da Mina",
+                    "Guardiao Aldeao dos Currais", "Guardiao Aldeao da Plantacao",
+                    "Guardiao Aldeao da Praca Verde" -> VillagerProfession.WEAPONSMITH;
+            case "Armoreiro da Casa Grande" -> VillagerProfession.ARMORER;
+            case "Ferreiro da Casa Grande" -> VillagerProfession.WEAPONSMITH;
+            case "Ferramenteiro da Casa Grande" -> VillagerProfession.TOOLSMITH;
+            case "Bibliotecario da Casa Grande" -> VillagerProfession.LIBRARIAN;
+            case "Clerigo da Casa Grande" -> VillagerProfession.CLERIC;
+            case "Pedreiro da Casa Grande" -> VillagerProfession.MASON;
             default -> villager.getVillagerData().getProfession();
         };
     }
@@ -909,6 +921,269 @@ public class StarterPortalEvents {
         buildAnimalFoodStripFarm(level, foodFarm, 4, 32);
         spawnNamed(level, EntityType.IRON_GOLEM, farmCenter.offset(0, 1, 0), "Guardiao dos Animais");
         assignAnimalCaretakersToPens(level, base);
+        buildPremiumAnimalWorkCenter(level, base);
+        spawnEstateGuardianVillagers(level, base);
+    }
+
+    private static BlockPos premiumAnimalWorkCenterCorner(BlockPos base) {
+        return base.offset(106, -1, -72);
+    }
+
+    private static void buildPremiumAnimalWorkCenter(ServerLevel level, BlockPos base) {
+        BlockPos corner = premiumAnimalWorkCenterCorner(base);
+        int width = 18;
+        int depth = 14;
+        int wallHeight = 6;
+        int eastDoorZ = depth / 2;
+
+        for (int x = 0; x <= width; x++) {
+            for (int z = 0; z <= depth; z++) {
+                BlockPos floor = corner.offset(x, 0, z);
+                boolean wall = x == 0 || x == width || z == 0 || z == depth;
+                boolean post = (x == 0 || x == width) && (z == 0 || z == depth);
+                level.setBlock(floor.below(), Blocks.COBBLESTONE.defaultBlockState(), 2);
+                level.setBlock(floor, Math.floorMod(x + z, 4) == 0
+                        ? Blocks.POLISHED_ANDESITE.defaultBlockState()
+                        : Blocks.SPRUCE_PLANKS.defaultBlockState(), 2);
+                for (int y = 1; y <= wallHeight; y++) {
+                    BlockPos pos = floor.above(y);
+                    BlockState state = wall
+                            ? premiumWorkCenterWallBlock(post, x, y, z)
+                            : Blocks.AIR.defaultBlockState();
+                    level.setBlock(pos, state, 2);
+                }
+            }
+        }
+
+        for (int x = -1; x <= width + 1; x++) {
+            for (int z = -1; z <= depth + 1; z++) {
+                level.setBlock(corner.offset(x, wallHeight + 1, z), Blocks.DARK_OAK_PLANKS.defaultBlockState(), 2);
+            }
+        }
+        buildDecorativeGabledRoof(level, corner, width, depth, wallHeight + 2);
+
+        placeHouseDoor(level, corner.offset(width, 1, eastDoorZ), Direction.EAST);
+        placeHouseDoor(level, corner.offset(0, 1, eastDoorZ), Direction.WEST);
+        decorateWorkerDoors(level, corner, width, depth);
+        level.setBlock(corner.offset(width, 3, eastDoorZ), Blocks.CHISELED_STONE_BRICKS.defaultBlockState(), 2);
+        level.setBlock(corner.offset(width, 4, eastDoorZ), Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState(), 2);
+
+        placePremiumWorkCenterWindows(level, corner, width, depth);
+        furnishPremiumAnimalWorkCenter(level, corner, width, depth);
+        lightPremiumAnimalWorkCenter(level, corner, width, depth);
+        populatePremiumAnimalWorkCenter(level, corner, base);
+    }
+
+    private static BlockState premiumWorkCenterWallBlock(boolean post, int x, int y, int z) {
+        if (post) {
+            return Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState();
+        }
+        if (y == 1 && Math.floorMod(x * 13 + z * 7, 5) == 0) {
+            return Blocks.CHISELED_STONE_BRICKS.defaultBlockState();
+        }
+        if (y >= 4 && Math.floorMod(x + z, 3) == 0) {
+            return Blocks.MOSSY_STONE_BRICKS.defaultBlockState();
+        }
+        return Blocks.STONE_BRICKS.defaultBlockState();
+    }
+
+    private static void placePremiumWorkCenterWindows(ServerLevel level, BlockPos corner, int width, int depth) {
+        for (int x : new int[] {3, 6, 12, 15}) {
+            placeWindow(level, corner.offset(x, 2, 0));
+            placeWindow(level, corner.offset(x, 2, depth));
+        }
+        for (int z : new int[] {3, 5, 9, 11}) {
+            placeWindow(level, corner.offset(0, 2, z));
+            placeWindow(level, corner.offset(width, 2, z));
+        }
+        for (BlockPos trim : new BlockPos[] {
+                corner.offset(width, 5, depth / 2 - 2),
+                corner.offset(width, 5, depth / 2 + 2),
+                corner.offset(0, 5, depth / 2 - 2),
+                corner.offset(0, 5, depth / 2 + 2)
+        }) {
+            level.setBlock(trim, Blocks.LIGHT_BLUE_STAINED_GLASS.defaultBlockState(), 2);
+        }
+    }
+
+    private static void furnishPremiumAnimalWorkCenter(ServerLevel level, BlockPos corner, int width, int depth) {
+        placePremiumStorageWall(level, corner, width, depth);
+        placePremiumWorkCenterStations(level, corner, width, depth);
+        placePremiumWorkCenterTable(level, corner, width, depth);
+        placePremiumWorkCenterBedsAndArmor(level, corner, width, depth);
+        decoratePremiumWorkCenterExterior(level, corner, width, depth);
+    }
+
+    private static void placePremiumStorageWall(ServerLevel level, BlockPos corner, int width, int depth) {
+        List<BlockPos> itemCatalogContainers = new ArrayList<>();
+        for (int z = 1; z < depth; z++) {
+            if (z >= depth / 2 - 1 && z <= depth / 2 + 1) {
+                continue;
+            }
+            BlockPos chest = corner.offset(width - 1, 1, z);
+            placeStorageChest(level, chest, Direction.WEST, Math.floorMod(z, 2) == 0);
+            itemCatalogContainers.add(chest);
+            for (int y : new int[] {3, 4, 5}) {
+                BlockPos barrel = corner.offset(width - 1, y, z);
+                placeStorageBarrel(level, barrel);
+                itemCatalogContainers.add(barrel);
+            }
+        }
+
+        for (int x = 2; x <= width - 3; x += 3) {
+            BlockPos north = corner.offset(x, 1, 1);
+            BlockPos south = corner.offset(x, 1, depth - 1);
+            placeStorageBarrel(level, north);
+            placeStorageBarrel(level, south);
+            itemCatalogContainers.add(north);
+            itemCatalogContainers.add(south);
+        }
+
+        fillContainersWithAllRegisteredItems(level, itemCatalogContainers);
+
+        BlockPos wandChest = corner.offset(2, 1, depth - 2);
+        placeStorageChest(level, wandChest, Direction.NORTH, false);
+        fillContainerWithItem(level, wandChest, MagicWorld.VARINHA_MAGICA.get());
+
+        BlockPos premiumChest = corner.offset(4, 1, depth - 2);
+        placeStorageChest(level, premiumChest, Direction.NORTH, true);
+        putItems(level, premiumChest,
+                new ItemStack(Items.ELYTRA), new ItemStack(Items.DRAGON_EGG),
+                new ItemStack(Items.NETHER_STAR, 16), new ItemStack(Items.BEACON, 8),
+                new ItemStack(Items.ENCHANTED_GOLDEN_APPLE, 32), new ItemStack(Items.TOTEM_OF_UNDYING, 16),
+                new ItemStack(Items.TRIDENT), new ItemStack(Items.HEART_OF_THE_SEA, 16),
+                new ItemStack(Items.CONDUIT, 8), new ItemStack(Items.NETHERITE_INGOT, 64),
+                new ItemStack(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE, 16),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_HELMET.get()),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_CHESTPLATE.get()),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_LEGGINGS.get()),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_BOOTS.get()));
+    }
+
+    private static void placePremiumWorkCenterStations(ServerLevel level, BlockPos corner, int width, int depth) {
+        level.setBlock(corner.offset(2, 1, 2), Blocks.CRAFTING_TABLE.defaultBlockState(), 2);
+        level.setBlock(corner.offset(3, 1, 2), Blocks.SMITHING_TABLE.defaultBlockState(), 2);
+        level.setBlock(corner.offset(4, 1, 2), Blocks.ANVIL.defaultBlockState(), 2);
+        level.setBlock(corner.offset(5, 1, 2), Blocks.GRINDSTONE.defaultBlockState(), 2);
+        level.setBlock(corner.offset(6, 1, 2), Blocks.STONECUTTER.defaultBlockState(), 2);
+        level.setBlock(corner.offset(7, 1, 2), Blocks.FURNACE.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.SOUTH), 2);
+        level.setBlock(corner.offset(8, 1, 2), Blocks.BLAST_FURNACE.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.SOUTH), 2);
+        level.setBlock(corner.offset(9, 1, 2), Blocks.SMOKER.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.SOUTH), 2);
+        level.setBlock(corner.offset(10, 1, 2), Blocks.BREWING_STAND.defaultBlockState(), 2);
+        level.setBlock(corner.offset(11, 1, 2), Blocks.ENCHANTING_TABLE.defaultBlockState(), 2);
+        level.setBlock(corner.offset(12, 1, 2), Blocks.LECTERN.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.SOUTH), 2);
+        level.setBlock(corner.offset(13, 1, 2), Blocks.CARTOGRAPHY_TABLE.defaultBlockState(), 2);
+        level.setBlock(corner.offset(14, 1, 2), Blocks.FLETCHING_TABLE.defaultBlockState(), 2);
+        level.setBlock(corner.offset(15, 1, 2), Blocks.LOOM.defaultBlockState(), 2);
+        level.setBlock(corner.offset(16, 1, 2), Blocks.CAULDRON.defaultBlockState(), 2);
+
+        for (int z = 3; z <= depth - 3; z += 2) {
+            level.setBlock(corner.offset(1, 1, z), Blocks.BOOKSHELF.defaultBlockState(), 2);
+            level.setBlock(corner.offset(1, 2, z), Blocks.BOOKSHELF.defaultBlockState(), 2);
+            level.setBlock(corner.offset(2, 1, z), Blocks.POTTED_BLUE_ORCHID.defaultBlockState(), 2);
+        }
+    }
+
+    private static void placePremiumWorkCenterTable(ServerLevel level, BlockPos corner, int width, int depth) {
+        BlockPos center = corner.offset(width / 2, 1, depth / 2);
+        for (int x = -3; x <= 3; x++) {
+            for (int z = -1; z <= 1; z++) {
+                BlockPos table = center.offset(x, 0, z);
+                level.setBlock(table, Blocks.DARK_OAK_FENCE.defaultBlockState(), 2);
+                level.setBlock(table.above(), Blocks.LIGHT_BLUE_CARPET.defaultBlockState(), 2);
+            }
+        }
+        for (int x = -3; x <= 3; x += 2) {
+            level.setBlock(center.offset(x, 0, -2), Blocks.DARK_OAK_STAIRS.defaultBlockState()
+                    .setValue(StairBlock.FACING, Direction.SOUTH), 2);
+            level.setBlock(center.offset(x, 0, 2), Blocks.DARK_OAK_STAIRS.defaultBlockState()
+                    .setValue(StairBlock.FACING, Direction.NORTH), 2);
+        }
+        level.setBlock(center.offset(-4, 0, 0), Blocks.DARK_OAK_STAIRS.defaultBlockState()
+                .setValue(StairBlock.FACING, Direction.EAST), 2);
+        level.setBlock(center.offset(4, 0, 0), Blocks.DARK_OAK_STAIRS.defaultBlockState()
+                .setValue(StairBlock.FACING, Direction.WEST), 2);
+        level.setBlock(center.above(3), Blocks.SEA_LANTERN.defaultBlockState(), 2);
+    }
+
+    private static void placePremiumWorkCenterBedsAndArmor(ServerLevel level, BlockPos corner, int width, int depth) {
+        for (int i = 0; i < 4; i++) {
+            placeBed(level, corner.offset(2 + i * 3, 1, depth - 4), Direction.SOUTH);
+        }
+        spawnArmorStand(level, corner.offset(3, 1, 4),
+                Items.NETHERITE_HELMET, Items.NETHERITE_CHESTPLATE,
+                Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS,
+                "Armadura de Netherite da Casa Grande");
+        spawnArmorStand(level, corner.offset(5, 1, 4),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_HELMET.get()),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_CHESTPLATE.get()),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_LEGGINGS.get()),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_BOOTS.get()),
+                "Armadura Draconic Aether da Casa Grande");
+        spawnNamed(level, EntityType.PARROT, corner.offset(width / 2, 2, depth - 3), "Ave da Casa Grande Premium");
+    }
+
+    private static void decoratePremiumWorkCenterExterior(ServerLevel level, BlockPos corner, int width, int depth) {
+        for (BlockPos planter : new BlockPos[] {
+                corner.offset(2, 1, -1), corner.offset(6, 1, -1), corner.offset(width - 2, 1, -1),
+                corner.offset(2, 1, depth + 1), corner.offset(6, 1, depth + 1), corner.offset(width - 2, 1, depth + 1),
+                corner.offset(-1, 1, 2), corner.offset(-1, 1, depth - 2),
+                corner.offset(width + 1, 1, 2), corner.offset(width + 1, 1, depth - 2)
+        }) {
+            if (level.getBlockState(planter).isAir() && level.getBlockState(planter.below()).isSolid()) {
+                level.setBlock(planter, Blocks.FLOWERING_AZALEA.defaultBlockState(), 2);
+            }
+        }
+        for (BlockPos flower : new BlockPos[] {
+                corner.offset(3, 1, -2), corner.offset(5, 1, -2), corner.offset(width - 3, 1, -2),
+                corner.offset(3, 1, depth + 2), corner.offset(5, 1, depth + 2), corner.offset(width - 3, 1, depth + 2)
+        }) {
+            if (level.getBlockState(flower).isAir() && level.getBlockState(flower.below()).isSolid()) {
+                level.setBlock(flower, flowerFor(flower.getX() + flower.getZ()), 2);
+            }
+        }
+    }
+
+    private static void lightPremiumAnimalWorkCenter(ServerLevel level, BlockPos corner, int width, int depth) {
+        for (int x = 2; x <= width - 2; x += 4) {
+            for (int z = 2; z <= depth - 2; z += 4) {
+                level.setBlock(corner.offset(x, 5, z), Blocks.SEA_LANTERN.defaultBlockState(), 2);
+            }
+        }
+        for (BlockPos lamp : new BlockPos[] {
+                corner.offset(-3, 0, -3), corner.offset(width + 3, 0, -3),
+                corner.offset(-3, 0, depth + 3), corner.offset(width + 3, 0, depth + 3),
+                corner.offset(width / 2, 0, -3), corner.offset(width / 2, 0, depth + 3),
+                corner.offset(-3, 0, depth / 2), corner.offset(width + 3, 0, depth / 2)
+        }) {
+            placeLampPost(level, lamp);
+        }
+        for (int x = 1; x < width; x += 3) {
+            level.setBlock(corner.offset(x, 1, -1), Blocks.SEA_LANTERN.defaultBlockState(), 2);
+            level.setBlock(corner.offset(x, 1, depth + 1), Blocks.SEA_LANTERN.defaultBlockState(), 2);
+        }
+        for (int z = 1; z < depth; z += 3) {
+            level.setBlock(corner.offset(-1, 1, z), Blocks.SEA_LANTERN.defaultBlockState(), 2);
+            level.setBlock(corner.offset(width + 1, 1, z), Blocks.SEA_LANTERN.defaultBlockState(), 2);
+        }
+    }
+
+    private static void populatePremiumAnimalWorkCenter(ServerLevel level, BlockPos corner, BlockPos base) {
+        BlockPos home = corner.offset(9, 1, 7);
+        spawnProfessionalVillager(level, corner.offset(7, 1, 5), "Guardiao Aldeao da Casa Grande",
+                VillagerProfession.WEAPONSMITH, home, home, Items.NETHERITE_SWORD, true);
+        spawnProfessionalVillager(level, corner.offset(6, 1, 8), "Armoreiro da Casa Grande",
+                VillagerProfession.ARMORER, home, corner.offset(4, 1, 2), Items.NETHERITE_CHESTPLATE, false);
+        spawnProfessionalVillager(level, corner.offset(8, 1, 8), "Ferreiro da Casa Grande",
+                VillagerProfession.WEAPONSMITH, home, corner.offset(3, 1, 2), Items.NETHERITE_SWORD, false);
+        spawnProfessionalVillager(level, corner.offset(10, 1, 8), "Ferramenteiro da Casa Grande",
+                VillagerProfession.TOOLSMITH, home, corner.offset(3, 1, 2), Items.NETHERITE_PICKAXE, false);
+        spawnProfessionalVillager(level, corner.offset(12, 1, 8), "Bibliotecario da Casa Grande",
+                VillagerProfession.LIBRARIAN, home, corner.offset(12, 1, 2), Items.BOOK, false);
+        spawnProfessionalVillager(level, corner.offset(14, 1, 8), "Clerigo da Casa Grande",
+                VillagerProfession.CLERIC, home, corner.offset(10, 1, 2), Items.BREWING_STAND, false);
+        spawnProfessionalVillager(level, corner.offset(4, 1, 8), "Pedreiro da Casa Grande",
+                VillagerProfession.MASON, home, base.offset(67, 0, 46), Items.STONE_BRICKS, false);
     }
 
     private static void assignAnimalCaretakersToPens(ServerLevel level, BlockPos base) {
@@ -1678,8 +1953,7 @@ public class StarterPortalEvents {
             }
         }
 
-        level.setBlock(center, Blocks.BELL.defaultBlockState(), 2);
-        level.setBlock(center.offset(0, 1, 0), Blocks.LANTERN.defaultBlockState(), 2);
+        reinforceGreenSquareBell(level, center);
         buildCommunityHall(level, center.offset(-8, 0, -28));
         BlockPos greenHouseA = base.offset(-124, -1, 50);
         BlockPos greenHouseB = base.offset(-101, -1, 50);
@@ -1698,11 +1972,59 @@ public class StarterPortalEvents {
 
         spawnAnimalGroup(level, EntityType.CAT, center.offset(-7, 1, 8), 3);
         spawnAnimalGroup(level, EntityType.PARROT, center.offset(7, 1, 8), 3);
+        decorateGreenSquareGarden(level, center);
         spawnWorkersForHouseBeds(level, greenHouseA, 14, 7, 10, "Trabalhador da Casa Verde 1", greenHouseA.offset(7, 1, 5), center, Items.EMERALD);
         spawnWorkersForHouseBeds(level, greenHouseB, 14, 7, 10, "Trabalhador da Casa Verde 2", greenHouseB.offset(7, 1, 5), center, Items.BREAD);
         spawnWorkerVillager(level, center.offset(-2, 1, 3), "Morador da Praca Verde 1", center, center, Items.EMERALD);
         spawnWorkerVillager(level, center.offset(2, 1, 3), "Morador da Praca Verde 2", center, center, Items.BREAD);
         spawnNamed(level, EntityType.IRON_GOLEM, center.offset(0, 1, 7), "Guardiao da Praca Verde");
+    }
+
+    private static void reinforceGreenSquareBell(ServerLevel level, BlockPos center) {
+        level.setBlock(center.below(2), Blocks.DIRT.defaultBlockState(), 2);
+        level.setBlock(center.below(), Blocks.POLISHED_DEEPSLATE.defaultBlockState(), 2);
+        level.setBlock(center, Blocks.BELL.defaultBlockState(), 2);
+        level.setBlock(center.offset(0, 1, 0), Blocks.LANTERN.defaultBlockState(), 2);
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            level.setBlock(center.relative(direction), Blocks.POLISHED_ANDESITE.defaultBlockState(), 2);
+        }
+    }
+
+    private static void decorateGreenSquareGarden(ServerLevel level, BlockPos center) {
+        for (BlockPos pos : new BlockPos[] {
+                center.offset(-6, 1, -6), center.offset(6, 1, -6),
+                center.offset(-6, 1, 6), center.offset(6, 1, 6),
+                center.offset(-10, 1, 0), center.offset(10, 1, 0),
+                center.offset(0, 1, -10), center.offset(0, 1, 10)
+        }) {
+            if (level.getBlockState(pos).isAir() && level.getBlockState(pos.below()).isSolid()) {
+                level.setBlock(pos, Blocks.FLOWERING_AZALEA.defaultBlockState(), 2);
+            }
+        }
+        for (BlockPos pos : new BlockPos[] {
+                center.offset(-8, 1, -4), center.offset(8, 1, -4),
+                center.offset(-8, 1, 4), center.offset(8, 1, 4),
+                center.offset(-4, 1, -8), center.offset(4, 1, -8),
+                center.offset(-4, 1, 8), center.offset(4, 1, 8)
+        }) {
+            if (level.getBlockState(pos).isAir() && level.getBlockState(pos.below()).isSolid()) {
+                level.setBlock(pos, flowerFor(pos.getX() + pos.getZ()), 2);
+            }
+        }
+        for (BlockPos light : new BlockPos[] {
+                center.offset(-5, 1, -5), center.offset(5, 1, -5),
+                center.offset(-5, 1, 5), center.offset(5, 1, 5)
+        }) {
+            level.setBlock(light, Blocks.SEA_LANTERN.defaultBlockState(), 2);
+            if (level.getBlockState(light.above()).isAir()) {
+                level.setBlock(light.above(), Blocks.LIGHT_BLUE_STAINED_GLASS.defaultBlockState(), 2);
+            }
+        }
+        spawnNamed(level, EntityType.PARROT, center.offset(-9, 1, 9), "Arara da Praca Verde");
+        spawnNamed(level, EntityType.PARROT, center.offset(9, 1, 9), "Papagaio da Praca Verde");
+        spawnNamed(level, EntityType.PARROT, center.offset(-9, 1, -9), "Ave Rosa da Praca Verde");
+        spawnNamed(level, EntityType.CHICKEN, center.offset(9, 1, -9), "Galinha Ornamental da Praca Verde");
+        spawnNamed(level, EntityType.ALLAY, center.offset(0, 2, -8), "Brilho Alegre da Praca Verde");
     }
 
     private static void buildCommunityHall(ServerLevel level, BlockPos corner) {
@@ -2742,6 +3064,7 @@ public class StarterPortalEvents {
         decorateImportedHouseDoors(level, base);
         expandImportedHouseWindows(level, base);
         decorateImportedHouseFrontFacade(level, base);
+        convertImportedHouseExteriorTreesToCherry(level, base);
 
         for (BlockPos preferred : new BlockPos[] {
                 base.offset(0, 1, 0), base.offset(10, 1, 0), base.offset(-10, 1, 0),
@@ -2810,6 +3133,82 @@ public class StarterPortalEvents {
             if (level.getBlockState(plant).isAir() && level.getBlockState(plant.below()).isSolid()) {
                 level.setBlock(plant, Blocks.FLOWERING_AZALEA.defaultBlockState(), 2);
             }
+        }
+    }
+
+    private static void convertImportedHouseExteriorTreesToCherry(ServerLevel level, BlockPos base) {
+        int minX = HOUSE_ORIGIN_X - 34;
+        int maxX = IMPORTED_HOUSE_MAX_X + 34;
+        int minZ = HOUSE_ORIGIN_Z - 34;
+        int maxZ = IMPORTED_HOUSE_MAX_Z + 34;
+        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
+
+        for (int x = minX; x <= maxX; x++) {
+            for (int z = minZ; z <= maxZ; z++) {
+                if (isInsideImportedHouseFootprint(x, z)
+                        || isLikelyImportedHouseRoadOrWallZone(x, z)) {
+                    continue;
+                }
+                for (int y = -1; y <= 18; y++) {
+                    mutable.set(base.getX() + x, base.getY() + y, base.getZ() + z);
+                    BlockState state = level.getBlockState(mutable);
+                    if (isNaturalTreeLog(state) && hasNaturalLeavesNearby(level, mutable.immutable(), 4)) {
+                        level.setBlock(mutable, Blocks.CHERRY_LOG.defaultBlockState(), 2);
+                    } else if (isNaturalTreeLeaf(state)) {
+                        level.setBlock(mutable, Blocks.CHERRY_LEAVES.defaultBlockState(), 2);
+                    }
+                }
+                placeCherryPetalsNearHouseTree(level, base.offset(x, 0, z));
+            }
+        }
+    }
+
+    private static boolean isLikelyImportedHouseRoadOrWallZone(int x, int z) {
+        return z >= IMPORTED_HOUSE_MAX_Z - 4
+                && z <= IMPORTED_HOUSE_MAX_Z + 12
+                && x >= -36
+                && x <= 36;
+    }
+
+    private static boolean isNaturalTreeLog(BlockState state) {
+        return state.is(Blocks.OAK_LOG)
+                || state.is(Blocks.SPRUCE_LOG)
+                || state.is(Blocks.BIRCH_LOG)
+                || state.is(Blocks.DARK_OAK_LOG)
+                || state.is(Blocks.ACACIA_LOG);
+    }
+
+    private static boolean isNaturalTreeLeaf(BlockState state) {
+        return state.is(Blocks.OAK_LEAVES)
+                || state.is(Blocks.SPRUCE_LEAVES)
+                || state.is(Blocks.BIRCH_LEAVES)
+                || state.is(Blocks.DARK_OAK_LEAVES)
+                || state.is(Blocks.ACACIA_LEAVES)
+                || state.is(Blocks.FLOWERING_AZALEA_LEAVES)
+                || state.is(Blocks.AZALEA_LEAVES);
+    }
+
+    private static boolean hasNaturalLeavesNearby(ServerLevel level, BlockPos pos, int radius) {
+        for (int x = -radius; x <= radius; x++) {
+            for (int y = 0; y <= radius; y++) {
+                for (int z = -radius; z <= radius; z++) {
+                    if (isNaturalTreeLeaf(level.getBlockState(pos.offset(x, y, z)))) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static void placeCherryPetalsNearHouseTree(ServerLevel level, BlockPos approximateGround) {
+        BlockPos ground = findHighestFeatureSurface(level, approximateGround, 8);
+        if (!level.getBlockState(ground).is(Blocks.GRASS_BLOCK)
+                || !level.getBlockState(ground.above()).isAir()) {
+            return;
+        }
+        if (Math.floorMod(ground.getX() * 31 + ground.getZ() * 17, 9) <= 2) {
+            level.setBlock(ground.above(), Blocks.PINK_PETALS.defaultBlockState(), 2);
         }
     }
 
@@ -3505,6 +3904,67 @@ public class StarterPortalEvents {
         }
     }
 
+    private static void spawnProfessionalVillager(
+            ServerLevel level,
+            BlockPos pos,
+            String name,
+            VillagerProfession profession,
+            BlockPos home,
+            BlockPos work,
+            Item heldItem,
+            boolean guardian
+    ) {
+        AABB nearby = new AABB(pos).inflate(256.0D, 64.0D, 256.0D);
+        if (!level.getEntitiesOfClass(Villager.class, nearby, villager -> name.equals(villager.getName().getString())).isEmpty()) {
+            return;
+        }
+        Entity entity = EntityType.VILLAGER.spawn(level, pos, MobSpawnType.STRUCTURE);
+        if (!(entity instanceof Villager villager)) {
+            return;
+        }
+
+        villager.setCustomName(Component.literal(name));
+        villager.setCustomNameVisible(true);
+        villager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(heldItem));
+        if (guardian) {
+            villager.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.TOTEM_OF_UNDYING));
+            villager.getPersistentData().putBoolean("MagicWorldGuardianVillager", true);
+        }
+        empowerMagicWorldVillager(villager, profession, home, work, GLOBAL_VILLAGER_WORK_RADIUS);
+    }
+
+    private static void spawnEstateGuardianVillagers(ServerLevel level, BlockPos base) {
+        BlockPos workCenter = premiumAnimalWorkCenterCorner(base).offset(9, 1, 7);
+        spawnProfessionalVillager(level, workCenter, "Guardiao Aldeao da Casa Grande",
+                VillagerProfession.WEAPONSMITH, workCenter, workCenter, Items.NETHERITE_SWORD, true);
+
+        BlockPos mine = base.offset(67, 0, 46);
+        spawnProfessionalVillager(level, mine.offset(2, 1, 0), "Guardiao Aldeao da Mina",
+                VillagerProfession.WEAPONSMITH, mine, mine, Items.NETHERITE_AXE, true);
+
+        BlockPos animalFarm = base.offset(92, 0, -36);
+        spawnProfessionalVillager(level, animalFarm, "Guardiao Aldeao dos Currais",
+                VillagerProfession.WEAPONSMITH, animalFarm, animalFarm, Items.NETHERITE_SWORD, true);
+
+        BlockPos plantation = base.offset(-108, 0, -68);
+        spawnProfessionalVillager(level, plantation, "Guardiao Aldeao da Plantacao",
+                VillagerProfession.WEAPONSMITH, plantation, plantation, Items.NETHERITE_SWORD, true);
+
+        BlockPos greenSquare = base.offset(-74, 0, 62);
+        spawnProfessionalVillager(level, greenSquare, "Guardiao Aldeao da Praca Verde",
+                VillagerProfession.WEAPONSMITH, greenSquare, greenSquare, Items.NETHERITE_SWORD, true);
+    }
+
+    private static void clearHostilesNearGuardianVillagers(ServerLevel level, AABB estate) {
+        for (Villager guardian : level.getEntitiesOfClass(Villager.class, estate,
+                villager -> villager.getPersistentData().getBoolean("MagicWorldGuardianVillager"))) {
+            AABB defendedArea = new AABB(guardian.blockPosition()).inflate(GLOBAL_VILLAGER_WORK_RADIUS, 80.0D, GLOBAL_VILLAGER_WORK_RADIUS);
+            for (Monster monster : level.getEntitiesOfClass(Monster.class, defendedArea)) {
+                monster.discard();
+            }
+        }
+    }
+
     private static void empowerMagicWorldVillager(
             Villager villager,
             VillagerProfession profession,
@@ -3657,6 +4117,58 @@ public class StarterPortalEvents {
             container.setChanged();
         }
         level.setBlock(pos, Blocks.CHEST.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, facing), 2);
+    }
+
+    private static void placeStorageChest(ServerLevel level, BlockPos pos, Direction facing, boolean trapped) {
+        if (level.getBlockEntity(pos) instanceof Container container) {
+            container.clearContent();
+            container.setChanged();
+        }
+        level.setBlock(pos, (trapped ? Blocks.TRAPPED_CHEST : Blocks.CHEST).defaultBlockState()
+                .setValue(HorizontalDirectionalBlock.FACING, facing), 2);
+    }
+
+    private static void placeStorageBarrel(ServerLevel level, BlockPos pos) {
+        if (level.getBlockEntity(pos) instanceof Container container) {
+            container.clearContent();
+            container.setChanged();
+        }
+        level.setBlock(pos, Blocks.BARREL.defaultBlockState(), 2);
+    }
+
+    private static void fillContainersWithAllRegisteredItems(ServerLevel level, List<BlockPos> containers) {
+        List<ItemStack> registeredItems = allRegisteredItemStacks();
+        if (registeredItems.isEmpty()) {
+            return;
+        }
+
+        int itemIndex = 0;
+        for (BlockPos pos : containers) {
+            if (!(level.getBlockEntity(pos) instanceof Container container)) {
+                continue;
+            }
+            for (int slot = 0; slot < container.getContainerSize(); slot++) {
+                ItemStack stack = registeredItems.get(itemIndex % registeredItems.size()).copy();
+                container.setItem(slot, stack);
+                itemIndex++;
+            }
+            container.setChanged();
+        }
+    }
+
+    private static List<ItemStack> allRegisteredItemStacks() {
+        List<ItemStack> stacks = new ArrayList<>();
+        for (Item item : BuiltInRegistries.ITEM) {
+            ItemStack stack = new ItemStack(item);
+            if (stack.isEmpty()) {
+                continue;
+            }
+            if (stack.getMaxStackSize() > 1) {
+                stack.setCount(Math.min(64, stack.getMaxStackSize()));
+            }
+            stacks.add(stack);
+        }
+        return stacks;
     }
 
     private static void putItems(ServerLevel level, BlockPos pos, ItemStack... items) {

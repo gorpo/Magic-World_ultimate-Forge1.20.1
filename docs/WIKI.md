@@ -769,3 +769,22 @@ Validacao e processo:
 - Todos os aldeoes gerenciados na propriedade e no castelo possuem raio minimo de caminhada/trabalho de `384` blocos.
 - Validado com `compileJava`, `build` e `git diff --check`; todos passaram.
 - O Codex valida somente com Gradle e nao abre o cliente.
+
+## Casa grande premium, Praca Verde e cerejeiras - 2026-06-06 14:33:55 -03:00
+
+- O reparo foi elevado para a versao `14`, aplicando no proximo login dos mundos ja criados.
+- A casa grande indicada pelos prints foi tratada no volume relativo `base.offset(106,-1,-72)` ate `base.offset(124,-1,-58)`, que corresponde ao retangulo absoluto observado `X 46..64` e `Z -42..-28`.
+- A primeira casa pequena dos cuidadores de animais agora vira um centro premium de trabalho, com paredes de pedra decoradas, telhado inclinado, janelas adicionais, blocos acima das portas, plantas, flores e ave.
+- O lado leste possui porta central de saida e parede de armazenamento; os baus/barris sao preenchidos automaticamente com os itens registrados do jogo/mod.
+- Foram adicionados bau cheio de varinhas magicas, bau premium de itens raros, set Netherite e set Draconic Aether.
+- O interior recebeu mesa grande, cadeiras, camas, bancada, fornalha, alto-forno, defumador, forja, bigorna, grindstone, stonecutter, mesa de encantamentos, estante, lectern, cartography table, fletching table, loom, caldeirao e brewing stand.
+- Foram adicionados profissionais fixos da Casa Grande: guardiao, armoreiro, ferreiro, ferramenteiro, bibliotecario, clerigo e pedreiro.
+- Guardioes aldeoes por setor sao recriados se sumirem: Casa Grande, Mina, Currais, Plantacao e Praca Verde.
+- Todos os aldeoes gerenciados seguem invulneraveis, nivel 5, com raio minimo global de `384` blocos.
+- A defesa remove hostis perto dos guardioes e mantem a limpeza global de monstros na area da propriedade/castelo, evitando dano em estruturas.
+- A iluminacao da casa foi reforcada com sea lanterns internas, postes externos e luzes no entorno para reduzir spawn/aproximacao de monstros.
+- A Praca Verde recebeu suporte solido extra abaixo do sino, pedra ao redor, mais flores, azaleias, luzes e aves nomeadas.
+- As arvores naturais em volta da casa importada sao convertidas para cerejeiras, fora do footprint da casa e evitando a faixa principal de rua/muro.
+- Petalas rosas sao aplicadas apenas em chao de grama livre perto dessas arvores.
+- Validado com `compileJava`, `build` e `git diff --check`; todos passaram.
+- O Codex valida somente com Gradle e nao abre o cliente.

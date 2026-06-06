@@ -1226,3 +1226,54 @@ Validacao:
   - `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
   - `git diff --check`: sem erros.
   - Cliente nao foi aberto; nao executar `runClient`.
+
+## Casa grande premium, Praca Verde e cerejeiras - 2026-06-06 14:33:55 -03:00
+
+Pedido atual:
+
+- Usar as quatro coordenadas dos prints como limites da casa grande.
+- Transformar a casa em centro premium de trabalho dos aldeoes.
+- Parede leste com armazenamento e porta central de saida.
+- Baus com todos os itens possiveis, bau cheio de varinhas magicas, itens premium/raros, set Netherite e set Draconic Aether.
+- Mesa, bancadas, fogoes, forjas, ferramentas, decoracao, plantas, janelas e iluminacao forte para monstros nao se aproximarem.
+- Villagers imortais; um guardiao aldeao por local para lidar com hostis sem destruir estruturas.
+- Mais um bloco/apoio abaixo do sino na Praca Verde, mais decoracao e aves na area.
+- Trocar as arvores em volta da casa por cerejeiras rosas, sem converter toda a propriedade e sem interferir nas estruturas.
+- Nao abrir cliente; validar somente com Gradle.
+
+Implementado:
+
+- `CURRENT_ESTATE_REPAIR_VERSION` elevado para `14`.
+- Volume da casa dos prints: `premiumAnimalWorkCenterCorner(base) = base.offset(106,-1,-72)`, largura `18`, profundidade `14`.
+- Esse volume corresponde aos prints atuais em torno de `X 46..64`, `Y 73/74`, `Z -42..-28` quando a base da propriedade esta em `(-60,74,30)`.
+- `buildPremiumAnimalWorkCenter` substitui a primeira casa pequena dos cuidadores por um centro premium com:
+  - paredes de pedra decorada, postes de dark oak, telhado inclinado e janelas extras;
+  - porta oeste e porta leste central, com blocos acima da porta;
+  - parede leste de baus/barris e armazenamento auxiliar;
+  - preenchimento automatico dos containers pelo registro `BuiltInRegistries.ITEM`;
+  - bau de varinhas, bau raro/premium, armaduras Netherite e Draconic Aether;
+  - mesa grande, cadeiras, camas, estacoes de trabalho, fornos/forjas, biblioteca, plantas e ave.
+- Novos aldeoes profissionais nomeados:
+  - `Guardiao Aldeao da Casa Grande`;
+  - `Armoreiro da Casa Grande`;
+  - `Ferreiro da Casa Grande`;
+  - `Ferramenteiro da Casa Grande`;
+  - `Bibliotecario da Casa Grande`;
+  - `Clerigo da Casa Grande`;
+  - `Pedreiro da Casa Grande`.
+- `professionForNamedVillager` preserva as profissoes desses novos nomes durante manutencao.
+- `spawnEstateGuardianVillagers` garante um guardiao aldeao em Casa Grande, Mina, Currais, Plantacao e Praca Verde.
+- `clearHostilesNearGuardianVillagers` remove monstros dentro do raio dos guardioes; a limpeza global de monstros da propriedade/castelo foi mantida como backup seguro.
+- Iluminacao reforcada com sea lanterns internas, luzes no perimetro e postes externos da casa.
+- `reinforceGreenSquareBell` coloca suporte solido sob o sino da Praca Verde e acabamento de pedra ao redor.
+- `decorateGreenSquareGarden` adiciona flores, azaleias, luzes, parrots, chicken ornamental e allay nomeados na Praca Verde.
+- `convertImportedHouseExteriorTreesToCherry` converte apenas troncos/folhas naturais perto da casa importada para `CHERRY_LOG`/`CHERRY_LEAVES`, ignorando o footprint da casa e a faixa principal de rua/muro.
+- `placeCherryPetalsNearHouseTree` aplica petalas rosas somente em grama livre perto dessas arvores.
+
+Validacao:
+
+- `./gradlew.bat compileJava --stacktrace`: BUILD SUCCESSFUL.
+- `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+- `git diff --check`: sem erros.
+- Falta ainda nesta entrega: commit e push.
+- Cliente nao foi aberto; nao executar `runClient`.
