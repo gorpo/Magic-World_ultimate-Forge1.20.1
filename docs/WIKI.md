@@ -207,6 +207,7 @@ Regra mantida:
 - O codigo deixou de depender de `textures/gui/title/logo_full.png` para o title screen.
 - Proporcao corrigida para 512x171.
 - Build validado com sucesso.
+
 ## Fix mosaico/background/logo - 2026-06-05
 
 - Removido override vanilla `options_background.png`, pois o Minecraft repete essa textura em mosaico.
@@ -682,3 +683,21 @@ Este registro documenta o conjunto completo preparado para o commit de conclusao
   - o mixin NeoForge de Iris nao tem classe equivalente direta no Oculus Forge 1.20.1; o Forge usa `IrisSodiumOptions` e injecoes no `SodiumGameOptionPages`, enquanto o titulo Oculus/Iris ja e renomeado pelo `EmbeddiumTabHeaderMagicWorldMixin`.
 - Validacao final desta correcao: `./gradlew.bat build --stacktrace` com `BUILD SUCCESSFUL`.
 - O Codex nao abriu o cliente Minecraft; o cliente continua sendo testado pelo usuario.
+
+## Correcao precisa menu grafico, casa e rua - 2026-06-06 11:56:55 -03:00
+
+- Regra mantida: nao abrir `runClient`; o usuario testa o cliente. A validacao do Codex foi somente Gradle.
+- `Horizontes Distantes` no menu grafico nao fica mais preso no rodape solto: o botao agora calcula a area real das abas do Embeddium e aparece logo abaixo da lista lateral, abaixo das entradas de shaders.
+- O painel avulso do botao Distant Horizons deixou de esticar ate o fim da tela; agora desenha somente a moldura do proprio botao.
+- Background do menu grafico ficou mais opaco para esconder melhor o jogo atras.
+- Botao/texto de suporte/doacao do Embeddium/Sodium agora e ocultado, desabilitado, sem label e movido para fora da tela.
+- Rolagem circular entre abas do Embeddium foi reforcada para usar tambem `getOffset()` da barra de rolagem quando o campo interno muda.
+- Reparo da propriedade elevado para versao 7, forçando nova execucao no proximo login de saves ja criados.
+- Frente da casa importada e protegida: estradas e caminhos agora ignoram o footprint da `imported_house.nbt`.
+- A casa importada e restaurada pelo NBT depois das rotinas de terreno/rua, preservando frente, muro e estrutura original.
+- Rua ao redor da casa foi elevada com bloco inteiro no nivel acima do tracado antigo, alinhando melhor com a linha da casa.
+- Drops soltos de itens ao redor da casa sao removidos antes/depois do reparo, evitando pilhas de baus quebrados voando.
+- Reposicao de baus gerados limpa o container antes de trocar o bloco, evitando novo drop de conteudo em reparos repetidos.
+- Casas de trabalhadores receberam reforco visual: blocos acima das portas, novas janelas quando ha parede, postes externos, luzes e plantas.
+- Build final executado: `./gradlew.bat build --stacktrace`.
+- Resultado: `BUILD SUCCESSFUL`.

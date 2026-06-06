@@ -33,8 +33,12 @@ public abstract class EmbeddiumTabFrameCircularScrollMagicWorldMixin {
             return;
         }
 
-        int offset = magicworld$getInt(scrollBar, "offset", 0);
+        int offset = magicworld$getInt(scrollBar, "offset", magicworld$invokeInt(scrollBar, "getOffset", 0));
         int maxOffset = magicworld$getInt(scrollBar, "maxScrollBarOffset", 0);
+        if (maxOffset <= 0) {
+            magicworld$cycle(delta, callback);
+            return;
+        }
         if ((delta < 0.0D && offset >= maxOffset) || (delta > 0.0D && offset <= 0)) {
             magicworld$cycle(delta, callback);
         }
@@ -87,6 +91,21 @@ public abstract class EmbeddiumTabFrameCircularScrollMagicWorldMixin {
     private static int magicworld$getInt(Object target, String name, int fallback) {
         Object value = magicworld$getField(target, name);
         return value instanceof Number number ? number.intValue() : fallback;
+    }
+
+    @Unique
+    private static int magicworld$invokeInt(Object target, String methodName, int fallback) {
+        if (target == null) {
+            return fallback;
+        }
+
+        try {
+            Method method = target.getClass().getMethod(methodName);
+            Object value = method.invoke(target);
+            return value instanceof Number number ? number.intValue() : fallback;
+        } catch (ReflectiveOperationException ignored) {
+            return fallback;
+        }
     }
 
     @Unique

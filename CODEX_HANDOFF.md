@@ -1060,3 +1060,41 @@ Teste visual pendente:
   - fundo opaco, logo, icones laterais, cores, linhas e busca estao cobertos pelos mixins Embeddium;
   - mixin NeoForge `IrisConfigMagicWorldMixin` nao tem alvo identico no Oculus Forge 1.20.1; o jar usa `IrisSodiumOptions`/`MixinSodiumGameOptionPages`, e o titulo Oculus/Iris ja e renomeado por `EmbeddiumTabHeaderMagicWorldMixin`.
 - Validar somente com Gradle. Nao executar `runClient`.
+
+## Correcao cirurgica menu grafico, casa e rua - 2026-06-06 11:56:55 -03:00
+
+Regra operacional:
+
+- Nao executar `runClient`.
+- O usuario testa o cliente.
+- Codex valida somente com Gradle.
+
+Feito:
+
+- `EmbeddiumVideoOptionsScreenMagicWorldMixin` deixou de posicionar o botao `Horizontes Distantes` por `height - 68`.
+- O botao agora procura o `TabFrame` real do Embeddium, le `tabSection`/`tabSectionInner` e fica abaixo da lista lateral, na area correta do menu grafico.
+- O painel do botao Distant Horizons agora envolve apenas o botao, sem criar um bloco solto ate o rodape.
+- Background do menu grafico ficou mais opaco para ocultar o jogo atras.
+- Botoes/textos de suporte/doacao do Embeddium/Sodium agora sao ocultados, desabilitados, sem label e movidos para fora da tela.
+- `EmbeddiumTabFrameCircularScrollMagicWorldMixin` usa tambem `getOffset()` para detectar limite da barra, reforcando a rolagem circular entre abas.
+- `CURRENT_ESTATE_REPAIR_VERSION` elevado para 7.
+- O reparo existente remove drops soltos antes/depois da casa e dos baus.
+- `imported_house.nbt` e restaurada sem limpar volume novamente, depois das rotinas de terreno, preservando frente/muro originais.
+- Estradas e caminhos agora ignoram o footprint da casa importada para nao cortar a estrutura.
+- Rua frontal/lateral ao redor da casa foi elevada com bloco inteiro, em vez de manter o tracado baixo com slabs.
+- `placeChest` limpa containers existentes antes de substituir o bloco, evitando drops de conteudo em reparos repetidos.
+- Casas de trabalhadores receberam acabamento externo: blocos acima das portas, janelas extras, postes, luzes e plantas.
+
+Validacao:
+
+- `./gradlew.bat compileJava --stacktrace`: BUILD SUCCESSFUL.
+- `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+- Cliente nao foi aberto.
+
+Teste manual esperado:
+
+- Abrir `Opcoes > Configuracoes de video`.
+- Conferir `Horizontes Distantes` abaixo das entradas laterais, perto de `Magic World Shaders`, sem icone solto no rodape.
+- Testar rolagem circular nas abas do menu grafico.
+- Entrar no save existente e conferir que a mensagem do reparo versao 7 aparece uma vez.
+- Conferir frente da casa/muro restaurados, rua elevada na linha da casa e ausencia de itens de baus voando.

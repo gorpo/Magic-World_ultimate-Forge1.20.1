@@ -26,6 +26,7 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.item.Item;
@@ -98,7 +99,7 @@ public class StarterPortalEvents {
     private static final int IMPORTED_HOUSE_MAX_Z = HOUSE_ORIGIN_Z + IMPORTED_HOUSE_SIZE_Z;
     private static final int CASTLE_SIZE_X = 265;
     private static final int CASTLE_SIZE_Z = 221;
-    private static final int CURRENT_ESTATE_REPAIR_VERSION = 5;
+    private static final int CURRENT_ESTATE_REPAIR_VERSION = 7;
 
     private static final Map<UUID, EstateTask> TASKS = new HashMap<>();
     private static final Set<UUID> PLAYERS_TOUCHING_STARTER_PORTAL = new HashSet<>();
@@ -127,7 +128,7 @@ public class StarterPortalEvents {
                 && data.getInt(ESTATE_REPAIR_VERSION_KEY) < CURRENT_ESTATE_REPAIR_VERSION) {
             repairExistingEstate(levelFor(player), estateBaseFromPlayer(player));
             data.putInt(ESTATE_REPAIR_VERSION_KEY, CURRENT_ESTATE_REPAIR_VERSION);
-            player.sendSystemMessage(Component.literal("Magic World: casarao, menu, villagers e rua reparados."));
+            player.sendSystemMessage(Component.literal("Magic World: frente da casa, rua elevada e baus reparados."));
         }
 
         if (!MagicWorldWorldOptions.isStarterEstateEnabled()
@@ -326,7 +327,7 @@ public class StarterPortalEvents {
     }
 
     private static void repairExistingEstate(ServerLevel level, BlockPos base) {
-        restoreImportedHouseStructure(level, base);
+        removeLooseDroppedItemsAroundImportedHouse(level, base);
         stabilizeEstateAirGaps(level, base);
         normalizeImportedHouseFrontRoad(level, base);
         buildPlantationWorkerSettlement(level, base);
@@ -334,9 +335,12 @@ public class StarterPortalEvents {
         buildGreenVillageSquare(level, base);
         buildEnhancedEstateLighting(level, base);
         buildStoneTreasureMineHouse(level, base.offset(67, -1, 46));
+        restoreImportedHouseTemplate(level, base);
+        finishImportedHouseContents(level, base);
+        removeLooseDroppedItemsAroundImportedHouse(level, base);
     }
 
-    private static void restoreImportedHouseStructure(ServerLevel level, BlockPos base) {
+    private static void restoreImportedHouseTemplate(ServerLevel level, BlockPos base) {
         BlockPos origin = houseOrigin(base);
         level.getStructureManager().get(IMPORTED_HOUSE).ifPresent(template ->
                 template.placeInWorld(
@@ -348,6 +352,9 @@ public class StarterPortalEvents {
                         2
                 )
         );
+    }
+
+    private static void finishImportedHouseContents(ServerLevel level, BlockPos base) {
         fillStarterChests(level, base);
         decorateImportedHouseAddons(level, base);
     }
@@ -357,6 +364,24 @@ public class StarterPortalEvents {
                 && x <= IMPORTED_HOUSE_MAX_X + BREATHING_MARGIN
                 && z >= HOUSE_ORIGIN_Z - BREATHING_MARGIN
                 && z <= IMPORTED_HOUSE_MAX_Z + BREATHING_MARGIN;
+    }
+
+    private static boolean isInsideImportedHouseFootprint(BlockPos base, BlockPos pos) {
+        return isInsideImportedHouseFootprint(pos.getX() - base.getX(), pos.getZ() - base.getZ());
+    }
+
+    private static void removeLooseDroppedItemsAroundImportedHouse(ServerLevel level, BlockPos base) {
+        AABB area = new AABB(
+                base.getX() + HOUSE_ORIGIN_X - 18,
+                base.getY() - 10,
+                base.getZ() + HOUSE_ORIGIN_Z - 18,
+                base.getX() + IMPORTED_ESTATE_FENCE_MAX_X + 18,
+                base.getY() + 36,
+                base.getZ() + IMPORTED_ESTATE_FENCE_MAX_Z + 18
+        );
+        for (ItemEntity item : level.getEntitiesOfClass(ItemEntity.class, area)) {
+            item.discard();
+        }
     }
 
     private static void prepareImportedEstateFoundation(ServerLevel level, BlockPos base) {
@@ -412,9 +437,8 @@ public class StarterPortalEvents {
             template.placeInWorld(level, origin, origin, new StructurePlaceSettings(), RandomSource.create(level.getSeed()), 2);
             prepareBreathingSurface(level, origin, template.getSize(), BREATHING_MARGIN);
             normalizeImportedHouseFrontRoad(level, base);
-            fillStarterChests(level, base);
-            decorateImportedHouseAddons(level, base);
             stabilizeImportedHousePerimeterTerrain(level, base);
+            finishImportedHouseContents(level, base);
         } else {
             buildFallbackHouse(level, base);
             stabilizeImportedHousePerimeterTerrain(level, base);
@@ -579,6 +603,11 @@ public class StarterPortalEvents {
         }) {
             placeLampPost(level, pos);
         }
+
+        removeLooseDroppedItemsAroundImportedHouse(level, base);
+        restoreImportedHouseTemplate(level, base);
+        finishImportedHouseContents(level, base);
+        removeLooseDroppedItemsAroundImportedHouse(level, base);
     }
 
     private static void buildCropField(ServerLevel level, BlockPos corner, BlockState cropState) {
@@ -917,7 +946,113 @@ public class StarterPortalEvents {
             }
         }
 
+        decorateWorkerHomeExterior(level, corner, width, depth);
         spawnNamed(level, EntityType.PARROT, corner.offset(width / 2, 2, depth - 2), "Ave " + label);
+    }
+
+    private static void decorateWorkerHomeExterior(ServerLevel level, BlockPos corner, int width, int depth) {
+        for (BlockPos post : new BlockPos[] {
+                corner.offset(-1, 1, -1),
+                corner.offset(width + 1, 1, -1),
+                corner.offset(-1, 1, depth + 1),
+                corner.offset(width + 1, 1, depth + 1)
+        }) {
+            for (int y = 0; y <= 4; y++) {
+                BlockPos pos = post.above(y);
+                if (level.getBlockState(pos).isAir() || level.getBlockState(pos).canBeReplaced()) {
+                    level.setBlock(pos, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState(), 2);
+                }
+            }
+            level.setBlock(post.above(5), Blocks.SEA_LANTERN.defaultBlockState(), 2);
+        }
+
+        for (BlockPos window : new BlockPos[] {
+                corner.offset(width / 2, 2, 0),
+                corner.offset(width / 2, 2, depth),
+                corner.offset(0, 2, depth / 2),
+                corner.offset(width, 2, depth / 2)
+        }) {
+            placeWorkerWindowIfWall(level, window);
+        }
+
+        decorateWorkerDoors(level, corner, width, depth);
+
+        for (BlockPos planter : new BlockPos[] {
+                corner.offset(2, 1, -1), corner.offset(width - 2, 1, -1),
+                corner.offset(2, 1, depth + 1), corner.offset(width - 2, 1, depth + 1),
+                corner.offset(-1, 1, 2), corner.offset(-1, 1, depth - 2),
+                corner.offset(width + 1, 1, 2), corner.offset(width + 1, 1, depth - 2)
+        }) {
+            if (level.getBlockState(planter).isAir() && level.getBlockState(planter.below()).isSolid()) {
+                level.setBlock(planter, Blocks.FLOWERING_AZALEA.defaultBlockState(), 2);
+            }
+        }
+
+        for (BlockPos light : new BlockPos[] {
+                corner.offset(width / 2, 3, -1),
+                corner.offset(width / 2, 3, depth + 1),
+                corner.offset(-1, 3, depth / 2),
+                corner.offset(width + 1, 3, depth / 2)
+        }) {
+            if (level.getBlockState(light).isAir() || level.getBlockState(light).canBeReplaced()) {
+                level.setBlock(light, Blocks.LANTERN.defaultBlockState(), 2);
+            }
+        }
+    }
+
+    private static void decorateWorkerDoors(ServerLevel level, BlockPos corner, int width, int depth) {
+        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
+        for (int x = 0; x <= width; x++) {
+            for (int z = 0; z <= depth; z++) {
+                for (int y = 1; y <= 3; y++) {
+                    mutable.set(corner.getX() + x, corner.getY() + y, corner.getZ() + z);
+                    BlockState state = level.getBlockState(mutable);
+                    if (!(state.getBlock() instanceof DoorBlock)
+                            || state.getValue(DoorBlock.HALF) != DoubleBlockHalf.LOWER) {
+                        continue;
+                    }
+
+                    Direction facing = state.getValue(DoorBlock.FACING);
+                    Direction side = facing.getClockWise();
+                    BlockPos lintel = mutable.above(2).immutable();
+                    level.setBlock(lintel, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState(), 2);
+                    level.setBlock(lintel.relative(side), Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState(), 2);
+                    level.setBlock(lintel.relative(side.getOpposite()), Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState(), 2);
+
+                    BlockPos awning = lintel.relative(facing);
+                    if (level.getBlockState(awning).isAir() || level.getBlockState(awning).canBeReplaced()) {
+                        level.setBlock(awning, Blocks.DARK_OAK_STAIRS.defaultBlockState()
+                                .setValue(StairBlock.FACING, facing), 2);
+                    }
+                    BlockPos lamp = mutable.relative(facing).above(2);
+                    if (level.getBlockState(lamp).isAir() || level.getBlockState(lamp).canBeReplaced()) {
+                        level.setBlock(lamp, Blocks.LANTERN.defaultBlockState(), 2);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void placeWorkerWindowIfWall(ServerLevel level, BlockPos lower) {
+        if (isWorkerHouseWallBlock(level.getBlockState(lower))
+                && isWorkerHouseWallBlock(level.getBlockState(lower.above()))) {
+            placeWindow(level, lower);
+            for (Direction direction : Direction.Plane.HORIZONTAL) {
+                BlockPos trim = lower.relative(direction);
+                if (level.getBlockState(trim).isAir()) {
+                    level.setBlock(trim, Blocks.DARK_OAK_FENCE.defaultBlockState(), 2);
+                }
+            }
+        }
+    }
+
+    private static boolean isWorkerHouseWallBlock(BlockState state) {
+        return state.is(Blocks.SPRUCE_PLANKS)
+                || state.is(Blocks.BIRCH_PLANKS)
+                || state.is(Blocks.OAK_PLANKS)
+                || state.is(Blocks.DARK_OAK_PLANKS)
+                || state.is(Blocks.OAK_LOG)
+                || state.is(Blocks.STRIPPED_SPRUCE_LOG);
     }
 
     private static void spawnWorkersForHouseBeds(
@@ -981,10 +1116,10 @@ public class StarterPortalEvents {
         buildStarterRoad(level, base, Direction.NORTH, 62);
         buildStarterRoad(level, base, Direction.EAST, 76);
         buildStarterRoad(level, base, Direction.WEST, 76);
-        buildRoadBetween(level, base.offset(-118, -1, -48), base.offset(-94, -1, -48));
-        buildRoadBetween(level, base.offset(104, -1, -64), base.offset(104, -1, -42));
-        buildRoadBetween(level, base.offset(-76, -1, 34), base.offset(-106, -1, 34));
-        buildRoadBetween(level, base.offset(-106, -1, 34), base.offset(-106, -1, 60));
+        buildRoadBetween(level, base, base.offset(-118, -1, -48), base.offset(-94, -1, -48));
+        buildRoadBetween(level, base, base.offset(104, -1, -64), base.offset(104, -1, -42));
+        buildRoadBetween(level, base, base.offset(-76, -1, 34), base.offset(-106, -1, 34));
+        buildRoadBetween(level, base, base.offset(-106, -1, 34), base.offset(-106, -1, 60));
     }
 
     private static void buildStarterRoad(ServerLevel level, BlockPos base, Direction direction, int length) {
@@ -993,21 +1128,36 @@ public class StarterPortalEvents {
             BlockPos center = filledGroundAt(level, base.relative(direction, step));
             for (int width = -2; width <= 2; width++) {
                 BlockPos pos = center.relative(side, width);
+                if (isInsideImportedHouseFootprint(base, pos)) {
+                    continue;
+                }
                 level.setBlock(pos.below(), Blocks.DIRT.defaultBlockState(), 2);
                 level.setBlock(pos, Math.abs(width) == 2 ? Blocks.POLISHED_ANDESITE.defaultBlockState() : Blocks.SMOOTH_STONE.defaultBlockState(), 2);
                 level.setBlock(pos.above(), Blocks.AIR.defaultBlockState(), 2);
                 level.setBlock(pos.above(2), Blocks.AIR.defaultBlockState(), 2);
             }
-            placeRoadShoulderSlab(level, center.relative(side, -3));
-            placeRoadShoulderSlab(level, center.relative(side, 3));
+            BlockPos leftShoulder = center.relative(side, -3);
+            BlockPos rightShoulder = center.relative(side, 3);
+            if (!isInsideImportedHouseFootprint(base, leftShoulder)) {
+                placeRoadShoulderSlab(level, leftShoulder);
+            }
+            if (!isInsideImportedHouseFootprint(base, rightShoulder)) {
+                placeRoadShoulderSlab(level, rightShoulder);
+            }
             if (step > 0 && step % 16 == 0) {
-                placeLampPost(level, center.relative(side, 4));
-                placeLampPost(level, center.relative(side, -4));
+                BlockPos rightLamp = center.relative(side, 4);
+                BlockPos leftLamp = center.relative(side, -4);
+                if (!isInsideImportedHouseFootprint(base, rightLamp)) {
+                    placeLampPost(level, rightLamp);
+                }
+                if (!isInsideImportedHouseFootprint(base, leftLamp)) {
+                    placeLampPost(level, leftLamp);
+                }
             }
         }
     }
 
-    private static void buildRoadBetween(ServerLevel level, BlockPos from, BlockPos to) {
+    private static void buildRoadBetween(ServerLevel level, BlockPos base, BlockPos from, BlockPos to) {
         int dx = Integer.compare(to.getX(), from.getX());
         int dz = Integer.compare(to.getZ(), from.getZ());
         BlockPos pos = filledGroundAt(level, from);
@@ -1016,24 +1166,33 @@ public class StarterPortalEvents {
             for (int x = -1; x <= 1; x++) {
                 for (int z = -1; z <= 1; z++) {
                     BlockPos road = filledGroundAt(level, pos.offset(x, 0, z));
+                    if (isInsideImportedHouseFootprint(base, road)) {
+                        continue;
+                    }
                     level.setBlock(road.below(), Blocks.DIRT.defaultBlockState(), 2);
                     level.setBlock(road, Blocks.SMOOTH_STONE.defaultBlockState(), 2);
                     level.setBlock(road.above(), Blocks.AIR.defaultBlockState(), 2);
                 }
             }
             for (int x = -2; x <= 2; x++) {
-                placeRoadShoulderSlab(level, filledGroundAt(level, pos.offset(x, 0, -2)));
-                placeRoadShoulderSlab(level, filledGroundAt(level, pos.offset(x, 0, 2)));
+                placeRoadShoulderSlabOutsideHouse(level, base, filledGroundAt(level, pos.offset(x, 0, -2)));
+                placeRoadShoulderSlabOutsideHouse(level, base, filledGroundAt(level, pos.offset(x, 0, 2)));
             }
             for (int z = -1; z <= 1; z++) {
-                placeRoadShoulderSlab(level, filledGroundAt(level, pos.offset(-2, 0, z)));
-                placeRoadShoulderSlab(level, filledGroundAt(level, pos.offset(2, 0, z)));
+                placeRoadShoulderSlabOutsideHouse(level, base, filledGroundAt(level, pos.offset(-2, 0, z)));
+                placeRoadShoulderSlabOutsideHouse(level, base, filledGroundAt(level, pos.offset(2, 0, z)));
             }
             if (pos.getX() != to.getX()) {
                 pos = pos.offset(dx, 0, 0);
             } else if (pos.getZ() != to.getZ()) {
                 pos = pos.offset(0, 0, dz);
             }
+        }
+    }
+
+    private static void placeRoadShoulderSlabOutsideHouse(ServerLevel level, BlockPos base, BlockPos pos) {
+        if (!isInsideImportedHouseFootprint(base, pos)) {
+            placeRoadShoulderSlab(level, pos);
         }
     }
 
@@ -1121,26 +1280,52 @@ public class StarterPortalEvents {
     }
 
     private static void normalizeImportedHouseFrontRoad(ServerLevel level, BlockPos base) {
-        int roadStartZ = IMPORTED_HOUSE_MAX_Z + 1;
-        int roadEndZ = IMPORTED_ESTATE_FENCE_MAX_Z - 1;
-        for (int z = roadStartZ; z <= roadEndZ; z++) {
+        for (int z = IMPORTED_HOUSE_MAX_Z + 1; z <= IMPORTED_ESTATE_FENCE_MAX_Z - 1; z++) {
             for (int x = -20; x <= 20; x++) {
-                BlockPos road = base.offset(x, 0, z);
                 BlockState surface = Math.abs(x) <= 5
                         ? Blocks.POLISHED_ANDESITE.defaultBlockState()
                         : Math.abs(x) <= 7
                         ? Blocks.POLISHED_DIORITE.defaultBlockState()
                         : Blocks.GRASS_BLOCK.defaultBlockState();
 
-                if (level.getBlockState(road.below()).isAir()) {
-                    level.setBlock(road.below(), Blocks.DIRT.defaultBlockState(), 2);
-                }
-                level.setBlock(road, surface, 2);
-                if (level.getBlockState(road.above()).canBeReplaced()) {
-                    level.setBlock(road.above(), Blocks.AIR.defaultBlockState(), 2);
-                }
+                placeElevatedHouseRoadBlock(level, base, x, z, surface);
             }
         }
+
+        for (int x = IMPORTED_HOUSE_MAX_X + 1; x <= IMPORTED_ESTATE_FENCE_MAX_X - 1; x++) {
+            for (int z = -8; z <= 8; z++) {
+                BlockState surface = Math.abs(z) <= 4
+                        ? Blocks.POLISHED_ANDESITE.defaultBlockState()
+                        : Math.abs(z) <= 6
+                        ? Blocks.POLISHED_DIORITE.defaultBlockState()
+                        : Blocks.GRASS_BLOCK.defaultBlockState();
+                placeElevatedHouseRoadBlock(level, base, x, z, surface);
+            }
+        }
+
+        for (int x = IMPORTED_ESTATE_FENCE_MIN_X + 1; x <= HOUSE_ORIGIN_X - 1; x++) {
+            for (int z = -8; z <= 8; z++) {
+                BlockState surface = Math.abs(z) <= 4
+                        ? Blocks.POLISHED_ANDESITE.defaultBlockState()
+                        : Math.abs(z) <= 6
+                        ? Blocks.POLISHED_DIORITE.defaultBlockState()
+                        : Blocks.GRASS_BLOCK.defaultBlockState();
+                placeElevatedHouseRoadBlock(level, base, x, z, surface);
+            }
+        }
+    }
+
+    private static void placeElevatedHouseRoadBlock(ServerLevel level, BlockPos base, int x, int z, BlockState surface) {
+        BlockPos road = base.offset(x, 1, z);
+        for (int y = -6; y <= 0; y++) {
+            BlockPos support = base.offset(x, y, z);
+            if (canPatchHousePerimeterGround(level.getBlockState(support))) {
+                level.setBlock(support, Blocks.DIRT.defaultBlockState(), 2);
+            }
+        }
+        level.setBlock(road, surface, 2);
+        level.setBlock(road.above(), Blocks.AIR.defaultBlockState(), 2);
+        level.setBlock(road.above(2), Blocks.AIR.defaultBlockState(), 2);
     }
 
     private static void stabilizeNaturalTerrainRect(ServerLevel level, BlockPos base, int minX, int maxX, int minZ, int maxZ) {
@@ -2187,7 +2372,6 @@ public class StarterPortalEvents {
         }
 
         decorateImportedHouseDoors(level, base);
-        decorateImportedHouseFrontFacade(level, base);
         expandImportedHouseWindows(level, base);
 
         for (BlockPos preferred : new BlockPos[] {
@@ -3027,6 +3211,10 @@ public class StarterPortalEvents {
     }
 
     private static void placeChest(ServerLevel level, BlockPos pos, Direction facing) {
+        if (level.getBlockEntity(pos) instanceof Container container) {
+            container.clearContent();
+            container.setChanged();
+        }
         level.setBlock(pos, Blocks.CHEST.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, facing), 2);
     }
 
