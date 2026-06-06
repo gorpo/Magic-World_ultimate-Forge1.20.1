@@ -759,3 +759,13 @@ Validacao e processo:
 - Cada curral possui agua, alimento, uma especie diferente, adultos e filhotes; cuidadores sao vinculados aos currais e a reproducao e mantida com limite.
 - Validado com `compileJava`, `build` e `git diff --check`; todos passaram.
 - O Codex valida somente com Gradle e nao abre o cliente.
+
+## Conselho profissional do castelo - 2026-06-06
+
+- O reparo versao `12` adiciona quatro aldeoes ao redor da mesa central indicada nos prints.
+- Profissoes distintas: bibliotecario, cartografo, clerigo e armeiro, todos nivel 5 e com estacoes de trabalho.
+- Pontos relativos ao centro do castelo: `(+2,+5)`, `(+2,-8)`, `(-8,-1)` e `(+8,0)`.
+- Profissoes dos demais moradores nomeados do castelo sao preservadas/corrigidas pela manutencao.
+- Todos os aldeoes gerenciados na propriedade e no castelo possuem raio minimo de caminhada/trabalho de `384` blocos.
+- Validado com `compileJava`, `build` e `git diff --check`; todos passaram.
+- O Codex valida somente com Gradle e nao abre o cliente.

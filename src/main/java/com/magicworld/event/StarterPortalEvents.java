@@ -102,7 +102,8 @@ public class StarterPortalEvents {
     private static final int IMPORTED_HOUSE_MAX_Z = HOUSE_ORIGIN_Z + IMPORTED_HOUSE_SIZE_Z;
     private static final int CASTLE_SIZE_X = 265;
     private static final int CASTLE_SIZE_Z = 221;
-    private static final int CURRENT_ESTATE_REPAIR_VERSION = 11;
+    private static final int CURRENT_ESTATE_REPAIR_VERSION = 12;
+    private static final int GLOBAL_VILLAGER_WORK_RADIUS = 384;
 
     private static final Map<UUID, EstateTask> TASKS = new HashMap<>();
     private static final Set<UUID> PLAYERS_TOUCHING_STARTER_PORTAL = new HashSet<>();
@@ -131,7 +132,7 @@ public class StarterPortalEvents {
                 && data.getInt(ESTATE_REPAIR_VERSION_KEY) < CURRENT_ESTATE_REPAIR_VERSION) {
             repairExistingEstate(levelFor(player), estateBaseFromPlayer(player));
             data.putInt(ESTATE_REPAIR_VERSION_KEY, CURRENT_ESTATE_REPAIR_VERSION);
-            player.sendSystemMessage(Component.literal("Magic World: portal, casa da mina e currais restaurados."));
+            player.sendSystemMessage(Component.literal("Magic World: aldeoes do castelo e alcance global atualizados."));
         }
 
         if (!MagicWorldWorldOptions.isStarterEstateEnabled()
@@ -349,6 +350,9 @@ public class StarterPortalEvents {
         removeLooseDroppedItemsAroundImportedHouse(level, base);
         restoreStoneTreasureMineHouse(level, base);
         restoreAnimalPens(level, base);
+        if (MagicWorldWorldOptions.isCastlesEnabled()) {
+            populateCastleCouncilTable(level, castleCenter(base));
+        }
     }
 
     private static void fillMissingStarterPortalBlocks(ServerLevel level, BlockPos center) {
@@ -408,13 +412,14 @@ public class StarterPortalEvents {
     }
 
     private static void maintainEstateLife(ServerLevel level, BlockPos base) {
+        BlockPos castleOrigin = castleOrigin(base);
         AABB estate = new AABB(
-                base.getX() + IMPORTED_ESTATE_FENCE_MIN_X - 24,
+                Math.min(base.getX() + IMPORTED_ESTATE_FENCE_MIN_X, castleOrigin.getX()) - 24,
                 base.getY() - 16,
-                base.getZ() + IMPORTED_ESTATE_FENCE_MIN_Z - 24,
-                base.getX() + IMPORTED_ESTATE_FENCE_MAX_X + 24,
-                base.getY() + 48,
-                base.getZ() + IMPORTED_ESTATE_FENCE_MAX_Z + 24
+                Math.min(base.getZ() + IMPORTED_ESTATE_FENCE_MIN_Z, castleOrigin.getZ()) - 24,
+                Math.max(base.getX() + IMPORTED_ESTATE_FENCE_MAX_X, castleOrigin.getX() + CASTLE_SIZE_X) + 24,
+                base.getY() + 192,
+                Math.max(base.getZ() + IMPORTED_ESTATE_FENCE_MAX_Z, castleOrigin.getZ() + CASTLE_SIZE_Z) + 24
         );
 
         for (Villager villager : level.getEntitiesOfClass(Villager.class, estate)) {
@@ -425,8 +430,12 @@ public class StarterPortalEvents {
             BlockPos work = data.contains("MagicWorldWorkX")
                     ? new BlockPos(data.getInt("MagicWorldWorkX"), data.getInt("MagicWorldWorkY"), data.getInt("MagicWorldWorkZ"))
                     : home;
-            int workRadius = Math.max(192, data.getInt("MagicWorldWorkRadius"));
-            empowerMagicWorldVillager(villager, VillagerProfession.FARMER, home, work, workRadius);
+            int workRadius = Math.max(GLOBAL_VILLAGER_WORK_RADIUS, data.getInt("MagicWorldWorkRadius"));
+            VillagerProfession profession = professionForNamedVillager(villager);
+            if (profession == VillagerProfession.NONE || profession == VillagerProfession.NITWIT) {
+                profession = VillagerProfession.FARMER;
+            }
+            empowerMagicWorldVillager(villager, profession, home, work, workRadius);
             villager.restrictTo(work, workRadius);
         }
 
@@ -436,6 +445,23 @@ public class StarterPortalEvents {
         assignAnimalCaretakersToPens(level, base);
         ensureAnimalPenPopulations(level, base);
         encourageAnimalPenBreeding(level, base);
+    }
+
+    private static VillagerProfession professionForNamedVillager(Villager villager) {
+        return switch (villager.getName().getString()) {
+            case "Bibliotecario Real", "Bibliotecario do Conselho" -> VillagerProfession.LIBRARIAN;
+            case "Cartografo da Torre", "Cartografo do Conselho" -> VillagerProfession.CARTOGRAPHER;
+            case "Armoreiro do Castelo", "Armoreiro do Conselho" -> VillagerProfession.ARMORER;
+            case "Clerigo da Capela", "Clerigo do Conselho" -> VillagerProfession.CLERIC;
+            case "Pedreiro Real" -> VillagerProfession.MASON;
+            case "Ferreiro de Armas" -> VillagerProfession.WEAPONSMITH;
+            case "Ferreiro de Ferramentas", "Ferreiro do Castelo" -> VillagerProfession.TOOLSMITH;
+            case "Flecheiro da Guarda" -> VillagerProfession.FLETCHER;
+            case "Cozinheiro do Salao" -> VillagerProfession.BUTCHER;
+            case "Tecelao da Ponte" -> VillagerProfession.SHEPHERD;
+            case "Coureeiro da Cavalaria" -> VillagerProfession.LEATHERWORKER;
+            default -> villager.getVillagerData().getProfession();
+        };
     }
 
     private static boolean isInsideImportedHouseFootprint(int x, int z) {
@@ -905,15 +931,15 @@ public class StarterPortalEvents {
             for (Villager villager : level.getEntitiesOfClass(Villager.class, estate,
                     candidate -> name.equals(candidate.getName().getString()))) {
                 villager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(foods[pen]));
-                empowerMagicWorldVillager(villager, VillagerProfession.FARMER, home, work, 192);
+                empowerMagicWorldVillager(villager, VillagerProfession.FARMER, home, work, GLOBAL_VILLAGER_WORK_RADIUS);
                 villager.getPersistentData().putInt("MagicWorldHomeX", home.getX());
                 villager.getPersistentData().putInt("MagicWorldHomeY", home.getY());
                 villager.getPersistentData().putInt("MagicWorldHomeZ", home.getZ());
                 villager.getPersistentData().putInt("MagicWorldWorkX", work.getX());
                 villager.getPersistentData().putInt("MagicWorldWorkY", work.getY());
                 villager.getPersistentData().putInt("MagicWorldWorkZ", work.getZ());
-                villager.getPersistentData().putInt("MagicWorldWorkRadius", 192);
-                villager.restrictTo(work, 192);
+                villager.getPersistentData().putInt("MagicWorldWorkRadius", GLOBAL_VILLAGER_WORK_RADIUS);
+                villager.restrictTo(work, GLOBAL_VILLAGER_WORK_RADIUS);
             }
         }
     }
@@ -2970,6 +2996,7 @@ public class StarterPortalEvents {
         spawnNamed(level, EntityType.VILLAGER, center.offset(4, 1, -8), "Mordomo do Castelo");
         spawnNamed(level, EntityType.VILLAGER, center.offset(-4, 1, -8), "Ferreiro do Castelo");
         populateCastleResidents(level, center);
+        populateCastleCouncilTable(level, center);
         ArmorStand stand = EntityType.ARMOR_STAND.create(level);
         if (stand != null) {
             stand.setCustomName(Component.literal("Dragao Magic World"));
@@ -3174,6 +3201,56 @@ public class StarterPortalEvents {
                 new ItemStack(Items.LEATHER, 64), new ItemStack(Items.SADDLE, 4), new ItemStack(Items.LEAD, 16));
     }
 
+    private static void populateCastleCouncilTable(ServerLevel level, BlockPos center) {
+        spawnCastleCouncilResident(level, center.offset(2, 0, 5), "Bibliotecario do Conselho",
+                VillagerProfession.LIBRARIAN, Items.BOOK, Blocks.LECTERN.defaultBlockState(), Direction.SOUTH);
+        spawnCastleCouncilResident(level, center.offset(2, 0, -8), "Cartografo do Conselho",
+                VillagerProfession.CARTOGRAPHER, Items.MAP, Blocks.CARTOGRAPHY_TABLE.defaultBlockState(), Direction.NORTH);
+        spawnCastleCouncilResident(level, center.offset(-8, 0, -1), "Clerigo do Conselho",
+                VillagerProfession.CLERIC, Items.BLAZE_ROD, Blocks.BREWING_STAND.defaultBlockState(), Direction.WEST);
+        spawnCastleCouncilResident(level, center.offset(8, 0, 0), "Armoreiro do Conselho",
+                VillagerProfession.ARMORER, Items.IRON_CHESTPLATE,
+                Blocks.BLAST_FURNACE.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.WEST), Direction.EAST);
+    }
+
+    private static void spawnCastleCouncilResident(
+            ServerLevel level,
+            BlockPos seat,
+            String name,
+            VillagerProfession profession,
+            Item heldItem,
+            BlockState jobBlock,
+            Direction outward
+    ) {
+        BlockPos spawn = level.getBlockState(seat).isAir() && level.getBlockState(seat.below()).isSolid()
+                ? seat
+                : seat.above();
+        AABB castleArea = new AABB(spawn).inflate(192.0D, 96.0D, 192.0D);
+        List<Villager> existing = level.getEntitiesOfClass(Villager.class, castleArea,
+                villager -> name.equals(villager.getName().getString()));
+        Villager villager = existing.isEmpty() ? null : existing.get(0);
+        if (villager == null) {
+            Entity entity = EntityType.VILLAGER.spawn(level, spawn, MobSpawnType.STRUCTURE);
+            if (entity instanceof Villager spawned) {
+                villager = spawned;
+            }
+        }
+        if (villager == null) {
+            return;
+        }
+
+        villager.moveTo(spawn.getX() + 0.5D, spawn.getY(), spawn.getZ() + 0.5D, outward.toYRot(), 0.0F);
+        villager.setCustomName(Component.literal(name));
+        villager.setCustomNameVisible(true);
+        villager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(heldItem));
+        empowerMagicWorldVillager(villager, profession, spawn, seat, GLOBAL_VILLAGER_WORK_RADIUS);
+
+        BlockPos station = seat.relative(outward, 2);
+        if (level.getBlockState(station).isAir() || level.getBlockState(station).canBeReplaced()) {
+            level.setBlock(station, jobBlock, 2);
+        }
+    }
+
     private static void spawnCastleResident(
             ServerLevel level,
             BlockPos requested,
@@ -3196,17 +3273,39 @@ public class StarterPortalEvents {
                 spot = lowerGroundSpot;
             }
         }
-        AABB nearby = new AABB(spot).inflate(28.0D, 20.0D, 28.0D);
-        if (level.getEntitiesOfClass(Villager.class, nearby, villager -> name.equals(villager.getName().getString())).isEmpty()) {
+        AABB nearby = new AABB(spot).inflate(256.0D, 96.0D, 256.0D);
+        List<Villager> residents = level.getEntitiesOfClass(Villager.class, nearby,
+                villager -> name.equals(villager.getName().getString()));
+        Villager resident = residents.isEmpty() ? null : residents.get(0);
+        if (resident == null) {
             Entity entity = EntityType.VILLAGER.spawn(level, spot, MobSpawnType.STRUCTURE);
-            if (entity instanceof Villager villager) {
-                villager.setCustomName(Component.literal(name));
-                villager.setCustomNameVisible(true);
-                villager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(heldItem));
-                empowerMagicWorldVillager(villager, VillagerProfession.FARMER, spot, requested, 96);
+            if (entity instanceof Villager spawned) {
+                resident = spawned;
             }
         }
+        if (resident != null) {
+            resident.setCustomName(Component.literal(name));
+            resident.setCustomNameVisible(true);
+            resident.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(heldItem));
+            empowerMagicWorldVillager(resident, professionForJobBlock(jobBlock), spot, requested, GLOBAL_VILLAGER_WORK_RADIUS);
+        }
         decorateCastleResidentStation(level, spot, facing, jobBlock, supplies);
+    }
+
+    private static VillagerProfession professionForJobBlock(BlockState jobBlock) {
+        if (jobBlock.is(Blocks.LECTERN)) return VillagerProfession.LIBRARIAN;
+        if (jobBlock.is(Blocks.CARTOGRAPHY_TABLE)) return VillagerProfession.CARTOGRAPHER;
+        if (jobBlock.is(Blocks.BLAST_FURNACE)) return VillagerProfession.ARMORER;
+        if (jobBlock.is(Blocks.BREWING_STAND)) return VillagerProfession.CLERIC;
+        if (jobBlock.is(Blocks.STONECUTTER)) return VillagerProfession.MASON;
+        if (jobBlock.is(Blocks.GRINDSTONE)) return VillagerProfession.WEAPONSMITH;
+        if (jobBlock.is(Blocks.SMITHING_TABLE)) return VillagerProfession.TOOLSMITH;
+        if (jobBlock.is(Blocks.FLETCHING_TABLE)) return VillagerProfession.FLETCHER;
+        if (jobBlock.is(Blocks.COMPOSTER)) return VillagerProfession.FARMER;
+        if (jobBlock.is(Blocks.SMOKER)) return VillagerProfession.BUTCHER;
+        if (jobBlock.is(Blocks.LOOM)) return VillagerProfession.SHEPHERD;
+        if (jobBlock.is(Blocks.CAULDRON)) return VillagerProfession.LEATHERWORKER;
+        return VillagerProfession.FARMER;
     }
 
     private static BlockPos castleGroundResidentSpot(ServerLevel level, BlockPos requested) {
@@ -3413,6 +3512,7 @@ public class StarterPortalEvents {
             BlockPos work,
             int workRadius
     ) {
+        int effectiveWorkRadius = Math.max(GLOBAL_VILLAGER_WORK_RADIUS, workRadius);
         villager.setPersistenceRequired();
         villager.setInvulnerable(true);
         villager.setCanPickUpLoot(true);
@@ -3426,7 +3526,7 @@ public class StarterPortalEvents {
             villager.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.42D);
         }
         if (villager.getAttribute(Attributes.FOLLOW_RANGE) != null) {
-            villager.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(workRadius);
+            villager.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(effectiveWorkRadius);
         }
         villager.setHealth(villager.getMaxHealth());
         int longDuration = 20 * 60 * 60 * 8;
@@ -3435,8 +3535,8 @@ public class StarterPortalEvents {
         villager.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, longDuration, 1, true, false));
         villager.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, longDuration, 1, true, false));
         villager.addEffect(new MobEffectInstance(MobEffects.HERO_OF_THE_VILLAGE, longDuration, 4, true, false));
-        villager.restrictTo(work, workRadius);
-        villager.getPersistentData().putInt("MagicWorldWorkRadius", workRadius);
+        villager.restrictTo(work, effectiveWorkRadius);
+        villager.getPersistentData().putInt("MagicWorldWorkRadius", effectiveWorkRadius);
         villager.getPersistentData().putInt("MagicWorldHomeX", home.getX());
         villager.getPersistentData().putInt("MagicWorldHomeY", home.getY());
         villager.getPersistentData().putInt("MagicWorldHomeZ", home.getZ());

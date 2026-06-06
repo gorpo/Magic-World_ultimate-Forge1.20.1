@@ -1208,3 +1208,21 @@ Validacao:
   - `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
   - `git diff --check`: sem erros.
   - Cliente nao foi aberto; nao executar `runClient`.
+
+## Conselho do castelo e alcance global dos aldeoes - 2026-06-06
+
+- Reparo elevado para a versao `12`.
+- Quatro aldeoes sao posicionados ao redor da mesa central do castelo nos offsets confirmados pelos prints:
+  - `(+2, 0, +5)`: Bibliotecario do Conselho;
+  - `(+2, 0, -8)`: Cartografo do Conselho;
+  - `(-8, 0, -1)`: Clerigo do Conselho;
+  - `(+8, 0, 0)`: Armoreiro do Conselho.
+- Cada membro possui profissao nivel 5, item e estacao de trabalho distintos, sem substituir blocos existentes da sala.
+- A manutencao reconhece os nomes dos profissionais antigos do castelo e preserva/corrige suas profissoes.
+- O raio minimo de trabalho, caminhada e alcance de todos os aldeoes gerenciados passou para `384` blocos.
+- A area de manutencao agora inclui integralmente propriedade e castelo.
+- Validacao:
+  - `./gradlew.bat compileJava --stacktrace`: BUILD SUCCESSFUL.
+  - `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+  - `git diff --check`: sem erros.
+  - Cliente nao foi aberto; nao executar `runClient`.
