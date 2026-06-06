@@ -993,8 +993,9 @@ public class StarterPortalEvents {
     }
 
     private static BlockPos witchCovenAnchor(BlockPos base) {
-        // Ponto do print: X 447 / Z -87 no mapa de teste atual, com base historica em X -60 / Z 30.
-        return base.offset(507, 0, -117);
+        // Print atual: jogador em X 67 / Z -4 olhando para a mata em X 58 / Z -5.
+        // A base historica do mapa de testes e X -60 / Z 30; o portao fica 4 blocos a leste da ancora.
+        return base.offset(114, 0, -35);
     }
 
     private static void buildWitchCovenHouse(ServerLevel level, BlockPos base) {

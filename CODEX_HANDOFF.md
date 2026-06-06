@@ -1659,3 +1659,11 @@ Validacao:
 - A casa afetada e a casa das bruxas recem-criada.
 - Alteracao: `buildWitchCovenHouse` usa `floorY = heightmap - 2` em vez de `heightmap - 1`, baixando todo o conjunto em 1 bloco.
 - Validacao parcial: `./gradlew.bat compileJava --stacktrace` = BUILD SUCCESSFUL.
+
+## Handoff 2026-06-06 - reposicionamento casa das bruxas
+- Usuario reportou que a casa das bruxas com as bruxas nao apareceu no local combinado.
+- Imagens novas: jogador em `X 67 / Y 68 / Z -4`, alvo/mata em `X 58 / Y 68 / Z -5`.
+- Causa: o offset anterior `base.offset(507,0,-117)` foi calculado com print antigo em `X 447 / Z -87` e ficou distante demais da area correta.
+- Fix: `witchCovenAnchor(base)` agora retorna `base.offset(114,0,-35)`. Como o gate e construido em `anchor + 4X`, o portao fica aproximadamente no alvo `X 58 / Z -5` usando base historica `X -60 / Z 30`.
+- Mantido ajuste de altura anterior: `floorY = heightmap - 2`.
+- Validacao executada: `./gradlew.bat compileJava --stacktrace` = BUILD SUCCESSFUL.

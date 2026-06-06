@@ -968,3 +968,11 @@ Validacao e processo:
 - Ajuste visual apos print: a casa das bruxas ficou um bloco alta em relacao a rua/terreno frontal.
 - `buildWitchCovenHouse` agora calcula `floorY` com `heightmap - 2`, baixando casa, cerca, entrada, piso e decoracao juntos em 1 bloco.
 - Validacao parcial: `./gradlew.bat compileJava --stacktrace` passou.
+
+## Registro 2026-06-06 - reposicionamento casa das bruxas
+- O print novo mostrou que a casa das bruxas nao apareceu no local combinado da mata.
+- Coordenadas do print: jogador em `X 67 / Y 68 / Z -4`, mirando a mata em `X 58 / Y 68 / Z -5`.
+- O offset anterior `base.offset(507,0,-117)` vinha do print antigo e mandava a casa para longe demais.
+- `witchCovenAnchor(base)` foi corrigido para `base.offset(114,0,-35)`; como o portao e colocado 4 blocos a leste da ancora, o portao cai perto de `X 58 / Z -5` quando a base historica e `X -60 / Z 30`.
+- A casa continua um bloco mais baixa (`heightmap - 2`) e se estende para oeste dentro da mata.
+- Validacao: `./gradlew.bat compileJava --stacktrace` passou.
