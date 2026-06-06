@@ -748,3 +748,14 @@ Validacao e processo:
 - Nao executar `runClient`; o usuario testa o cliente.
 - `./gradlew.bat compileJava --stacktrace`: BUILD SUCCESSFUL.
 - `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+
+## Reparo breve do portal, casa da mina e currais - 2026-06-06
+
+- O reparo versao `11` preenche apenas blocos ausentes/em ar na base e estrutura do portal inicial.
+- A abertura central e todos os blocos existentes sao preservados.
+- A casa fechada de pedra sobre a mina e reconstruida por ultimo, depois das rotinas que poderiam limpar sua area.
+- A restauracao recoloca piso, paredes, telhado, janelas, porta, baus, decoracao e acesso a mina, alem de remover os itens soltos deixados pela destruicao anterior.
+- As cercas dos seis currais sao fechadas somente no perimetro existente, sem tocar na plantacao, com uma porteira por curral.
+- Cada curral possui agua, alimento, uma especie diferente, adultos e filhotes; cuidadores sao vinculados aos currais e a reproducao e mantida com limite.
+- Validado com `compileJava`, `build` e `git diff --check`; todos passaram.
+- O Codex valida somente com Gradle e nao abre o cliente.

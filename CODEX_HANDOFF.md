@@ -1191,3 +1191,20 @@ Validacao:
 - `./gradlew.bat compileJava --stacktrace`: BUILD SUCCESSFUL.
 - `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
 - Cliente nao foi aberto.
+
+## Reparo pontual do portal, casa da mina e currais - 2026-06-06
+
+- Reparo elevado para a versao `11`.
+- Base, suporte, pilares, topo e vidros laterais do portal inicial sao preenchidos somente quando o bloco esperado estiver em ar.
+- Nenhum bloco existente e substituido e a abertura central do portal permanece livre.
+- Corrigida a regressao que deixava armaduras e itens expostos no gramado: a limpeza/geracao posterior do castelo podia apagar a casa fechada construida sobre a mina.
+- A casa de pedra da mina agora e restaurada como ultima etapa tanto na criacao inicial quanto no reparo de propriedades existentes.
+- Itens soltos ao redor da casa da mina sao removidos antes e depois da restauracao; paredes, telhado, janelas, porta, baus, decoracao e acesso a mina sao reconstruidos.
+- Os seis currais sao reparados somente em sua linha exata de cerca, sem limpar a plantacao ou estruturas vizinhas, e mantem uma unica porteira cada.
+- Cada curral recebe agua, feno, composteira, bau de alimento, uma especie exclusiva, tres adultos e dois filhotes.
+- Cuidadores existentes sao vinculados individualmente aos seis currais; a manutencao repoe apenas animais nomeados ausentes e incentiva reproducao ate o limite controlado.
+- Validacao em 2026-06-06 14:05:06 -03:00:
+  - `./gradlew.bat compileJava --stacktrace`: BUILD SUCCESSFUL.
+  - `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+  - `git diff --check`: sem erros.
+  - Cliente nao foi aberto; nao executar `runClient`.

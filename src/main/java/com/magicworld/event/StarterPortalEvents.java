@@ -21,6 +21,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.RelativeMovement;
@@ -30,6 +31,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.VillagerProfession;
+import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -100,7 +102,7 @@ public class StarterPortalEvents {
     private static final int IMPORTED_HOUSE_MAX_Z = HOUSE_ORIGIN_Z + IMPORTED_HOUSE_SIZE_Z;
     private static final int CASTLE_SIZE_X = 265;
     private static final int CASTLE_SIZE_Z = 221;
-    private static final int CURRENT_ESTATE_REPAIR_VERSION = 8;
+    private static final int CURRENT_ESTATE_REPAIR_VERSION = 11;
 
     private static final Map<UUID, EstateTask> TASKS = new HashMap<>();
     private static final Set<UUID> PLAYERS_TOUCHING_STARTER_PORTAL = new HashSet<>();
@@ -129,7 +131,7 @@ public class StarterPortalEvents {
                 && data.getInt(ESTATE_REPAIR_VERSION_KEY) < CURRENT_ESTATE_REPAIR_VERSION) {
             repairExistingEstate(levelFor(player), estateBaseFromPlayer(player));
             data.putInt(ESTATE_REPAIR_VERSION_KEY, CURRENT_ESTATE_REPAIR_VERSION);
-            player.sendSystemMessage(Component.literal("Magic World: menu da propriedade, casarao e moradores reparados."));
+            player.sendSystemMessage(Component.literal("Magic World: portal, casa da mina e currais restaurados."));
         }
 
         if (!MagicWorldWorldOptions.isStarterEstateEnabled()
@@ -233,6 +235,7 @@ public class StarterPortalEvents {
                 TASKS.put(player.getUUID(), new EstateTask(task.base, 5, FINAL_DELAY_TICKS));
             }
             default -> {
+                restoreStoneTreasureMineHouse(level, task.base);
                 player.getPersistentData().putBoolean(ESTATE_CREATED_KEY, true);
                 player.getPersistentData().putInt(ESTATE_REPAIR_VERSION_KEY, CURRENT_ESTATE_REPAIR_VERSION);
                 applyMagicWorldServerSettings(player);
@@ -333,6 +336,7 @@ public class StarterPortalEvents {
     }
 
     private static void repairExistingEstate(ServerLevel level, BlockPos base) {
+        fillMissingStarterPortalBlocks(level, starterPortalCenter(base));
         removeLooseDroppedItemsAroundImportedHouse(level, base);
         stabilizeEstateAirGaps(level, base);
         normalizeImportedHouseFrontRoad(level, base);
@@ -340,10 +344,48 @@ public class StarterPortalEvents {
         buildAnimalCaretakerSettlement(level, base);
         buildGreenVillageSquare(level, base);
         buildEnhancedEstateLighting(level, base);
-        buildStoneTreasureMineHouse(level, base.offset(67, -1, 46));
         restoreImportedHouseTemplate(level, base);
         finishImportedHouseContents(level, base);
         removeLooseDroppedItemsAroundImportedHouse(level, base);
+        restoreStoneTreasureMineHouse(level, base);
+        restoreAnimalPens(level, base);
+    }
+
+    private static void fillMissingStarterPortalBlocks(ServerLevel level, BlockPos center) {
+        for (int x = -3; x <= 3; x++) {
+            for (int z = -2; z <= 2; z++) {
+                BlockPos support = center.offset(x, -1, z);
+                BlockPos floor = center.offset(x, 0, z);
+                if (level.getBlockState(support).isAir()) {
+                    level.setBlock(support, Blocks.DIRT.defaultBlockState(), 2);
+                }
+                if (level.getBlockState(floor).isAir()) {
+                    boolean edge = Math.abs(x) == 3 || Math.abs(z) == 2;
+                    level.setBlock(floor, edge
+                            ? Blocks.POLISHED_ANDESITE.defaultBlockState()
+                            : Blocks.SMOOTH_STONE.defaultBlockState(), 2);
+                }
+            }
+        }
+
+        for (int y = 1; y <= 5; y++) {
+            setBlockIfAir(level, center.offset(-2, y, 0), Blocks.STRIPPED_OAK_LOG.defaultBlockState());
+            setBlockIfAir(level, center.offset(2, y, 0), Blocks.STRIPPED_OAK_LOG.defaultBlockState());
+        }
+        for (int x = -3; x <= 3; x++) {
+            setBlockIfAir(level, center.offset(x, 5, 0), Blocks.OAK_PLANKS.defaultBlockState());
+            setBlockIfAir(level, center.offset(x, 6, 0), Blocks.DARK_OAK_SLAB.defaultBlockState());
+        }
+        for (int y = 1; y <= 4; y++) {
+            setBlockIfAir(level, center.offset(-1, y, 0), Blocks.PURPLE_STAINED_GLASS.defaultBlockState());
+            setBlockIfAir(level, center.offset(1, y, 0), Blocks.MAGENTA_STAINED_GLASS.defaultBlockState());
+        }
+    }
+
+    private static void setBlockIfAir(ServerLevel level, BlockPos pos, BlockState state) {
+        if (level.getBlockState(pos).isAir()) {
+            level.setBlock(pos, state, 2);
+        }
     }
 
     private static void restoreImportedHouseTemplate(ServerLevel level, BlockPos base) {
@@ -391,6 +433,9 @@ public class StarterPortalEvents {
         for (Monster monster : level.getEntitiesOfClass(Monster.class, estate)) {
             monster.discard();
         }
+        assignAnimalCaretakersToPens(level, base);
+        ensureAnimalPenPopulations(level, base);
+        encourageAnimalPenBreeding(level, base);
     }
 
     private static boolean isInsideImportedHouseFootprint(int x, int z) {
@@ -413,6 +458,20 @@ public class StarterPortalEvents {
                 base.getY() + 36,
                 base.getZ() + IMPORTED_ESTATE_FENCE_MAX_Z + 18
         );
+        for (ItemEntity item : level.getEntitiesOfClass(ItemEntity.class, area)) {
+            item.discard();
+        }
+    }
+
+    private static void restoreStoneTreasureMineHouse(ServerLevel level, BlockPos base) {
+        BlockPos center = base.offset(67, -1, 46);
+        removeLooseDroppedItemsAroundMineHouse(level, center);
+        buildStoneTreasureMineHouse(level, center);
+        removeLooseDroppedItemsAroundMineHouse(level, center);
+    }
+
+    private static void removeLooseDroppedItemsAroundMineHouse(ServerLevel level, BlockPos center) {
+        AABB area = new AABB(center).inflate(24.0D, 16.0D, 24.0D);
         for (ItemEntity item : level.getEntitiesOfClass(ItemEntity.class, area)) {
             item.discard();
         }
@@ -615,6 +674,7 @@ public class StarterPortalEvents {
         buildAnimalPen(level, base.offset(46, -1, -42), 14, 12);
         buildAnimalPen(level, base.offset(62, -1, -42), 14, 12);
         buildAnimalPen(level, base.offset(78, -1, -42), 14, 12);
+        furnishAnimalPens(level, base);
         buildAnimalFeedGarden(level, base.offset(78, -1, -10), 22, 12);
         buildPlantationWorkerSettlement(level, base);
         buildAnimalCaretakerSettlement(level, base);
@@ -623,7 +683,6 @@ public class StarterPortalEvents {
         stabilizeEstateAirGaps(level, base);
         stabilizeGreenVillageDistrictTerrain(level, base);
         buildGreenVillageSquare(level, base);
-        buildStoneTreasureMineHouse(level, base.offset(67, -1, 46));
         buildEstateLivingBorder(level, base, IMPORTED_ESTATE_FENCE_MIN_X, IMPORTED_ESTATE_FENCE_MAX_X,
                 IMPORTED_ESTATE_FENCE_MIN_Z, IMPORTED_ESTATE_FENCE_MAX_Z);
         buildEnhancedEstateLighting(level, base);
@@ -691,12 +750,54 @@ public class StarterPortalEvents {
     private static void placeAnimalPenGates(ServerLevel level, BlockPos corner, int width, int depth) {
         level.setBlock(corner.offset(width / 2, 1, 0), Blocks.OAK_FENCE_GATE.defaultBlockState()
                 .setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH), 2);
-        level.setBlock(corner.offset(width / 2, 1, depth), Blocks.OAK_FENCE_GATE.defaultBlockState()
-                .setValue(HorizontalDirectionalBlock.FACING, Direction.SOUTH), 2);
-        level.setBlock(corner.offset(0, 1, depth / 2), Blocks.OAK_FENCE_GATE.defaultBlockState()
-                .setValue(HorizontalDirectionalBlock.FACING, Direction.WEST), 2);
-        level.setBlock(corner.offset(width, 1, depth / 2), Blocks.OAK_FENCE_GATE.defaultBlockState()
-                .setValue(HorizontalDirectionalBlock.FACING, Direction.EAST), 2);
+    }
+
+    private static void restoreAnimalPens(ServerLevel level, BlockPos base) {
+        BlockPos[] corners = animalPenCorners(base);
+        for (BlockPos corner : corners) {
+            repairAnimalPenBoundary(level, corner, 14, 12);
+        }
+        furnishAnimalPens(level, base);
+        ensureAnimalPenPopulations(level, base);
+        assignAnimalCaretakersToPens(level, base);
+    }
+
+    private static void repairAnimalPenBoundary(ServerLevel level, BlockPos corner, int width, int depth) {
+        for (int x = 0; x <= width; x++) {
+            for (int z = 0; z <= depth; z++) {
+                if (x != 0 && x != width && z != 0 && z != depth) {
+                    continue;
+                }
+                BlockPos fence = corner.offset(x, 1, z);
+                boolean entrance = x == width / 2 && z == 0;
+                level.setBlock(fence, entrance
+                        ? Blocks.OAK_FENCE_GATE.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH)
+                        : Blocks.OAK_FENCE.defaultBlockState(), 2);
+            }
+        }
+    }
+
+    private static void furnishAnimalPens(ServerLevel level, BlockPos base) {
+        Item[] foods = {
+                Items.WHEAT, Items.CARROT, Items.WHEAT,
+                Items.WHEAT_SEEDS, Items.GOLDEN_CARROT, Items.WHEAT
+        };
+        for (int i = 0; i < animalPenCorners(base).length; i++) {
+            BlockPos corner = animalPenCorners(base)[i];
+            level.setBlock(corner.offset(2, 1, 2), Blocks.WATER_CAULDRON.defaultBlockState(), 2);
+            level.setBlock(corner.offset(3, 1, 2), Blocks.HAY_BLOCK.defaultBlockState(), 2);
+            level.setBlock(corner.offset(4, 1, 2), Blocks.COMPOSTER.defaultBlockState(), 2);
+            BlockPos feedChest = corner.offset(11, 1, 2);
+            placeChest(level, feedChest, Direction.SOUTH);
+            putItems(level, feedChest, new ItemStack(foods[i], 64), new ItemStack(foods[i], 64), new ItemStack(Items.HAY_BLOCK, 32));
+        }
+    }
+
+    private static BlockPos[] animalPenCorners(BlockPos base) {
+        return new BlockPos[] {
+                base.offset(46, -1, -60), base.offset(62, -1, -60), base.offset(78, -1, -60),
+                base.offset(46, -1, -42), base.offset(62, -1, -42), base.offset(78, -1, -42)
+        };
     }
 
     private static void buildAnimalFeedGarden(ServerLevel level, BlockPos corner, int width, int depth) {
@@ -781,6 +882,40 @@ public class StarterPortalEvents {
 
         buildAnimalFoodStripFarm(level, foodFarm, 4, 32);
         spawnNamed(level, EntityType.IRON_GOLEM, farmCenter.offset(0, 1, 0), "Guardiao dos Animais");
+        assignAnimalCaretakersToPens(level, base);
+    }
+
+    private static void assignAnimalCaretakersToPens(ServerLevel level, BlockPos base) {
+        BlockPos[] houses = {
+                base.offset(106, -1, -72),
+                base.offset(106, -1, -56)
+        };
+        BlockPos[] pens = animalPenCorners(base);
+        Item[] foods = {
+                Items.WHEAT, Items.CARROT, Items.WHEAT,
+                Items.WHEAT_SEEDS, Items.GOLDEN_CARROT, Items.WHEAT
+        };
+        AABB estate = new AABB(base).inflate(256.0D, 64.0D, 256.0D);
+        for (int pen = 0; pen < pens.length; pen++) {
+            int house = pen / 3;
+            int worker = pen % 3 + 1;
+            String name = "Cuidador da Fazenda Casa " + (house + 1) + "-" + worker;
+            BlockPos home = houses[house].offset(5, 1, 4);
+            BlockPos work = pens[pen].offset(7, 1, 6);
+            for (Villager villager : level.getEntitiesOfClass(Villager.class, estate,
+                    candidate -> name.equals(candidate.getName().getString()))) {
+                villager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(foods[pen]));
+                empowerMagicWorldVillager(villager, VillagerProfession.FARMER, home, work, 192);
+                villager.getPersistentData().putInt("MagicWorldHomeX", home.getX());
+                villager.getPersistentData().putInt("MagicWorldHomeY", home.getY());
+                villager.getPersistentData().putInt("MagicWorldHomeZ", home.getZ());
+                villager.getPersistentData().putInt("MagicWorldWorkX", work.getX());
+                villager.getPersistentData().putInt("MagicWorldWorkY", work.getY());
+                villager.getPersistentData().putInt("MagicWorldWorkZ", work.getZ());
+                villager.getPersistentData().putInt("MagicWorldWorkRadius", 192);
+                villager.restrictTo(work, 192);
+            }
+        }
     }
 
     private static void buildSimplePlantationWorkerHouse(ServerLevel level, BlockPos corner, Direction mainDoorFacing, Direction backDoorFacing) {
@@ -1963,16 +2098,64 @@ public class StarterPortalEvents {
     }
 
     private static void spawnImportedStarterAnimals(ServerLevel level, BlockPos base) {
-        spawnAnimalGroup(level, EntityType.COW, base.offset(51, 0, -56), 4);
-        spawnAnimalGroup(level, EntityType.PIG, base.offset(67, 0, -56), 4);
-        spawnAnimalGroup(level, EntityType.SHEEP, base.offset(83, 0, -56), 4);
-        spawnAnimalGroup(level, EntityType.CHICKEN, base.offset(51, 0, -38), 6);
-        spawnAnimalGroup(level, EntityType.GOAT, base.offset(67, 0, -38), 4);
-        spawnAnimalGroup(level, EntityType.RABBIT, base.offset(83, 0, -38), 6);
-        spawnAnimalGroup(level, EntityType.LLAMA, base.offset(51, 0, -22), 4);
-        spawnAnimalGroup(level, EntityType.HORSE, base.offset(67, 0, -22), 3);
-        spawnAnimalGroup(level, EntityType.DONKEY, base.offset(83, 0, -22), 3);
-        spawnAnimalGroup(level, EntityType.CAMEL, base.offset(67, 0, -6), 3);
+        ensureAnimalPenPopulations(level, base);
+    }
+
+    private static void ensureAnimalPenPopulations(ServerLevel level, BlockPos base) {
+        EntityType<?>[] species = {
+                EntityType.COW, EntityType.PIG, EntityType.SHEEP,
+                EntityType.CHICKEN, EntityType.HORSE, EntityType.GOAT
+        };
+        String[] speciesNames = {"Vaca", "Porco", "Ovelha", "Galinha", "Cavalo", "Cabra"};
+        BlockPos[] corners = animalPenCorners(base);
+        for (int pen = 0; pen < corners.length; pen++) {
+            BlockPos center = corners[pen].offset(7, 0, 6);
+            for (int adult = 1; adult <= 3; adult++) {
+                spawnBreedingAnimal(level, species[pen], center.offset(adult - 2, 1, -1),
+                        speciesNames[pen] + " Curral " + (pen + 1) + " Adulto " + adult, false);
+            }
+            for (int baby = 1; baby <= 2; baby++) {
+                spawnBreedingAnimal(level, species[pen], center.offset(baby - 1, 1, 1),
+                        speciesNames[pen] + " Curral " + (pen + 1) + " Filhote " + baby, true);
+            }
+        }
+    }
+
+    private static void spawnBreedingAnimal(ServerLevel level, EntityType<?> type, BlockPos pos, String name, boolean baby) {
+        AABB nearby = new AABB(pos).inflate(256.0D, 64.0D, 256.0D);
+        if (!level.getEntitiesOfClass(Entity.class, nearby, entity -> name.equals(entity.getName().getString())).isEmpty()) {
+            return;
+        }
+        Entity entity = type.spawn(level, pos, MobSpawnType.STRUCTURE);
+        if (entity == null) {
+            return;
+        }
+        entity.setCustomName(Component.literal(name));
+        entity.setCustomNameVisible(false);
+        entity.setInvulnerable(true);
+        if (entity instanceof Mob mob) {
+            mob.setPersistenceRequired();
+        }
+        if (entity instanceof AgeableMob ageable) {
+            ageable.setAge(baby ? -24000 : 0);
+        }
+    }
+
+    private static void encourageAnimalPenBreeding(ServerLevel level, BlockPos base) {
+        if (Math.floorMod(level.getGameTime(), 2400L) >= 200L) {
+            return;
+        }
+        for (BlockPos corner : animalPenCorners(base)) {
+            AABB pen = new AABB(corner.offset(1, 0, 1), corner.offset(13, 4, 11));
+            List<Animal> animals = level.getEntitiesOfClass(Animal.class, pen);
+            if (animals.size() >= 9) {
+                continue;
+            }
+            List<Animal> adults = animals.stream().filter(animal -> animal.getAge() == 0).toList();
+            for (int i = 0; i < Math.min(2, adults.size()); i++) {
+                adults.get(i).setInLove(null);
+            }
+        }
     }
 
     private static void buildStarterPortal(ServerLevel level, BlockPos center) {
