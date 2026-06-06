@@ -1334,3 +1334,65 @@ Validacao:
 - `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
 - `git diff --check`: sem erros; apenas avisos esperados de CRLF no Windows.
 - Cliente nao foi aberto pelo Codex; o usuario testa o cliente.
+
+## Ajuste da casa grande, cerejeiras e casas dos animais - 2026-06-06 14:58:27 -03:00
+
+Pedido atual:
+
+- O usuario esclareceu que a casa grande vazia indicada nos prints precisa receber o mesmo pacote premium que foi criado no centro perto dos animais.
+- Manter a casa premium existente perto dos animais como esta.
+- Adicionar duas portas no lado voltado para as fazendas/currais.
+- Coordenadas lidas do print atual: jogador em `55.092 / 74 / -34.441`, bloco alvo `55 73 -29`.
+- Novo print mostrou as casas em frente ao ponto `56 / 74 / -11` um bloco abaixo do nivel do chao.
+
+Implementado:
+
+- Confirmado pelo calculo da base atual `(-60,74,30)` que o centro `55 74 -35` cai dentro de `premiumAnimalWorkCenterCorner(base).offset(9,1,7)`.
+- O volume premium existente e `X 46..64`, `Y 73+`, `Z -42..-28`, com centro em `55 / 74 / -35`.
+- `CURRENT_ESTATE_REPAIR_VERSION` elevado para `17`, para forcar o reparo no save ja criado.
+- A rotina `buildPremiumAnimalWorkCenter` continua reconstruindo e mobiliando esse volume com armazenamento, baus premium, varinhas, estacoes de trabalho, mesa, camas, armaduras, luzes e aldeoes.
+- A porta leste central foi mantida na parede de armazenamento.
+- O lado oeste agora tem duas portas, em `z = depth/2 - 3` e `z = depth/2 + 3`, ambas com caminho curto para o lado das fazendas/currais.
+- O usuario pediu para manter as cerejeiras externas ja convertidas e tambem converter as arvores verdes que ficaram no entorno da casa importada.
+- `convertImportedHouseExteriorTreesToCherry` agora cobre uma faixa maior ao redor da casa (`64` blocos para fora do footprint) e nao pula mais a zona de rua/muro; como a rotina so troca troncos/folhas naturais, ruas, muros e blocos solidos da casa continuam preservados.
+- As casas dos animais/centro premium em frente a `56 74 -11` foram elevadas de `base.offset(106,-1,...)` para `base.offset(106,0,...)`.
+- `assignAnimalCaretakersToPens` e `buildWorkerSettlement` foram alinhados para usar o mesmo nivel novo, evitando aldeoes ou referencias no nivel antigo.
+
+Validacao:
+
+- `./gradlew.bat compileJava --stacktrace`: BUILD SUCCESSFUL.
+- `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+- `git diff --check`: sem erros; apenas avisos esperados de CRLF no Windows.
+- Cliente nao foi aberto pelo Codex.
+
+## Santuario magico do fim da rua - 2026-06-06 15:05:02 -03:00
+
+Pedido atual:
+
+- Dentro das coordenadas dos prints, no final da rua em frente a casa, transformar a caverna/espaco vazio em santuario.
+- O santuario deve ter muita luz, decoracao, blocos coloridos, coisas premium, parede de baus com todos os itens do jogo, ferramentas, armaduras, quadros/decoracao, plantas, mesa central, sinos, brilhos, redstone, coelhos e passaros.
+- Precisa entrar no sistema de loading.
+
+Coordenadas lidas dos prints:
+
+- Pontos de referencia: `236 75 -40`, `281 75 -56`, `237 75 -56`, `281 75 -39`.
+- Volume implementado: aproximadamente `X 236..281`, `Y 74+`, `Z -56..-39`.
+- Origem relativa: `roadEndMagicSanctuaryOrigin(base) = base.offset(296,0,-86)`.
+- Tamanho usado: largura `45`, profundidade `17`, altura interna `10`.
+
+Implementado:
+
+- `CURRENT_ESTATE_REPAIR_VERSION` elevado para `18`.
+- `handleEstateTask` ganhou etapa `6` em `97%`, mensagem `Carregando santuario magico do fim da rua...`.
+- O santuário e construido antes do `ESTATE_CREATED_KEY` e antes do progresso `100%`.
+- `repairExistingEstate` chama `buildRoadEndMagicSanctuary` para saves ja existentes.
+- O santuário tem shell proprio com piso colorido/iluminado, paredes decoradas, teto de calcite/amethyst, redstone blocks, redstone lamps, glowstone e sea lanterns.
+- A parede leste e as laterais recebem baus/barris preenchidos por `fillContainersWithAllRegisteredItems`.
+- Ha bau de varinhas, bau premium, bau de ferramentas, estacoes de trabalho, mesa central, sino, banners, paineis decorativos, plantas, armor stands para couro/malha/ferro/ouro/diamante/netherite/Draconic Aether, allays, parrots e rabbits.
+
+Validacao:
+
+- `./gradlew.bat compileJava --stacktrace`: BUILD SUCCESSFUL.
+- `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+- `git diff --check`: sem erros; apenas avisos esperados de CRLF no Windows.
+- Cliente nao foi aberto pelo Codex.

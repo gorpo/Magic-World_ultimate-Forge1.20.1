@@ -104,7 +104,7 @@ public class StarterPortalEvents {
     private static final int IMPORTED_HOUSE_MAX_Z = HOUSE_ORIGIN_Z + IMPORTED_HOUSE_SIZE_Z;
     private static final int CASTLE_SIZE_X = 265;
     private static final int CASTLE_SIZE_Z = 221;
-    private static final int CURRENT_ESTATE_REPAIR_VERSION = 15;
+    private static final int CURRENT_ESTATE_REPAIR_VERSION = 18;
     private static final int GLOBAL_VILLAGER_WORK_RADIUS = 384;
 
     private static final Map<UUID, EstateTask> TASKS = new HashMap<>();
@@ -134,7 +134,7 @@ public class StarterPortalEvents {
                 && data.getInt(ESTATE_REPAIR_VERSION_KEY) < CURRENT_ESTATE_REPAIR_VERSION) {
             repairExistingEstate(levelFor(player), estateBaseFromPlayer(player));
             data.putInt(ESTATE_REPAIR_VERSION_KEY, CURRENT_ESTATE_REPAIR_VERSION);
-            player.sendSystemMessage(Component.literal("Magic World: casa grande premium, guardioes e iluminacao reforcada atualizados."));
+            player.sendSystemMessage(Component.literal("Magic World: santuario do fim da rua, casas elevadas e cerejeiras atualizados."));
         }
 
         if (!MagicWorldWorldOptions.isStarterEstateEnabled()
@@ -240,7 +240,12 @@ public class StarterPortalEvents {
             case 5 -> {
                 MagicWorldNetwork.sendInitialLoadProgress(player, 94, "Carregando casa do fim da rua...", false);
                 buildStarterRoadEndHouse(level, task.base);
-                TASKS.put(player.getUUID(), new EstateTask(task.base, 6, FINAL_DELAY_TICKS));
+                TASKS.put(player.getUUID(), new EstateTask(task.base, 6, STEP_DELAY_TICKS));
+            }
+            case 6 -> {
+                MagicWorldNetwork.sendInitialLoadProgress(player, 97, "Carregando santuario magico do fim da rua...", false);
+                buildRoadEndMagicSanctuary(level, task.base);
+                TASKS.put(player.getUUID(), new EstateTask(task.base, 7, FINAL_DELAY_TICKS));
             }
             default -> {
                 restoreStoneTreasureMineHouse(level, task.base);
@@ -356,6 +361,7 @@ public class StarterPortalEvents {
         finishImportedHouseContents(level, base);
         removeLooseDroppedItemsAroundImportedHouse(level, base);
         buildStarterRoadEndHouse(level, base);
+        buildRoadEndMagicSanctuary(level, base);
         restoreStoneTreasureMineHouse(level, base);
         restoreAnimalPens(level, base);
         if (MagicWorldWorldOptions.isCastlesEnabled()) {
@@ -698,6 +704,266 @@ public class StarterPortalEvents {
         spawnNamed(level, EntityType.CAT, frontDoor.offset(3, 1, 5), "Gato da Casa do Fim da Rua");
     }
 
+    private static BlockPos roadEndMagicSanctuaryOrigin(BlockPos base) {
+        return base.offset(296, 0, -86);
+    }
+
+    private static void buildRoadEndMagicSanctuary(ServerLevel level, BlockPos base) {
+        BlockPos origin = roadEndMagicSanctuaryOrigin(base);
+        int width = 45;
+        int depth = 17;
+        int height = 10;
+        int centerZ = depth / 2;
+
+        prepareRoadEndMagicSanctuaryShell(level, origin, width, depth, height, centerZ);
+        buildRoadEndSanctuaryStorage(level, origin, width, depth);
+        buildRoadEndSanctuaryStations(level, origin, width, depth);
+        buildRoadEndSanctuaryMeetingTable(level, origin, width, depth);
+        buildRoadEndSanctuaryArmorGallery(level, origin, width, depth);
+        decorateRoadEndSanctuary(level, origin, width, depth, height);
+        populateRoadEndSanctuary(level, origin, width, depth);
+    }
+
+    private static void prepareRoadEndMagicSanctuaryShell(
+            ServerLevel level,
+            BlockPos origin,
+            int width,
+            int depth,
+            int height,
+            int centerZ
+    ) {
+        for (int x = 0; x <= width; x++) {
+            for (int z = 0; z <= depth; z++) {
+                BlockPos floor = origin.offset(x, 0, z);
+                boolean edge = x == 0 || x == width || z == 0 || z == depth;
+                boolean entrance = (z >= centerZ - 2 && z <= centerZ + 2) && (x == 0 || x == width);
+                level.setBlock(floor.below(), Blocks.POLISHED_DEEPSLATE.defaultBlockState(), 2);
+                level.setBlock(floor, sanctuaryFloorBlock(x, z), 2);
+                for (int y = 1; y <= height; y++) {
+                    BlockPos pos = floor.above(y);
+                    if (edge && !entrance) {
+                        level.setBlock(pos, sanctuaryWallBlock(x, y, z), 2);
+                    } else {
+                        level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
+                    }
+                }
+            }
+        }
+
+        for (int x = 0; x <= width; x++) {
+            for (int z = 0; z <= depth; z++) {
+                boolean edge = x == 0 || x == width || z == 0 || z == depth;
+                BlockState ceiling = edge || Math.floorMod(x + z, 5) == 0
+                        ? Blocks.AMETHYST_BLOCK.defaultBlockState()
+                        : Blocks.CALCITE.defaultBlockState();
+                level.setBlock(origin.offset(x, height + 1, z), ceiling, 2);
+                if (Math.floorMod(x * 17 + z * 11, 13) == 0) {
+                    level.setBlock(origin.offset(x, height, z), Blocks.SEA_LANTERN.defaultBlockState(), 2);
+                }
+            }
+        }
+
+        for (int x = 0; x <= width; x += 5) {
+            level.setBlock(origin.offset(x, 1, centerZ), Blocks.REDSTONE_BLOCK.defaultBlockState(), 2);
+            level.setBlock(origin.offset(x, 2, centerZ), Blocks.REDSTONE_LAMP.defaultBlockState(), 2);
+            level.setBlock(origin.offset(x, 3, centerZ), Blocks.SEA_LANTERN.defaultBlockState(), 2);
+        }
+    }
+
+    private static BlockState sanctuaryFloorBlock(int x, int z) {
+        if (Math.floorMod(x - z, 9) == 0) {
+            return Blocks.AMETHYST_BLOCK.defaultBlockState();
+        }
+        if (Math.floorMod(x + z, 7) == 0) {
+            return Blocks.SEA_LANTERN.defaultBlockState();
+        }
+        if (Math.floorMod(x * 3 + z * 5, 11) == 0) {
+            return Blocks.PURPUR_BLOCK.defaultBlockState();
+        }
+        return Math.floorMod(x + z, 2) == 0
+                ? Blocks.POLISHED_ANDESITE.defaultBlockState()
+                : Blocks.SMOOTH_QUARTZ.defaultBlockState();
+    }
+
+    private static BlockState sanctuaryWallBlock(int x, int y, int z) {
+        if (y == 1 && Math.floorMod(x * 13 + z * 7, 6) == 0) {
+            return Blocks.CHISELED_QUARTZ_BLOCK.defaultBlockState();
+        }
+        if (y >= 4 && Math.floorMod(x + y + z, 5) == 0) {
+            return Blocks.PURPLE_STAINED_GLASS.defaultBlockState();
+        }
+        if (Math.floorMod(x * 5 + y * 3 + z, 9) == 0) {
+            return Blocks.GLOWSTONE.defaultBlockState();
+        }
+        return Blocks.DEEPSLATE_TILES.defaultBlockState();
+    }
+
+    private static void buildRoadEndSanctuaryStorage(ServerLevel level, BlockPos origin, int width, int depth) {
+        List<BlockPos> itemCatalogContainers = new ArrayList<>();
+        for (int z = 1; z < depth; z++) {
+            BlockPos chest = origin.offset(width - 1, 1, z);
+            placeStorageChest(level, chest, Direction.WEST, Math.floorMod(z, 2) == 0);
+            itemCatalogContainers.add(chest);
+            for (int y = 3; y <= 6; y++) {
+                BlockPos barrel = origin.offset(width - 1, y, z);
+                placeStorageBarrel(level, barrel);
+                itemCatalogContainers.add(barrel);
+            }
+        }
+        for (int x = 3; x <= width - 7; x += 4) {
+            BlockPos north = origin.offset(x, 1, 1);
+            BlockPos south = origin.offset(x, 1, depth - 1);
+            placeStorageChest(level, north, Direction.SOUTH, false);
+            placeStorageChest(level, south, Direction.NORTH, true);
+            itemCatalogContainers.add(north);
+            itemCatalogContainers.add(south);
+        }
+        fillContainersWithAllRegisteredItems(level, itemCatalogContainers);
+
+        BlockPos wandChest = origin.offset(4, 1, depth - 3);
+        placeStorageChest(level, wandChest, Direction.NORTH, false);
+        fillContainerWithItem(level, wandChest, MagicWorld.VARINHA_MAGICA.get());
+
+        BlockPos premiumChest = origin.offset(8, 1, depth - 3);
+        placeStorageChest(level, premiumChest, Direction.NORTH, true);
+        putItems(level, premiumChest,
+                new ItemStack(Items.ELYTRA), new ItemStack(Items.DRAGON_EGG),
+                new ItemStack(Items.NETHER_STAR, 32), new ItemStack(Items.BEACON, 16),
+                new ItemStack(Items.ENCHANTED_GOLDEN_APPLE, 64), new ItemStack(Items.TOTEM_OF_UNDYING, 32),
+                new ItemStack(Items.NETHERITE_INGOT, 64), new ItemStack(Items.DIAMOND, 64),
+                new ItemStack(Items.EMERALD, 64), new ItemStack(Items.HEART_OF_THE_SEA, 32),
+                new ItemStack(Items.CONDUIT, 16), new ItemStack(Items.PAINTING, 64));
+    }
+
+    private static void buildRoadEndSanctuaryStations(ServerLevel level, BlockPos origin, int width, int depth) {
+        int z = 3;
+        for (int x = 3; x <= 16; x++) {
+            BlockPos pos = origin.offset(x, 1, z);
+            BlockState state = switch (x - 3) {
+                case 0 -> Blocks.CRAFTING_TABLE.defaultBlockState();
+                case 1 -> Blocks.SMITHING_TABLE.defaultBlockState();
+                case 2 -> Blocks.ANVIL.defaultBlockState();
+                case 3 -> Blocks.GRINDSTONE.defaultBlockState();
+                case 4 -> Blocks.STONECUTTER.defaultBlockState();
+                case 5 -> Blocks.FURNACE.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.SOUTH);
+                case 6 -> Blocks.BLAST_FURNACE.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.SOUTH);
+                case 7 -> Blocks.SMOKER.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.SOUTH);
+                case 8 -> Blocks.BREWING_STAND.defaultBlockState();
+                case 9 -> Blocks.ENCHANTING_TABLE.defaultBlockState();
+                case 10 -> Blocks.LECTERN.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.SOUTH);
+                case 11 -> Blocks.CARTOGRAPHY_TABLE.defaultBlockState();
+                case 12 -> Blocks.FLETCHING_TABLE.defaultBlockState();
+                default -> Blocks.LOOM.defaultBlockState();
+            };
+            level.setBlock(pos, state, 2);
+        }
+        level.setBlock(origin.offset(17, 1, z), Blocks.CAULDRON.defaultBlockState(), 2);
+
+        BlockPos toolsChest = origin.offset(3, 1, depth - 4);
+        placeStorageChest(level, toolsChest, Direction.NORTH, false);
+        putItems(level, toolsChest,
+                new ItemStack(Items.WOODEN_PICKAXE), new ItemStack(Items.WOODEN_AXE), new ItemStack(Items.WOODEN_SHOVEL), new ItemStack(Items.WOODEN_HOE),
+                new ItemStack(Items.STONE_PICKAXE), new ItemStack(Items.STONE_AXE), new ItemStack(Items.STONE_SHOVEL), new ItemStack(Items.STONE_HOE),
+                new ItemStack(Items.IRON_PICKAXE), new ItemStack(Items.IRON_AXE), new ItemStack(Items.IRON_SHOVEL), new ItemStack(Items.IRON_HOE),
+                new ItemStack(Items.GOLDEN_PICKAXE), new ItemStack(Items.GOLDEN_AXE), new ItemStack(Items.GOLDEN_SHOVEL), new ItemStack(Items.GOLDEN_HOE),
+                new ItemStack(Items.DIAMOND_PICKAXE), new ItemStack(Items.DIAMOND_AXE), new ItemStack(Items.DIAMOND_SHOVEL), new ItemStack(Items.DIAMOND_HOE),
+                new ItemStack(Items.NETHERITE_PICKAXE), new ItemStack(Items.NETHERITE_AXE), new ItemStack(Items.NETHERITE_SHOVEL), new ItemStack(Items.NETHERITE_HOE),
+                new ItemStack(Items.BOW), new ItemStack(Items.CROSSBOW), new ItemStack(Items.FISHING_ROD), new ItemStack(Items.SHIELD));
+    }
+
+    private static void buildRoadEndSanctuaryMeetingTable(ServerLevel level, BlockPos origin, int width, int depth) {
+        BlockPos center = origin.offset(width / 2, 1, depth / 2);
+        for (int x = -5; x <= 5; x++) {
+            for (int z = -2; z <= 2; z++) {
+                BlockPos table = center.offset(x, 0, z);
+                level.setBlock(table, Blocks.DARK_OAK_FENCE.defaultBlockState(), 2);
+                level.setBlock(table.above(), Math.floorMod(x + z, 2) == 0
+                        ? Blocks.PURPLE_CARPET.defaultBlockState()
+                        : Blocks.LIGHT_BLUE_CARPET.defaultBlockState(), 2);
+            }
+        }
+        for (int x = -5; x <= 5; x += 2) {
+            level.setBlock(center.offset(x, 0, -3), Blocks.DARK_OAK_STAIRS.defaultBlockState()
+                    .setValue(StairBlock.FACING, Direction.SOUTH), 2);
+            level.setBlock(center.offset(x, 0, 3), Blocks.DARK_OAK_STAIRS.defaultBlockState()
+                    .setValue(StairBlock.FACING, Direction.NORTH), 2);
+        }
+        for (int z = -2; z <= 2; z += 2) {
+            level.setBlock(center.offset(-6, 0, z), Blocks.DARK_OAK_STAIRS.defaultBlockState()
+                    .setValue(StairBlock.FACING, Direction.EAST), 2);
+            level.setBlock(center.offset(6, 0, z), Blocks.DARK_OAK_STAIRS.defaultBlockState()
+                    .setValue(StairBlock.FACING, Direction.WEST), 2);
+        }
+        level.setBlock(center.above(4), Blocks.SEA_LANTERN.defaultBlockState(), 2);
+        level.setBlock(center.above(5), Blocks.BELL.defaultBlockState(), 2);
+    }
+
+    private static void buildRoadEndSanctuaryArmorGallery(ServerLevel level, BlockPos origin, int width, int depth) {
+        int z = depth - 5;
+        spawnArmorStand(level, origin.offset(13, 1, z), Items.LEATHER_HELMET, Items.LEATHER_CHESTPLATE, Items.LEATHER_LEGGINGS, Items.LEATHER_BOOTS, "Santuario Armadura de Couro");
+        spawnArmorStand(level, origin.offset(15, 1, z), Items.CHAINMAIL_HELMET, Items.CHAINMAIL_CHESTPLATE, Items.CHAINMAIL_LEGGINGS, Items.CHAINMAIL_BOOTS, "Santuario Armadura de Malha");
+        spawnArmorStand(level, origin.offset(17, 1, z), Items.IRON_HELMET, Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS, Items.IRON_BOOTS, "Santuario Armadura de Ferro");
+        spawnArmorStand(level, origin.offset(19, 1, z), Items.GOLDEN_HELMET, Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_BOOTS, "Santuario Armadura de Ouro");
+        spawnArmorStand(level, origin.offset(21, 1, z), Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS, Items.DIAMOND_BOOTS, "Santuario Armadura de Diamante");
+        spawnArmorStand(level, origin.offset(23, 1, z), Items.NETHERITE_HELMET, Items.NETHERITE_CHESTPLATE, Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS, "Santuario Armadura de Netherite");
+        spawnArmorStand(level, origin.offset(25, 1, z),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_HELMET.get()),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_CHESTPLATE.get()),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_LEGGINGS.get()),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_BOOTS.get()),
+                "Santuario Armadura Draconic Aether");
+    }
+
+    private static void decorateRoadEndSanctuary(ServerLevel level, BlockPos origin, int width, int depth, int height) {
+        BlockState[] banners = {
+                Blocks.WHITE_BANNER.defaultBlockState(), Blocks.ORANGE_BANNER.defaultBlockState(),
+                Blocks.MAGENTA_BANNER.defaultBlockState(), Blocks.LIGHT_BLUE_BANNER.defaultBlockState(),
+                Blocks.YELLOW_BANNER.defaultBlockState(), Blocks.LIME_BANNER.defaultBlockState(),
+                Blocks.PINK_BANNER.defaultBlockState(), Blocks.CYAN_BANNER.defaultBlockState(),
+                Blocks.PURPLE_BANNER.defaultBlockState(), Blocks.BLUE_BANNER.defaultBlockState(),
+                Blocks.RED_BANNER.defaultBlockState(), Blocks.BLACK_BANNER.defaultBlockState()
+        };
+        for (int i = 0; i < banners.length; i++) {
+            level.setBlock(origin.offset(2 + i * 3, 1, 2), banners[i], 2);
+        }
+
+        for (int x = 3; x <= width - 3; x += 5) {
+            for (int z : new int[] {2, depth - 2}) {
+                BlockPos art = origin.offset(x, 3, z);
+                level.setBlock(art, Blocks.BOOKSHELF.defaultBlockState(), 2);
+                level.setBlock(art.above(), Blocks.LIGHT_BLUE_STAINED_GLASS.defaultBlockState(), 2);
+                level.setBlock(art.above(2), Blocks.PURPLE_STAINED_GLASS.defaultBlockState(), 2);
+            }
+        }
+
+        for (BlockPos pos : new BlockPos[] {
+                origin.offset(2, 1, 5), origin.offset(5, 1, depth - 5),
+                origin.offset(width - 7, 1, 5), origin.offset(width - 5, 1, depth - 5),
+                origin.offset(width / 2 - 8, 1, 3), origin.offset(width / 2 + 8, 1, depth - 3)
+        }) {
+            level.setBlock(pos, Blocks.POTTED_BLUE_ORCHID.defaultBlockState(), 2);
+        }
+        for (BlockPos pos : new BlockPos[] {
+                origin.offset(4, 1, 6), origin.offset(7, 1, depth - 6),
+                origin.offset(width - 9, 1, 6), origin.offset(width - 8, 1, depth - 6)
+        }) {
+            level.setBlock(pos, Blocks.FLOWERING_AZALEA.defaultBlockState(), 2);
+        }
+        for (int x = 4; x <= width - 4; x += 6) {
+            level.setBlock(origin.offset(x, height - 1, 1), Blocks.END_ROD.defaultBlockState(), 2);
+            level.setBlock(origin.offset(x, height - 1, depth - 1), Blocks.END_ROD.defaultBlockState(), 2);
+        }
+    }
+
+    private static void populateRoadEndSanctuary(ServerLevel level, BlockPos origin, int width, int depth) {
+        spawnNamed(level, EntityType.ALLAY, origin.offset(width / 2 - 3, 2, depth / 2), "Brilho do Santuario 1");
+        spawnNamed(level, EntityType.ALLAY, origin.offset(width / 2 + 3, 2, depth / 2), "Brilho do Santuario 2");
+        spawnNamed(level, EntityType.PARROT, origin.offset(5, 2, 5), "Passaro Azul do Santuario");
+        spawnNamed(level, EntityType.PARROT, origin.offset(width - 6, 2, depth - 5), "Passaro Magico do Santuario");
+        spawnNamed(level, EntityType.RABBIT, origin.offset(8, 1, depth / 2), "Coelho do Santuario 1");
+        spawnNamed(level, EntityType.RABBIT, origin.offset(width - 9, 1, depth / 2), "Coelho do Santuario 2");
+    }
+
     private static void buildImportedCastle(ServerLevel level, BlockPos origin) {
         Optional<StructureTemplate> optional = level.getStructureManager().get(IMPORTED_CASTLE);
         if (optional.isPresent()) {
@@ -972,8 +1238,8 @@ public class StarterPortalEvents {
 
     private static void buildAnimalCaretakerSettlement(ServerLevel level, BlockPos base) {
         BlockPos[] houses = {
-                base.offset(106, -1, -72),
-                base.offset(106, -1, -56)
+                base.offset(106, 0, -72),
+                base.offset(106, 0, -56)
         };
         BlockPos foodFarm = base.offset(92, -1, -52);
         BlockPos farmCenter = foodFarm.offset(1, 0, 16);
@@ -998,7 +1264,7 @@ public class StarterPortalEvents {
     }
 
     private static BlockPos premiumAnimalWorkCenterCorner(BlockPos base) {
-        return base.offset(106, -1, -72);
+        return base.offset(106, 0, -72);
     }
 
     private static void buildPremiumAnimalWorkCenter(ServerLevel level, BlockPos base) {
@@ -1035,7 +1301,10 @@ public class StarterPortalEvents {
         buildDecorativeGabledRoof(level, corner, width, depth, wallHeight + 2);
 
         placeHouseDoor(level, corner.offset(width, 1, eastDoorZ), Direction.EAST);
-        placeHouseDoor(level, corner.offset(0, 1, eastDoorZ), Direction.WEST);
+        placeHouseDoor(level, corner.offset(0, 1, depth / 2 - 3), Direction.WEST);
+        placeHouseDoor(level, corner.offset(0, 1, depth / 2 + 3), Direction.WEST);
+        buildHousePathToFarm(level, corner.offset(0, 1, depth / 2 - 3), Direction.WEST, 8);
+        buildHousePathToFarm(level, corner.offset(0, 1, depth / 2 + 3), Direction.WEST, 8);
         decorateWorkerDoors(level, corner, width, depth);
         level.setBlock(corner.offset(width, 3, eastDoorZ), Blocks.CHISELED_STONE_BRICKS.defaultBlockState(), 2);
         level.setBlock(corner.offset(width, 4, eastDoorZ), Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState(), 2);
@@ -1260,8 +1529,8 @@ public class StarterPortalEvents {
 
     private static void assignAnimalCaretakersToPens(ServerLevel level, BlockPos base) {
         BlockPos[] houses = {
-                base.offset(106, -1, -72),
-                base.offset(106, -1, -56)
+                base.offset(106, 0, -72),
+                base.offset(106, 0, -56)
         };
         BlockPos[] pens = animalPenCorners(base);
         Item[] foods = {
@@ -2387,8 +2656,8 @@ public class StarterPortalEvents {
         BlockPos[] houses = {
                 base.offset(-126, -1, -56),
                 base.offset(-102, -1, -56),
-                base.offset(106, -1, -72),
-                base.offset(106, -1, -56)
+                base.offset(106, 0, -72),
+                base.offset(106, 0, -56)
         };
         for (int i = 0; i < houses.length; i++) {
             buildWorkerHouse(level, houses[i], i < 2 ? Direction.SOUTH : Direction.WEST);
@@ -3209,16 +3478,15 @@ public class StarterPortalEvents {
     }
 
     private static void convertImportedHouseExteriorTreesToCherry(ServerLevel level, BlockPos base) {
-        int minX = HOUSE_ORIGIN_X - 34;
-        int maxX = IMPORTED_HOUSE_MAX_X + 34;
-        int minZ = HOUSE_ORIGIN_Z - 34;
-        int maxZ = IMPORTED_HOUSE_MAX_Z + 34;
+        int minX = HOUSE_ORIGIN_X - 64;
+        int maxX = IMPORTED_HOUSE_MAX_X + 64;
+        int minZ = HOUSE_ORIGIN_Z - 64;
+        int maxZ = IMPORTED_HOUSE_MAX_Z + 64;
         BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
 
         for (int x = minX; x <= maxX; x++) {
             for (int z = minZ; z <= maxZ; z++) {
-                if (isInsideImportedHouseFootprint(x, z)
-                        || isLikelyImportedHouseRoadOrWallZone(x, z)) {
+                if (isInsideImportedHouseFootprint(x, z)) {
                     continue;
                 }
                 for (int y = -1; y <= 18; y++) {
@@ -3233,13 +3501,6 @@ public class StarterPortalEvents {
                 placeCherryPetalsNearHouseTree(level, base.offset(x, 0, z));
             }
         }
-    }
-
-    private static boolean isLikelyImportedHouseRoadOrWallZone(int x, int z) {
-        return z >= IMPORTED_HOUSE_MAX_Z - 4
-                && z <= IMPORTED_HOUSE_MAX_Z + 12
-                && x >= -36
-                && x <= 36;
     }
 
     private static boolean isNaturalTreeLog(BlockState state) {

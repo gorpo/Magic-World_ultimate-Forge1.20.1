@@ -760,6 +760,28 @@ Validacao e processo:
 - Validado com `compileJava`, `build` e `git diff --check`; todos passaram.
 - O Codex valida somente com Gradle e nao abre o cliente.
 
+## Santuario magico do fim da rua - 2026-06-06 15:05:02 -03:00
+
+- O reparo foi elevado para a versao `18`, para aplicar no proximo login de saves ja criados.
+- O santuário usa o volume dos prints no final da rua, aproximadamente `X 236..281`, `Y 74+`, `Z -56..-39`.
+- A origem relativa usada e `base.offset(296,0,-86)`, com largura `45`, profundidade `17` e altura interna de `10`.
+- O loading inicial ganhou etapa propria em `97%`, mensagem `Carregando santuario magico do fim da rua...`, antes de marcar `100%`.
+- `repairExistingEstate` tambem chama a rotina, garantindo aplicacao em mundos ja existentes.
+- O espaço recebe piso colorido com quartz, andesite, purpur, amethyst e sea lanterns, paredes decoradas, teto iluminado, redstone blocks, redstone lamps e glowstone.
+- A parede leste e laterais recebem baus/barris preenchidos com o catalogo de itens registrados do jogo/mod.
+- Ha bau de varinhas magicas, bau premium, ferramentas de todos os tiers principais, estacoes de trabalho, mesa central de reuniao, sino, luzes, banners, paineis decorativos, plantas, armaduras em stands, allays, parrots e rabbits.
+- Validado com `compileJava`, `build` e `git diff --check`; todos passaram.
+- O Codex valida somente com Gradle e nao abre o cliente.
+
+## Elevacao das casas dos animais - 2026-06-06 14:58:27 -03:00
+
+- O reparo foi elevado para a versao `17`, forcando atualizacao no proximo login do save ja criado.
+- O print indicou casas em frente ao ponto `56 74 -11` um bloco abaixo do nivel do chao.
+- As casas dos animais e o centro premium foram elevados de `base.offset(106,-1,...)` para `base.offset(106,0,...)`.
+- Isso sobe piso, paredes, portas, camas, baus, decoracao e referencias dos cuidadores em um bloco.
+- `assignAnimalCaretakersToPens` e `buildWorkerSettlement` foram alinhados ao mesmo nivel novo.
+- O Codex valida somente com Gradle e nao abre o cliente.
+
 ## Conselho profissional do castelo - 2026-06-06
 
 - O reparo versao `12` adiciona quatro aldeoes ao redor da mesa central indicada nos prints.
@@ -809,5 +831,18 @@ Validacao e processo:
 - O log do cliente apontou falta de `magicworld:textures/gui/title/title_background_static.png` e `magicworld:textures/gui/title/logo_full.png`.
 - `MagicWorldStaticBackground` foi ajustado para usar os assets existentes `textures/gui/title_background_static.png` e `textures/gui/title_logo.png`.
 - A logo do menu agora usa as dimensoes `512x171`, correspondentes ao arquivo existente.
+- Validado com `compileJava`, `build` e `git diff --check`; todos passaram.
+- O Codex valida somente com Gradle e nao abre o cliente.
+
+## Ajuste da casa grande nas coordenadas dos prints - 2026-06-06 14:52:19 -03:00
+
+- O reparo foi elevado para a versao `16`, forçando atualizacao no proximo login do save ja criado.
+- As coordenadas do print atual indicam o centro `55 74 -35` e alvo `55 73 -29`.
+- Esse ponto corresponde ao volume premium `X 46..64`, `Y 73+`, `Z -42..-28` quando a base da propriedade esta em `-60 74 30`.
+- A rotina da casa grande premium continua garantindo armazenamento, baus com itens premium, bau de varinhas, estacoes de trabalho, mesa, camas, armaduras, luzes, decoracao, ave e aldeoes profissionais.
+- A porta leste central foi mantida.
+- O lado oeste, voltado para os currais/fazendas, agora tem duas portas com caminhos curtos saindo para fora.
+- A conversao de cerejeiras no entorno da casa importada foi ampliada para uma faixa de `64` blocos para fora do footprint protegido.
+- A zona de rua/muro nao e mais pulada nessa conversao, mas apenas troncos e folhas naturais sao trocados por cerejeira.
 - Validado com `compileJava`, `build` e `git diff --check`; todos passaram.
 - O Codex valida somente com Gradle e nao abre o cliente.
