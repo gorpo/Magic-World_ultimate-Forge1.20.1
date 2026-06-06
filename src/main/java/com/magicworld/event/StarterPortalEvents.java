@@ -643,7 +643,7 @@ public class StarterPortalEvents {
     }
 
     private static BlockPos starterRoadEndHouseOrigin(BlockPos base) {
-        return base.offset(-5, -4, -90);
+        return base.offset(-5, 1, -74);
     }
 
     private static void buildStarterRoadEndHouse(ServerLevel level, BlockPos base) {
@@ -656,7 +656,7 @@ public class StarterPortalEvents {
         StructureTemplate template = optional.get();
         Vec3i size = template.getSize();
         forceLoadStructureArea(level, origin, size.getX(), size.getZ(), 4);
-        clearStructureVolume(level, origin, size, 2, true);
+        clearStructureVolume(level, origin, size, 3, true);
         prepareStarterRoadEndHousePlateau(level, origin, size);
         StructurePlaceSettings settings = new StructurePlaceSettings()
                 .setIgnoreEntities(true)
@@ -687,22 +687,16 @@ public class StarterPortalEvents {
 
     private static void decorateStarterRoadEndHouseFront(ServerLevel level, BlockPos origin, Vec3i size) {
         BlockPos frontDoor = origin.offset(size.getX() - 1 - 12, 3, size.getZ() - 1 - 17);
-        buildHousePathToFarm(level, frontDoor, Direction.SOUTH, 13);
-        for (int step = 1; step <= 5; step++) {
-            BlockPos center = filledGroundAt(level, frontDoor.relative(Direction.SOUTH, step));
-            level.setBlock(center, Blocks.SMOOTH_STONE.defaultBlockState(), 2);
-            level.setBlock(center.east(), Blocks.POLISHED_ANDESITE.defaultBlockState(), 2);
-            level.setBlock(center.west(), Blocks.POLISHED_ANDESITE.defaultBlockState(), 2);
-        }
+        buildStarterRoadEndHouseEntrance(level, frontDoor, Direction.SOUTH, 6);
         for (BlockPos lamp : new BlockPos[] {
                 frontDoor.offset(-4, -1, 4), frontDoor.offset(4, -1, 4),
-                frontDoor.offset(-7, -1, 10), frontDoor.offset(7, -1, 10)
+                frontDoor.offset(-7, -1, 6), frontDoor.offset(7, -1, 6)
         }) {
             placeLampPost(level, lamp);
         }
         for (BlockPos plant : new BlockPos[] {
                 frontDoor.offset(-3, 0, 3), frontDoor.offset(3, 0, 3),
-                frontDoor.offset(-5, 0, 6), frontDoor.offset(5, 0, 6)
+                frontDoor.offset(-5, 0, 5), frontDoor.offset(5, 0, 5)
         }) {
             if (level.getBlockState(plant).isAir() && level.getBlockState(plant.below()).isSolid()) {
                 level.setBlock(plant, Blocks.FLOWERING_AZALEA.defaultBlockState(), 2);
@@ -710,6 +704,25 @@ public class StarterPortalEvents {
         }
         spawnNamed(level, EntityType.PARROT, frontDoor.offset(-3, 1, 5), "Ave da Casa do Fim da Rua");
         spawnNamed(level, EntityType.CAT, frontDoor.offset(3, 1, 5), "Gato da Casa do Fim da Rua");
+    }
+
+    private static void buildStarterRoadEndHouseEntrance(ServerLevel level, BlockPos door, Direction direction, int length) {
+        Direction side = direction.getClockWise();
+        for (int step = 0; step <= length; step++) {
+            BlockPos center = door.below().relative(direction, step);
+            for (int width = -1; width <= 1; width++) {
+                BlockPos path = center.relative(side, width);
+                for (int y = 1; y <= 4; y++) {
+                    level.setBlock(path.above(y), Blocks.AIR.defaultBlockState(), 2);
+                }
+                for (int y = -5; y < 0; y++) {
+                    level.setBlock(path.offset(0, y, 0), Blocks.DIRT.defaultBlockState(), 2);
+                }
+                level.setBlock(path, Math.abs(width) == 1
+                        ? Blocks.POLISHED_ANDESITE.defaultBlockState()
+                        : Blocks.SMOOTH_STONE.defaultBlockState(), 2);
+            }
+        }
     }
 
     private static BlockPos roadEndMagicSanctuaryOrigin(BlockPos base) {

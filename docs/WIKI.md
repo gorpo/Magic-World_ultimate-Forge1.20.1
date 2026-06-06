@@ -943,3 +943,9 @@ Validacao e processo:
 - Painel central do Magic World ficou praticamente opaco para impedir leitura cruzada com o menu original.
 - Texto informativo interno foi reduzido para duas linhas curtas, removendo listas longas que ficavam sobre os botoes em GUI scale alta.
 - Validacao: ./gradlew.bat compileJava --stacktrace passou.
+
+## Registro 2026-06-06 - casa do fim da rua altura e acesso
+- Casa do fim da rua: origem ajustada para base + (-5, +1, -74), subindo 5 blocos e avancando 16 blocos em direcao a rua.
+- Casa do fim da rua: limpeza do volume aumentada para margem 3 para remover terreno/pedra que encoste na estrutura.
+- Casa do fim da rua: caminho generico baseado em surface scan foi removido desta casa; agora a entrada usa acesso dedicado no nivel da porta para nao gerar pedras por cima da construcao.
+- Validacao: ./gradlew.bat compileJava --stacktrace passou.

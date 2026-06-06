@@ -1633,3 +1633,10 @@ Validacao:
 - MagicCreateWorldLineCover agora cobre a tela inteira quando o painel esta aberto; MagicCreateWorldBackdrop ficou mais opaco.
 - MagicCreateWorldInfo foi reduzido para duas linhas curtas para nao invadir os botoes em escala GUI grande.
 - Validacao executada: ./gradlew.bat compileJava --stacktrace = BUILD SUCCESSFUL.
+
+## Handoff 2026-06-06 - casa fim da rua +5Y +16Z
+- Ajuste solicitado por prints: casa do fim da rua precisava subir 5 blocos, avancar 16 blocos para mais perto da rua e remover pedras sobrepostas que nao eram da casa.
+- StarterPortalEvents.starterRoadEndHouseOrigin agora base.offset(-5, 1, -74).
+- clearStructureVolume da casa do fim da rua usa margem 3.
+- decorateStarterRoadEndHouseFront nao usa mais buildHousePathToFarm/fillGroundAt; adicionada buildStarterRoadEndHouseEntrance para criar acesso direto no nivel da porta sem colocar smooth stone sobre o template.
+- Validacao executada: ./gradlew.bat compileJava --stacktrace = BUILD SUCCESSFUL.
