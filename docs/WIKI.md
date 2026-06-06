@@ -511,3 +511,123 @@ Teste pendente:
 Teste pendente:
 
 - Abrir o pause menu e validar alinhamento/espacamento visual.
+
+## Personalizacao da tela grafica Embeddium - 2026-06-06
+
+- Portada para Forge 1.20.1 a personalizacao visual da tela grafica existente no projeto NeoForge.
+- A tela moderna do Embeddium agora usa background estatico Magic World, titulo `Magic World - Graficos` e o icone `screenshots/config-icon.png`.
+- Os botoes de doacao do Embeddium foram ocultados.
+- O mixin e opcional para manter o Magic World funcional quando Embeddium nao estiver instalado.
+- Build passou e o cliente iniciou com Embeddium/Oculus sem erro do novo mixin.
+
+### Correcao ao abrir Configuracoes de video
+
+- Corrigido `VerifyError: Bad type on operand stack` ao clicar em Configuracoes de video.
+- Causa: o injector que troca o titulo usava uma chamada de instancia antes do construtor do Embeddium terminar.
+- O injector de titulo agora e estatico e nao acessa `this` durante o construtor.
+- Build passou com `./gradlew.bat build --stacktrace`.
+
+### Identidade visual completa do menu grafico
+
+- O cabecalho `Embeddium` foi renomeado para `Magic World`.
+- O cabecalho `Oculus` foi renomeado para `Magic World Shaders`.
+- Os icones originais de Embeddium/Oculus na barra esquerda foram substituidos pelo icone Magic World.
+- Destaques rosas, selecoes, checkboxes e linhas do menu foram trocados pelo tema azul-ciano usado no projeto NeoForge.
+- Build passou e o cliente iniciou sem erro de aplicacao dos novos mixins.
+
+### Revisao fiel do port NeoForge
+
+- Corrigidos os IDs internos reais usados pelo Embeddium Forge:
+  - `sodium` passa a aparecer como `Magic World`;
+  - `iris` passa a aparecer como `Magic World Shaders`.
+- Portado o botao `Horizontes Distantes` para o rodape esquerdo do menu grafico.
+- O botao usa o icone Magic World e abre a classe Forge real `GetConfigScreen_forge`.
+- O jar do Distant Horizons deve ficar em `run/dev-mods` durante o desenvolvimento.
+- Corrigidos os hooks herdados do Minecraft para os nomes runtime do Forge:
+  - `m_7856_` adiciona o botao do Distant Horizons durante a inicializacao;
+  - `m_280273_` aplica o background Magic World;
+  - `m_88315_` aplica logo, cores e linhas personalizadas.
+- O logo principal do Embeddium tambem foi substituido pelo logo grafico Magic World.
+- Removido o icone avulso do rodape que poderia sobrepor o botao do Distant Horizons.
+- Validado com `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+
+## Conclusao do menu grafico e decoracao do casarao - 2026-06-06
+
+- O menu grafico recebeu rolagem circular entre paginas ao ultrapassar o limite superior ou inferior.
+- O botao `Horizontes Distantes` e criado no rodape esquerdo mesmo com inicializacao tardia do mod.
+- Botoes de acao do Embeddium foram movidos para o rodape esquerdo, como no layout NeoForge.
+- O tema ciano Magic World foi ampliado para mais estados visuais do Embeddium.
+- O reparo versionado da propriedade passou para a versao 3.
+- O casarao importado agora recebe acabamento acima das portas, mais janelas, iluminacao, plantas, mobiliario e estacoes uteis.
+- Foram adicionados baus internos com varinhas Magic World, ferramentas e itens raros/premium.
+- Foram adicionadas exposicoes de armadura Netherite e de um conjunto Netherite nomeado `Magic World`.
+- A armadura customizada real do NeoForge ainda nao existe como item registrado neste Forge 1.20.1.
+
+### Regra de validacao
+
+- O Codex nao deve executar `runClient` nem abrir o cliente Minecraft.
+- Testes do Codex devem usar somente Gradle; testes visuais dentro do cliente ficam com o usuario.
+- O cliente abriu a tela grafica com Magic World, Embeddium, Oculus e Distant Horizons `3.0.3-b` sem erro de mixin.
+
+## Reparo conservador da propriedade e menu grafico - 2026-06-06
+
+- Adicionado reparo versionado para propriedades ja criadas; ele executa uma vez no proximo login.
+- A casa importada e restaurada pelo NBT original sem repetir a limpeza destrutiva ao redor.
+- O NBT `imported_house.nbt` do Forge foi confirmado como identico ao NeoForge por hash SHA-256.
+- Valos com ar no nivel do solo sao preenchidos com suporte de terra e grama, sem substituir agua ou construcoes.
+- A rua frontal foi normalizada e recebeu acabamento de meio bloco nas laterais.
+- A casa de pedra da mina e reconstruida por ultimo, com piso, paredes, janelas, telhado decorado, entrada, baus e armaduras internas.
+- O botao injetado pelo Distant Horizons no menu de pausa agora e ocultado.
+- O botao `Horizontes Distantes` e renderizado no rodape esquerdo do menu grafico, acima dos botoes de acao.
+- `Support Sodium` e ocultado antes e depois da montagem do frame do Embeddium.
+- O jar do Distant Horizons foi movido novamente para `run/dev-mods`.
+- Build validado com `./gradlew.bat build --stacktrace`.
+
+## Correcao responsiva do menu Itens e icone do Distant Horizons - 2026-06-06
+
+- O menu secreto `Itens` agora calcula a quantidade de colunas pela largura real do painel.
+- As categorias quebram em varias linhas em janelas pequenas e a grade usa recorte para impedir itens fora do painel.
+- Abas superiores tambem reduzem de largura quando necessario.
+- O icone pequeno injetado pelo Distant Horizons foi identificado em `OptionsScreen` e agora e ocultado em qualquer tela vanilla.
+- O acesso ao Distant Horizons permanece somente no rodape esquerdo do menu grafico Magic World.
+- O reparo da casa da mina preserva armaduras nomeadas existentes e evita criar duplicatas.
+- Validado com `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+
+## Registro consolidado - 2026-06-06 10:24:52 -03:00
+
+Este registro documenta o conjunto completo preparado para o commit de conclusao do menu grafico, menus responsivos e reparos da propriedade.
+
+### Menu grafico Magic World
+
+- Portada a identidade visual do projeto NeoForge para o Embeddium Forge 1.20.1.
+- Renomeados os grupos Sodium/Embeddium e Iris/Oculus para `Magic World` e `Magic World Shaders`.
+- Aplicados logo, icones laterais, background, linhas e destaques em azul-ciano.
+- Removido `Support Sodium` e ocultados os botoes de doacao.
+- Adicionado acesso ao Distant Horizons no rodape esquerdo do menu grafico.
+- Removidos os botoes/atalhos do Distant Horizons injetados nas telas vanilla e no menu de pausa.
+- Reorganizados `Fechar`, `Aplicar` e `Desfazer` no rodape esquerdo.
+- Adicionada rolagem circular entre paginas ao ultrapassar o inicio ou fim da pagina atual.
+
+### Menus responsivos
+
+- A tela secreta de itens calcula abas, categorias, colunas e linhas conforme a largura disponivel.
+- Categorias podem ocupar varias linhas.
+- A grade usa recorte para impedir itens fora do painel em janela pequena.
+- Tooltips continuam aparecendo fora da area recortada.
+
+### Propriedade e construcoes
+
+- Criado reparo versionado da propriedade, atualmente na versao 3.
+- O reparo restaura a casa importada, normaliza a rua frontal, adiciona acabamento de meio bloco e preenche valos de ar no nivel do solo.
+- A area da mina e preservada pelo nivelamento geral e sua casa de pedra e reconstruida por ultimo.
+- A casa da mina possui paredes, janelas, telhado decorado, entrada, baus e armaduras, sem duplicar suportes nomeados.
+- O casarao recebe acabamento acima das portas, mais janelas, iluminacao, plantas, mobiliario e estacoes uteis.
+- Foram adicionados baus com varinhas Magic World, ferramentas e itens raros/premium.
+- Foram adicionadas exposicoes de Netherite e de Netherite nomeada `Magic World`.
+- O conjunto personalizado real do NeoForge nao foi referenciado porque ainda nao possui itens registrados neste Forge 1.20.1.
+
+### Validacao e processo
+
+- Validacao final: `./gradlew.bat build --stacktrace` com `BUILD SUCCESSFUL`.
+- O cliente Minecraft nao deve ser aberto pelo Codex.
+- Testes visuais e funcionais dentro do cliente sao responsabilidade do usuario.

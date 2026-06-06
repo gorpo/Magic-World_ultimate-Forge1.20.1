@@ -145,7 +145,7 @@ public class MagicWorldSecretMinecraftScreen extends Screen {
     private void drawTabs(GuiGraphics graphics, int mouseX, int mouseY) {
         Tab[] tabs = Tab.values();
         int gap = 6;
-        int tabWidth = Math.max(76, Math.min(112, (panelWidth - 28 - gap * (tabs.length - 1)) / tabs.length));
+        int tabWidth = Math.max(44, Math.min(112, (panelWidth - 28 - gap * (tabs.length - 1)) / tabs.length));
         int totalWidth = tabs.length * tabWidth + (tabs.length - 1) * gap;
         int x = panelX + panelWidth / 2 - totalWidth / 2;
         int y = panelY + 56;
@@ -189,13 +189,15 @@ public class MagicWorldSecretMinecraftScreen extends Screen {
     private void drawItemMenu(GuiGraphics graphics, int mouseX, int mouseY) {
         drawItemCategories(graphics, mouseX, mouseY);
         List<Item> items = filteredItems();
-        int gridTop = contentTop + 32;
-        int columns = Math.max(4, (panelWidth - 36) / SLOT);
+        int gridTop = itemGridTop();
+        int columns = itemColumns();
         int rows = Math.max(1, (contentBottom - gridTop) / SLOT);
         int first = scroll * columns;
+        ItemStack hoveredStack = ItemStack.EMPTY;
 
         drawScrollHint(graphics, items.size(), columns, rows);
 
+        graphics.enableScissor(panelX + 14, gridTop, panelX + panelWidth - 14, contentBottom);
         for (int index = first; index < items.size() && index < first + rows * columns; index++) {
             int local = index - first;
             int x = panelX + 18 + (local % columns) * SLOT;
@@ -207,21 +209,25 @@ public class MagicWorldSecretMinecraftScreen extends Screen {
             graphics.renderOutline(x, y, 24, 24, hovered ? BLUE : 0x885C7CBA);
             graphics.renderItem(new ItemStack(item), x + 4, y + 4);
             if (hovered) {
-                graphics.renderTooltip(font, new ItemStack(item), mouseX, mouseY);
+                hoveredStack = new ItemStack(item);
             }
+        }
+        graphics.disableScissor();
+        if (!hoveredStack.isEmpty()) {
+            graphics.renderTooltip(font, hoveredStack, mouseX, mouseY);
         }
     }
 
     private void drawItemCategories(GuiGraphics graphics, int mouseX, int mouseY) {
         int gap = 4;
-        int x = panelX + 24;
-        int y = contentTop;
         int available = panelWidth - 48;
-        int categoryWidth = Math.max(48, (available - gap * (ITEM_CATEGORIES.length - 1)) / ITEM_CATEGORIES.length);
+        int columns = itemCategoryColumns();
+        int categoryWidth = (available - gap * (columns - 1)) / columns;
 
         for (int i = 0; i < ITEM_CATEGORIES.length; i++) {
+            int x = panelX + 24 + (i % columns) * (categoryWidth + gap);
+            int y = contentTop + (i / columns) * 24;
             drawCenteredSmallButton(graphics, x, y, categoryWidth, 20, ITEM_CATEGORIES[i], mouseX, mouseY, i == itemCategory);
-            x += categoryWidth + gap;
         }
     }
 
@@ -248,7 +254,7 @@ public class MagicWorldSecretMinecraftScreen extends Screen {
     private Tab getClickedTab(double mouseX, double mouseY) {
         Tab[] tabs = Tab.values();
         int gap = 6;
-        int tabWidth = Math.max(76, Math.min(112, (panelWidth - 28 - gap * (tabs.length - 1)) / tabs.length));
+        int tabWidth = Math.max(44, Math.min(112, (panelWidth - 28 - gap * (tabs.length - 1)) / tabs.length));
         int totalWidth = tabs.length * tabWidth + (tabs.length - 1) * gap;
         int x = panelX + panelWidth / 2 - totalWidth / 2;
         int y = panelY + 56;
@@ -264,24 +270,24 @@ public class MagicWorldSecretMinecraftScreen extends Screen {
 
     private int getClickedItemCategory(double mouseX, double mouseY) {
         int gap = 4;
-        int x = panelX + 24;
-        int y = contentTop;
         int available = panelWidth - 48;
-        int categoryWidth = Math.max(48, (available - gap * (ITEM_CATEGORIES.length - 1)) / ITEM_CATEGORIES.length);
+        int columns = itemCategoryColumns();
+        int categoryWidth = (available - gap * (columns - 1)) / columns;
 
         for (int i = 0; i < ITEM_CATEGORIES.length; i++) {
+            int x = panelX + 24 + (i % columns) * (categoryWidth + gap);
+            int y = contentTop + (i / columns) * 24;
             if (isInside(mouseX, mouseY, x, y, categoryWidth, 20)) {
                 return i;
             }
-            x += categoryWidth + gap;
         }
         return -1;
     }
 
     private Item getClickedItem(double mouseX, double mouseY) {
         List<Item> items = filteredItems();
-        int gridTop = contentTop + 32;
-        int columns = Math.max(4, (panelWidth - 36) / SLOT);
+        int gridTop = itemGridTop();
+        int columns = itemColumns();
         int rows = Math.max(1, (contentBottom - gridTop) / SLOT);
         int first = scroll * columns;
 
@@ -324,11 +330,25 @@ public class MagicWorldSecretMinecraftScreen extends Screen {
     }
 
     private int maxItemScroll() {
-        int gridTop = contentTop + 32;
-        int columns = Math.max(4, (panelWidth - 36) / SLOT);
+        int gridTop = itemGridTop();
+        int columns = itemColumns();
         int rows = Math.max(1, (filteredItems().size() + columns - 1) / columns);
         int visibleRows = Math.max(1, (contentBottom - gridTop) / SLOT);
         return Math.max(0, rows - visibleRows);
+    }
+
+    private int itemCategoryColumns() {
+        int available = panelWidth - 48;
+        return Math.max(2, Math.min(ITEM_CATEGORIES.length, (available + 4) / 64));
+    }
+
+    private int itemGridTop() {
+        int categoryRows = (ITEM_CATEGORIES.length + itemCategoryColumns() - 1) / itemCategoryColumns();
+        return contentTop + categoryRows * 24 + 8;
+    }
+
+    private int itemColumns() {
+        return Math.max(1, (panelWidth - 36) / SLOT);
     }
 
     private void runAction(SecretAction action) {

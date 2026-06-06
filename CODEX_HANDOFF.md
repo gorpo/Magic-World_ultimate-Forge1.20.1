@@ -881,3 +881,123 @@ Teste manual:
 Teste manual:
 
 - Abrir ESC e conferir se `Mods`, `MagicWorld`, `Salvar e sair/Menu principal` e demais botoes nao se sobrepoem.
+
+## Bloco em 2026-06-06 - personalizacao da tela grafica Embeddium
+
+- O codigo de personalizacao Sodium do NeoForge foi adaptado para a API real do Embeddium `0.3.31` usada no Forge 1.20.1.
+- Criado `EmbeddiumVideoOptionsScreenMagicWorldMixin` opcional:
+  - aplica o background estatico Magic World;
+  - troca o titulo para `Magic World - Graficos`;
+  - troca o logo principal do Embeddium pelo logo grafico Magic World;
+  - oculta os botoes de doacao do Embeddium.
+- `magicworld.mixins.json` passou a ser opcional para nao impedir a inicializacao quando Embeddium nao estiver instalado.
+- Validado com `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+- Validado com `./gradlew.bat runClient --stacktrace`: cliente iniciou com Embeddium/Oculus e permaneceu aberto ate o timeout, sem erro do novo mixin.
+
+Teste pendente:
+
+- Abrir `Opcoes > Configuracoes de video` com Embeddium ativo e validar o visual.
+
+## Bloco em 2026-06-06 - conclusao do menu grafico e ampliacao do casarao
+
+- Regra de trabalho solicitada pelo usuario: nao executar `runClient` nem abrir o cliente Minecraft.
+- O usuario realiza todos os testes visuais e funcionais dentro do cliente.
+- A validacao do Codex deve usar somente tarefas Gradle de compilacao/build.
+- O rodape esquerdo do menu grafico agora cria o botao `Horizontes Distantes` mesmo quando a inicializacao do Distant Horizons ocorre depois da tela.
+- `Fechar`, `Aplicar` e `Desfazer` foram reposicionados no rodape esquerdo, seguindo o layout NeoForge.
+- Adicionada rolagem circular entre as paginas do Embeddium quando a rolagem ultrapassa o inicio/fim da pagina atual.
+- Ampliadas as substituicoes de cores para o tema ciano Magic World.
+- O reparo da propriedade foi elevado para a versao 3 e executara uma vez no proximo login.
+- O casarao importado recebeu:
+  - acabamento de madeira, escadas decorativas e lanternas acima das portas existentes;
+  - alargamento conservador de janelas existentes, somente em paredes entre dois espacos de ar;
+  - mais iluminacao interna;
+  - estantes, vasos, plantas, bancadas, barris e itens uteis em locais internos cobertos;
+  - bau cheio de varinhas Magic World;
+  - baus com ferramentas e itens raros/premium;
+  - exposicao de armadura Netherite;
+  - exposicao de armadura Netherite nomeada `Magic World`.
+- O Forge 1.20.1 ainda nao registra os itens da armadura personalizada do NeoForge. Por isso, a exposicao Magic World usa Netherite nomeada sem referenciar IDs inexistentes.
+- `compileJava` validado com sucesso. Nao foi aberto cliente.
+
+### Fix do crash ao abrir Configuracoes de video
+
+- O teste manual revelou `VerifyError: Bad type on operand stack` no construtor de `EmbeddiumVideoOptionsScreen`.
+- Causa: `@ModifyConstant` no construtor chamava o handler de instancia antes da chamada ao construtor de `Screen`.
+- `magicworld$renameScreen` foi alterado para metodo estatico, evitando acesso a `this` ainda nao inicializado.
+- Validado com `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+
+### Port da identidade completa do menu grafico
+
+- Adicionados mixins especificos para os componentes reais do Embeddium Forge 1.20.1:
+  - `EmbeddiumTabHeaderMagicWorldMixin`;
+  - `EmbeddiumAccentColorMagicWorldMixin`;
+  - `EmbeddiumLineColorMagicWorldMixin`.
+- Cabecalhos laterais:
+  - `Embeddium` agora aparece como `Magic World`;
+  - `Oculus/Iris` agora aparece como `Magic World Shaders`;
+  - icones laterais originais foram substituidos pelo icone Magic World.
+- Cores rosas de selecao/checks e linhas cinzas foram substituidas pelo tema azul-ciano do NeoForge.
+- Validado com `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+- Validado com `./gradlew.bat runClient --stacktrace`: cliente iniciou sem erro de aplicacao dos novos mixins.
+
+Teste visual pendente:
+
+- Abrir `Opcoes > Configuracoes de video` e confirmar nomes, icones laterais, checks, selecoes e linhas em azul-ciano.
+
+### Revisao fiel do port e Distant Horizons
+
+- Descoberto que o Embeddium Forge agrupa seus cabecalhos pelos IDs internos `sodium` e `iris`, nao somente `embeddium` e `oculus`.
+- `EmbeddiumTabHeaderMagicWorldMixin` agora trata os quatro IDs:
+  - `sodium`/`embeddium` -> `Magic World`;
+  - `iris`/`oculus` -> `Magic World Shaders`.
+- Portado `MagicWorldDistantHorizonsButton` para a API GUI do Forge 1.20.1.
+- O botao e adicionado no rodape esquerdo da tela grafica quando Distant Horizons esta carregado.
+- A abertura usa primeiro `GetConfigScreen_forge`, classe existente no Distant Horizons `3.0.3` para Forge 1.20.1.
+- O jar `DistantHorizons-3.0.3-b-1.20.1-fabric-forge.jar` foi movido de `run/mods` para `run/dev-mods`.
+- Corrigidos os nomes runtime Forge usados nos hooks opcionais:
+  - inicializacao: `m_7856_`;
+  - background: `m_280273_`;
+  - renderizacao: `m_88315_`.
+- Essa correcao fez o botao, background, logo e substituicoes de cores/linhas realmente aplicarem no Embeddium `0.3.31`.
+- Removido o icone avulso do canto inferior esquerdo para nao sobrepor o botao do Distant Horizons.
+- Validado com `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+- Em `runClient`, a tela grafica foi carregada e o log confirmou os mixins Magic World em `EmbeddiumVideoOptionsScreen`, `TabHeaderWidget`, `FlatButtonWidget`, frames, busca e barras sem `MixinApplyError`, `InjectionError` ou `VerifyError`.
+- Distant Horizons `3.0.3-b` inicializou no mesmo teste.
+
+## Bloco em 2026-06-06 - reparo da propriedade existente e menu grafico
+
+- `StarterPortalEvents` agora possui reparo versionado `MagicWorldForgeEstateRepairVersion=2`.
+- No proximo login de uma propriedade ja criada, o reparo executa uma unica vez:
+  - restaura `imported_house.nbt` sem limpar novamente o volume;
+  - normaliza a rua frontal e adiciona acabamento lateral de slab;
+  - preenche somente vazios de ar no nivel do solo, preservando agua e blocos existentes;
+  - exclui a area da mina do preenchimento geral;
+  - reconstrói a casa da mina por ultimo.
+- O NBT da casa Forge e NeoForge possui o mesmo SHA-256:
+  - `160F27F53D3163CF32C4E4F854618C080DBD52E2564E22B486B48827187F491D`.
+- A casa da mina recebeu novamente paredes, janelas, telhado com escadas, entrada, decoracao, baus e armaduras internas.
+- `ClientEvents#tunePauseMenu` oculta o botao do Distant Horizons injetado no menu de pausa.
+- O mixin do Embeddium renderiza explicitamente `MagicWorldDistantHorizonsButton` no menu grafico e o posiciona acima da barra de acoes.
+- `Support Sodium` e ocultado antes da montagem do frame e novamente ao final do `init`.
+- Distant Horizons foi movido de `run/mods` para `run/dev-mods`.
+- Validado com `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+- `runClient` iniciou com Distant Horizons `3.0.3-b` sem `MixinApplyError`, `InjectionError`, `VerifyError` ou erro fatal.
+
+## Bloco em 2026-06-06 - layout responsivo e remocao do icone DH
+
+- `MagicWorldSecretMinecraftScreen` passou a calcular abas, categorias e colunas de itens pela largura disponivel.
+- Categorias quebram em linhas e a grade recebe scissor, eliminando vazamento em janela pequena.
+- A injecao do pequeno icone do Distant Horizons foi localizada em `MixinOptionsScreen`.
+- `ClientEvents` agora oculta widgets cujo pacote pertence ao Distant Horizons em telas vanilla; o botao Magic World no menu grafico nao e afetado.
+- O descritor de `parentBasicFrameBuilder` no mixin Embeddium usa `CallbackInfoReturnable<?>`.
+- O reparo da mina agora detecta armaduras nomeadas existentes antes de gerar novas, evitando duplicatas.
+- Build final validado com `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+
+## Commit consolidado - 2026-06-06 10:24:52 -03:00
+
+- Escopo consolidado: menu grafico Embeddium/Distant Horizons, menu secreto responsivo, reparo versionado da propriedade, rua, valos, casa da mina e decoracao do casarao.
+- Validacao obrigatoria: somente Gradle.
+- Validacao final executada antes do commit: `./gradlew.bat build --stacktrace`.
+- Resultado: `BUILD SUCCESSFUL`.
+- Nao executar `runClient`; o usuario realiza os testes no cliente.

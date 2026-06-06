@@ -26,6 +26,7 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -53,8 +54,10 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -65,6 +68,7 @@ public class StarterPortalEvents {
     private static final String ESTATE_BASE_X_KEY = "MagicWorldForgeStarterEstateBaseX";
     private static final String ESTATE_BASE_Y_KEY = "MagicWorldForgeStarterEstateBaseY";
     private static final String ESTATE_BASE_Z_KEY = "MagicWorldForgeStarterEstateBaseZ";
+    private static final String ESTATE_REPAIR_VERSION_KEY = "MagicWorldForgeEstateRepairVersion";
     private static final String PREMIUM_UNLOCKED_KEY = "MagicWorldForgePremiumUnlocked";
     private static final String PORTAL_COOLDOWN_KEY = "MagicWorldForgePortalCooldown";
     private static final String RETURN_PORTAL_PREFIX = "MagicWorldForgeReturnPortal";
@@ -92,6 +96,7 @@ public class StarterPortalEvents {
     private static final int IMPORTED_HOUSE_MAX_Z = HOUSE_ORIGIN_Z + IMPORTED_HOUSE_SIZE_Z;
     private static final int CASTLE_SIZE_X = 265;
     private static final int CASTLE_SIZE_Z = 221;
+    private static final int CURRENT_ESTATE_REPAIR_VERSION = 3;
 
     private static final Map<UUID, EstateTask> TASKS = new HashMap<>();
     private static final Set<UUID> PLAYERS_TOUCHING_STARTER_PORTAL = new HashSet<>();
@@ -116,6 +121,13 @@ public class StarterPortalEvents {
         applyMagicWorldServerSettings(player);
 
         CompoundTag data = player.getPersistentData();
+        if (data.getBoolean(ESTATE_CREATED_KEY)
+                && data.getInt(ESTATE_REPAIR_VERSION_KEY) < CURRENT_ESTATE_REPAIR_VERSION) {
+            repairExistingEstate(levelFor(player), estateBaseFromPlayer(player));
+            data.putInt(ESTATE_REPAIR_VERSION_KEY, CURRENT_ESTATE_REPAIR_VERSION);
+            player.sendSystemMessage(Component.literal("Magic World: propriedade e casarao decorado reparados."));
+        }
+
         if (!MagicWorldWorldOptions.isStarterEstateEnabled()
                 || data.getBoolean(ESTATE_CREATED_KEY)
                 || TASKS.containsKey(player.getUUID())) {
@@ -213,6 +225,7 @@ public class StarterPortalEvents {
             }
             default -> {
                 player.getPersistentData().putBoolean(ESTATE_CREATED_KEY, true);
+                player.getPersistentData().putInt(ESTATE_REPAIR_VERSION_KEY, CURRENT_ESTATE_REPAIR_VERSION);
                 applyMagicWorldServerSettings(player);
                 teleportPlayerToEstateSpawn(player, level, task.base);
                 MagicWorldNetwork.sendInitialLoadProgress(player, 100, "Magic World carregado.", true);
@@ -306,6 +319,33 @@ public class StarterPortalEvents {
         return base.offset(-24, 0, 48);
     }
 
+    private static ServerLevel levelFor(ServerPlayer player) {
+        return player.serverLevel();
+    }
+
+    private static void repairExistingEstate(ServerLevel level, BlockPos base) {
+        restoreImportedHouseStructure(level, base);
+        stabilizeEstateAirGaps(level, base);
+        normalizeImportedHouseFrontRoad(level, base);
+        buildStoneTreasureMineHouse(level, base.offset(67, -1, 46));
+    }
+
+    private static void restoreImportedHouseStructure(ServerLevel level, BlockPos base) {
+        BlockPos origin = houseOrigin(base);
+        level.getStructureManager().get(IMPORTED_HOUSE).ifPresent(template ->
+                template.placeInWorld(
+                        level,
+                        origin,
+                        origin,
+                        new StructurePlaceSettings().setIgnoreEntities(true).setKnownShape(true),
+                        RandomSource.create(level.getSeed() ^ origin.asLong()),
+                        2
+                )
+        );
+        fillStarterChests(level, base);
+        decorateImportedHouseAddons(level, base);
+    }
+
     private static boolean isInsideImportedHouseFootprint(int x, int z) {
         return x >= HOUSE_ORIGIN_X - BREATHING_MARGIN
                 && x <= IMPORTED_HOUSE_MAX_X + BREATHING_MARGIN
@@ -365,6 +405,7 @@ public class StarterPortalEvents {
             clearStructureVolume(level, origin, template.getSize(), BREATHING_MARGIN, true);
             template.placeInWorld(level, origin, origin, new StructurePlaceSettings(), RandomSource.create(level.getSeed()), 2);
             prepareBreathingSurface(level, origin, template.getSize(), BREATHING_MARGIN);
+            normalizeImportedHouseFrontRoad(level, base);
             fillStarterChests(level, base);
             decorateImportedHouseAddons(level, base);
             stabilizeImportedHousePerimeterTerrain(level, base);
@@ -515,6 +556,7 @@ public class StarterPortalEvents {
         buildAnimalCaretakerSettlement(level, base);
         buildStarterEstateRoads(level, base);
         stabilizeEstateOpenGapTerrain(level, base);
+        stabilizeEstateAirGaps(level, base);
         stabilizeGreenVillageDistrictTerrain(level, base);
         buildGreenVillageSquare(level, base);
         buildStoneTreasureMineHouse(level, base.offset(67, -1, 46));
@@ -961,6 +1003,52 @@ public class StarterPortalEvents {
         stabilizeNaturalTerrainRect(level, base, -128, -84, -50, -5);
     }
 
+    private static void stabilizeEstateAirGaps(ServerLevel level, BlockPos base) {
+        for (int x = IMPORTED_ESTATE_FENCE_MIN_X + 1; x < IMPORTED_ESTATE_FENCE_MAX_X; x++) {
+            for (int z = IMPORTED_ESTATE_FENCE_MIN_Z + 1; z < IMPORTED_ESTATE_FENCE_MAX_Z; z++) {
+                if (x >= 55 && x <= 79 && z >= 34 && z <= 58) {
+                    continue;
+                }
+
+                BlockPos ground = base.offset(x, -1, z);
+                if (!level.getBlockState(ground).isAir()) {
+                    continue;
+                }
+
+                for (int y = -8; y <= -2; y++) {
+                    BlockPos support = base.offset(x, y, z);
+                    if (level.getBlockState(support).isAir()) {
+                        level.setBlock(support, Blocks.DIRT.defaultBlockState(), 2);
+                    }
+                }
+                level.setBlock(ground, Blocks.GRASS_BLOCK.defaultBlockState(), 2);
+            }
+        }
+    }
+
+    private static void normalizeImportedHouseFrontRoad(ServerLevel level, BlockPos base) {
+        for (int z = 14; z <= IMPORTED_ESTATE_FENCE_MAX_Z - 2; z++) {
+            for (int x = -18; x <= 18; x++) {
+                BlockPos road = base.offset(x, 0, z);
+                BlockState surface = Math.abs(x) <= 5
+                        ? Blocks.POLISHED_ANDESITE.defaultBlockState()
+                        : Math.abs(x) <= 7
+                        ? Blocks.POLISHED_DIORITE.defaultBlockState()
+                        : Blocks.GRASS_BLOCK.defaultBlockState();
+
+                if (level.getBlockState(road.below()).isAir()) {
+                    level.setBlock(road.below(), Blocks.DIRT.defaultBlockState(), 2);
+                }
+                level.setBlock(road, surface, 2);
+                if (Math.abs(x) == 8) {
+                    level.setBlock(road.above(), Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 2);
+                } else if (level.getBlockState(road.above()).canBeReplaced()) {
+                    level.setBlock(road.above(), Blocks.AIR.defaultBlockState(), 2);
+                }
+            }
+        }
+    }
+
     private static void stabilizeNaturalTerrainRect(ServerLevel level, BlockPos base, int minX, int maxX, int minZ, int maxZ) {
         for (int x = minX; x <= maxX; x++) {
             for (int z = minZ; z <= maxZ; z++) {
@@ -1094,9 +1182,22 @@ public class StarterPortalEvents {
         for (int x = -6; x <= 5; x++) {
             for (int z = -6; z <= 5; z++) {
                 level.setBlock(center.offset(x, 6, z), Blocks.DEEPSLATE_BRICKS.defaultBlockState(), 2);
+                if (x == -6 || x == 5 || z == -6 || z == 5) {
+                    Direction facing = z < 0 ? Direction.NORTH : Direction.SOUTH;
+                    level.setBlock(center.offset(x, 7, z), Blocks.DEEPSLATE_BRICK_STAIRS.defaultBlockState()
+                            .setValue(StairBlock.FACING, facing), 2);
+                }
             }
         }
         placeHouseDoor(level, center.offset(0, 1, -5), Direction.NORTH);
+        for (int x : new int[] {-3, 2}) {
+            placeWindow(level, center.offset(x, 2, -5));
+            placeWindow(level, center.offset(x, 2, 4));
+        }
+        for (int z : new int[] {-3, 2}) {
+            placeWindow(level, center.offset(-5, 2, z));
+            placeWindow(level, center.offset(4, 2, z));
+        }
     }
 
     private static BlockState mineHouseWallBlock(int x, int y, int z) {
@@ -1979,6 +2080,215 @@ public class StarterPortalEvents {
         }) {
             placeLampPost(level, pos);
         }
+
+        decorateImportedHouseDoors(level, base);
+        expandImportedHouseWindows(level, base);
+
+        for (BlockPos preferred : new BlockPos[] {
+                base.offset(0, 1, 0), base.offset(10, 1, 0), base.offset(-10, 1, 0),
+                base.offset(0, 1, 10), base.offset(0, 1, -10),
+                base.offset(16, 1, 12), base.offset(-16, 1, 12),
+                base.offset(16, 1, -12), base.offset(-16, 1, -12)
+        }) {
+            decorateSafeInteriorSpot(level, preferred);
+        }
+
+        for (BlockPos preferred : new BlockPos[] {
+                base.offset(6, 1, 6), base.offset(-6, 1, 6),
+                base.offset(6, 1, -6), base.offset(-6, 1, -6),
+                base.offset(18, 1, 0), base.offset(-18, 1, 0)
+        }) {
+            placeSafeInteriorLight(level, preferred);
+        }
+
+        fillImportedHousePremiumChests(level, base);
+        spawnArmorStand(level, base.offset(-12, 1, 3),
+                Items.NETHERITE_HELMET, Items.NETHERITE_CHESTPLATE,
+                Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS,
+                "Armadura de Netherite");
+        spawnNamedMagicWorldArmorStand(level, base.offset(12, 1, 3));
+    }
+
+    private static void decorateImportedHouseDoors(ServerLevel level, BlockPos base) {
+        BlockPos origin = houseOrigin(base);
+        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
+        for (int x = 0; x < IMPORTED_HOUSE_SIZE_X; x++) {
+            for (int z = 0; z < IMPORTED_HOUSE_SIZE_Z; z++) {
+                for (int y = 0; y <= 18; y++) {
+                    mutable.set(origin.getX() + x, origin.getY() + y, origin.getZ() + z);
+                    BlockState state = level.getBlockState(mutable);
+                    if (!(state.getBlock() instanceof DoorBlock)
+                            || state.getValue(DoorBlock.HALF) != DoubleBlockHalf.UPPER) {
+                        continue;
+                    }
+
+                    BlockPos lintel = mutable.above().immutable();
+                    if (level.getBlockState(lintel).isAir()) {
+                        level.setBlock(lintel, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState(), 2);
+                    }
+                    Direction facing = state.getValue(DoorBlock.FACING);
+                    Direction side = facing.getClockWise();
+                    for (Direction direction : new Direction[] {side, side.getOpposite()}) {
+                        BlockPos trim = lintel.relative(direction);
+                        if (level.getBlockState(trim).isAir()) {
+                            level.setBlock(trim, Blocks.DARK_OAK_STAIRS.defaultBlockState()
+                                    .setValue(StairBlock.FACING, direction.getOpposite()), 2);
+                        }
+                    }
+                    BlockPos lamp = lintel.relative(facing.getOpposite());
+                    if (level.getBlockState(lamp).isAir()) {
+                        level.setBlock(lamp, Blocks.LANTERN.defaultBlockState(), 2);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void expandImportedHouseWindows(ServerLevel level, BlockPos base) {
+        BlockPos origin = houseOrigin(base);
+        List<BlockPos> windows = new ArrayList<>();
+        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
+        for (int x = 0; x < IMPORTED_HOUSE_SIZE_X; x++) {
+            for (int z = 0; z < IMPORTED_HOUSE_SIZE_Z; z++) {
+                for (int y = 1; y <= 18; y++) {
+                    mutable.set(origin.getX() + x, origin.getY() + y, origin.getZ() + z);
+                    BlockState state = level.getBlockState(mutable);
+                    if (state.is(Blocks.GLASS_PANE)
+                            || state.is(Blocks.GLASS)
+                            || state.is(Blocks.LIGHT_BLUE_STAINED_GLASS_PANE)
+                            || state.is(Blocks.LIGHT_BLUE_STAINED_GLASS)) {
+                        windows.add(mutable.immutable());
+                    }
+                }
+            }
+        }
+
+        for (BlockPos window : windows) {
+            boolean northSouthAir = level.getBlockState(window.north()).isAir()
+                    && level.getBlockState(window.south()).isAir();
+            boolean eastWestAir = level.getBlockState(window.east()).isAir()
+                    && level.getBlockState(window.west()).isAir();
+            if (northSouthAir) {
+                widenWindow(level, window.east(), Direction.NORTH, Direction.SOUTH);
+                widenWindow(level, window.west(), Direction.NORTH, Direction.SOUTH);
+            } else if (eastWestAir) {
+                widenWindow(level, window.north(), Direction.EAST, Direction.WEST);
+                widenWindow(level, window.south(), Direction.EAST, Direction.WEST);
+            }
+        }
+    }
+
+    private static void widenWindow(ServerLevel level, BlockPos pos, Direction firstSide, Direction secondSide) {
+        BlockState state = level.getBlockState(pos);
+        if (!isImportedHouseWindowWall(state)
+                || !level.getBlockState(pos.relative(firstSide)).isAir()
+                || !level.getBlockState(pos.relative(secondSide)).isAir()) {
+            return;
+        }
+        level.setBlock(pos, Blocks.LIGHT_BLUE_STAINED_GLASS_PANE.defaultBlockState(), 2);
+    }
+
+    private static boolean isImportedHouseWindowWall(BlockState state) {
+        return state.is(Blocks.STONE_BRICKS)
+                || state.is(Blocks.MOSSY_STONE_BRICKS)
+                || state.is(Blocks.DEEPSLATE_BRICKS)
+                || state.is(Blocks.POLISHED_DEEPSLATE)
+                || state.is(Blocks.DARK_OAK_PLANKS)
+                || state.is(Blocks.SPRUCE_PLANKS)
+                || state.is(Blocks.OAK_PLANKS)
+                || state.is(Blocks.BIRCH_PLANKS)
+                || state.is(Blocks.BRICKS);
+    }
+
+    private static void decorateSafeInteriorSpot(ServerLevel level, BlockPos preferred) {
+        BlockPos safe = findSafeInteriorFloor(level, preferred, 8, 5);
+        if (safe == null) {
+            return;
+        }
+
+        int style = Math.floorMod(safe.getX() + safe.getZ(), 4);
+        switch (style) {
+            case 0 -> {
+                level.setBlock(safe, Blocks.BOOKSHELF.defaultBlockState(), 2);
+                if (level.getBlockState(safe.above()).isAir()) {
+                    level.setBlock(safe.above(), Blocks.POTTED_DANDELION.defaultBlockState(), 2);
+                }
+            }
+            case 1 -> {
+                level.setBlock(safe, Blocks.CRAFTING_TABLE.defaultBlockState(), 2);
+                if (level.getBlockState(safe.relative(Direction.EAST)).isAir()) {
+                    level.setBlock(safe.relative(Direction.EAST), Blocks.ANVIL.defaultBlockState(), 2);
+                }
+            }
+            case 2 -> {
+                level.setBlock(safe, Blocks.BARREL.defaultBlockState(), 2);
+                if (level.getBlockState(safe.above()).isAir()) {
+                    level.setBlock(safe.above(), Blocks.LANTERN.defaultBlockState(), 2);
+                }
+            }
+            default -> {
+                level.setBlock(safe, Blocks.FLOWERING_AZALEA.defaultBlockState(), 2);
+                if (level.getBlockState(safe.below()).isSolid()) {
+                    for (Direction direction : Direction.Plane.HORIZONTAL) {
+                        BlockPos flower = safe.relative(direction);
+                        if (level.getBlockState(flower).isAir()
+                                && level.getBlockState(flower.below()).isSolid()) {
+                            level.setBlock(flower, flowerFor(flower.getX() + flower.getZ()), 2);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static void placeSafeInteriorLight(ServerLevel level, BlockPos preferred) {
+        BlockPos safe = findSafeInteriorFloor(level, preferred, 8, 5);
+        if (safe == null) {
+            return;
+        }
+        BlockPos light = safe.above(2);
+        if (level.getBlockState(light).isAir()) {
+            level.setBlock(light, Blocks.SEA_LANTERN.defaultBlockState(), 2);
+        }
+    }
+
+    private static void fillImportedHousePremiumChests(ServerLevel level, BlockPos base) {
+        BlockPos wands = placeSafeChest(level, base.offset(-14, 1, -8), Direction.SOUTH);
+        putItems(level, wands,
+                new ItemStack(MagicWorld.VARINHA_MAGICA.get()),
+                new ItemStack(MagicWorld.VARINHA_MAGICA.get()),
+                new ItemStack(MagicWorld.VARINHA_MAGICA.get()));
+
+        BlockPos rareItems = placeSafeChest(level, base.offset(14, 1, -8), Direction.SOUTH);
+        putItems(level, rareItems,
+                new ItemStack(Items.ELYTRA), new ItemStack(Items.DRAGON_EGG),
+                new ItemStack(Items.NETHER_STAR, 8), new ItemStack(Items.BEACON, 4),
+                new ItemStack(Items.ENCHANTED_GOLDEN_APPLE, 16), new ItemStack(Items.TOTEM_OF_UNDYING, 8),
+                new ItemStack(Items.TRIDENT), new ItemStack(Items.HEART_OF_THE_SEA, 8),
+                new ItemStack(Items.CONDUIT, 4), new ItemStack(Items.NETHERITE_INGOT, 16));
+
+        BlockPos usefulItems = placeSafeChest(level, base.offset(14, 1, 8), Direction.NORTH);
+        putItems(level, usefulItems,
+                new ItemStack(Items.NETHERITE_PICKAXE), new ItemStack(Items.NETHERITE_AXE),
+                new ItemStack(Items.NETHERITE_SHOVEL), new ItemStack(Items.NETHERITE_HOE),
+                new ItemStack(Items.NETHERITE_SWORD), new ItemStack(Items.BOW),
+                new ItemStack(Items.CROSSBOW), new ItemStack(Items.SHIELD),
+                new ItemStack(Items.FIREWORK_ROCKET, 64), new ItemStack(Items.EXPERIENCE_BOTTLE, 64));
+    }
+
+    private static void spawnNamedMagicWorldArmorStand(ServerLevel level, BlockPos pos) {
+        spawnArmorStand(level, pos,
+                namedArmor(Items.NETHERITE_HELMET, "Elmo Magic World"),
+                namedArmor(Items.NETHERITE_CHESTPLATE, "Peitoral Magic World"),
+                namedArmor(Items.NETHERITE_LEGGINGS, "Calcas Magic World"),
+                namedArmor(Items.NETHERITE_BOOTS, "Botas Magic World"),
+                "Armadura Magic World");
+    }
+
+    private static ItemStack namedArmor(Item item, String name) {
+        ItemStack stack = new ItemStack(item);
+        stack.setHoverName(Component.literal(name));
+        return stack;
     }
 
     private static void decorateCastleStarterLife(ServerLevel level, BlockPos center) {
@@ -2106,7 +2416,8 @@ public class StarterPortalEvents {
                     if (!level.isInWorldBounds(mutable)
                             || !level.getBlockState(mutable).isAir()
                             || !level.getBlockState(mutable.above()).isAir()
-                            || !level.getBlockState(mutable.below()).isSolid()) {
+                            || !level.getBlockState(mutable.below()).isSolid()
+                            || !hasSolidCeilingAbove(level, mutable, 14)) {
                         continue;
                     }
 
@@ -2351,6 +2662,11 @@ public class StarterPortalEvents {
             return;
         }
 
+        AABB nearby = new AABB(safePos).inflate(16.0D, 8.0D, 16.0D);
+        if (!level.getEntitiesOfClass(ArmorStand.class, nearby, stand -> name.equals(stand.getName().getString())).isEmpty()) {
+            return;
+        }
+
         Entity entity = EntityType.ARMOR_STAND.spawn(level, safePos, MobSpawnType.STRUCTURE);
         if (!(entity instanceof ArmorStand stand)) {
             return;
@@ -2360,6 +2676,39 @@ public class StarterPortalEvents {
         stand.setItemSlot(EquipmentSlot.CHEST, new ItemStack(chestplate));
         stand.setItemSlot(EquipmentSlot.LEGS, new ItemStack(leggings));
         stand.setItemSlot(EquipmentSlot.FEET, new ItemStack(boots));
+        stand.setCustomName(Component.literal(name));
+        stand.setCustomNameVisible(true);
+        stand.setNoGravity(true);
+    }
+
+    private static void spawnArmorStand(
+            ServerLevel level,
+            BlockPos pos,
+            ItemStack helmet,
+            ItemStack chestplate,
+            ItemStack leggings,
+            ItemStack boots,
+            String name
+    ) {
+        BlockPos safePos = findSafeInteriorFloor(level, pos, 5, 4);
+        if (safePos == null) {
+            return;
+        }
+
+        AABB nearby = new AABB(safePos).inflate(16.0D, 8.0D, 16.0D);
+        if (!level.getEntitiesOfClass(ArmorStand.class, nearby, stand -> name.equals(stand.getName().getString())).isEmpty()) {
+            return;
+        }
+
+        Entity entity = EntityType.ARMOR_STAND.spawn(level, safePos, MobSpawnType.STRUCTURE);
+        if (!(entity instanceof ArmorStand stand)) {
+            return;
+        }
+
+        stand.setItemSlot(EquipmentSlot.HEAD, helmet);
+        stand.setItemSlot(EquipmentSlot.CHEST, chestplate);
+        stand.setItemSlot(EquipmentSlot.LEGS, leggings);
+        stand.setItemSlot(EquipmentSlot.FEET, boots);
         stand.setCustomName(Component.literal(name));
         stand.setCustomNameVisible(true);
         stand.setNoGravity(true);

@@ -1,9 +1,14 @@
 {
-  "required": true,
+  "required": false,
   "minVersion": "0.8",
   "package": "com.magicworld.mixin",
   "compatibilityLevel": "JAVA_17",
   "client": [
+    "EmbeddiumAccentColorMagicWorldMixin",
+    "EmbeddiumLineColorMagicWorldMixin",
+    "EmbeddiumTabFrameCircularScrollMagicWorldMixin",
+    "EmbeddiumTabHeaderMagicWorldMixin",
+    "EmbeddiumVideoOptionsScreenMagicWorldMixin",
     "MagicWorldCreateWorldScreenBackgroundMixin",
     "MagicWorldLevelLoadingScreenMixin",
     "MagicWorldSelectWorldScreenBackgroundMixin",

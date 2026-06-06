@@ -124,6 +124,8 @@ public class ClientEvents {
 
         @SubscribeEvent
         public static void onScreenInit(ScreenEvent.Init.Post event) {
+            hideDistantHorizonsInjectedWidgets(event);
+
             if (event.getScreen() instanceof PauseScreen pauseScreen) {
                 tunePauseMenu(event, pauseScreen);
             }
@@ -603,7 +605,13 @@ public class ClientEvents {
             AbstractWidget modsButton = findPauseButton(widgets, "mods");
             AbstractWidget lanButton = findPauseButton(widgets, "open to lan", "abrir em lan", "lan");
             AbstractWidget magicButton = findPauseButton(widgets, "magicworld", "magic world");
+            AbstractWidget distantHorizonsButton = findPauseButton(widgets, "distant horizons", "distanthorizons", "horizontes distantes");
             AbstractWidget anchorButton = lanButton != null ? lanButton : optionsButton;
+
+            if (distantHorizonsButton != null) {
+                distantHorizonsButton.visible = false;
+                distantHorizonsButton.active = false;
+            }
 
             if (anchorButton == null) {
                 return;
@@ -661,6 +669,20 @@ public class ClientEvents {
                 }
             }
             return null;
+        }
+
+        private static void hideDistantHorizonsInjectedWidgets(ScreenEvent.Init.Post event) {
+            for (GuiEventListener listener : event.getListenersList()) {
+                if (!(listener instanceof AbstractWidget widget)) {
+                    continue;
+                }
+
+                String widgetClass = widget.getClass().getName().toLowerCase();
+                if (widgetClass.startsWith("com.seibel.distanthorizons.")) {
+                    widget.visible = false;
+                    widget.active = false;
+                }
+            }
         }
 
         private static boolean isCreateWorldGameTab(CreateWorldScreen screen) {
