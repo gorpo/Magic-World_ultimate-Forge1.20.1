@@ -48,6 +48,7 @@ import net.minecraft.world.level.block.EndPortalFrameBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.NetherPortalBlock;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
@@ -642,7 +643,7 @@ public class StarterPortalEvents {
     }
 
     private static BlockPos starterRoadEndHouseOrigin(BlockPos base) {
-        return base.offset(-12, -4, -106);
+        return base.offset(-5, -4, -90);
     }
 
     private static void buildStarterRoadEndHouse(ServerLevel level, BlockPos base) {
@@ -657,15 +658,20 @@ public class StarterPortalEvents {
         forceLoadStructureArea(level, origin, size.getX(), size.getZ(), 4);
         clearStructureVolume(level, origin, size, 2, true);
         prepareStarterRoadEndHousePlateau(level, origin, size);
+        StructurePlaceSettings settings = new StructurePlaceSettings()
+                .setIgnoreEntities(true)
+                .setKnownShape(true)
+                .setRotation(Rotation.CLOCKWISE_180)
+                .setRotationPivot(new BlockPos(size.getX() / 2, 0, size.getZ() / 2));
         template.placeInWorld(
                 level,
                 origin,
                 origin,
-                new StructurePlaceSettings().setIgnoreEntities(true).setKnownShape(true),
+                settings,
                 RandomSource.create(level.getSeed() ^ origin.asLong()),
                 2
         );
-        decorateStarterRoadEndHouseFront(level, origin);
+        decorateStarterRoadEndHouseFront(level, origin, size);
     }
 
     private static void prepareStarterRoadEndHousePlateau(ServerLevel level, BlockPos origin, Vec3i size) {
@@ -679,8 +685,8 @@ public class StarterPortalEvents {
         }
     }
 
-    private static void decorateStarterRoadEndHouseFront(ServerLevel level, BlockPos origin) {
-        BlockPos frontDoor = origin.offset(12, 3, 17);
+    private static void decorateStarterRoadEndHouseFront(ServerLevel level, BlockPos origin, Vec3i size) {
+        BlockPos frontDoor = origin.offset(size.getX() - 1 - 12, 3, size.getZ() - 1 - 17);
         buildHousePathToFarm(level, frontDoor, Direction.SOUTH, 13);
         for (int step = 1; step <= 5; step++) {
             BlockPos center = filledGroundAt(level, frontDoor.relative(Direction.SOUTH, step));
@@ -707,7 +713,7 @@ public class StarterPortalEvents {
     }
 
     private static BlockPos roadEndMagicSanctuaryOrigin(BlockPos base) {
-        return base.offset(-128, -4, -8);
+        return base.offset(-54, -4, -8);
     }
 
     private static void buildRoadEndMagicSanctuary(ServerLevel level, BlockPos base) {
@@ -717,8 +723,8 @@ public class StarterPortalEvents {
         int height = 10;
         int centerZ = depth / 2;
 
-        forceLoadAreaBetween(level, base.offset(-76, 0, -12), origin.offset(width + 8, 0, depth + 6));
-        buildRoadBetween(level, base, base.offset(-76, -1, 0), origin.offset(width, -1, centerZ));
+        forceLoadAreaBetween(level, base.offset(-18, 0, -12), origin.offset(width + 8, 0, depth + 6));
+        buildRoadBetween(level, base, base.offset(-4, -1, 0), origin.offset(width, -1, centerZ));
         prepareRoadEndMagicSanctuaryShell(level, origin, width, depth, height, centerZ);
         clearRoadEndSanctuaryEntrance(level, origin, width, centerZ);
         buildRoadEndSanctuaryStorage(level, origin, width, depth);
@@ -3577,13 +3583,9 @@ public class StarterPortalEvents {
         int maxX = base.getX() + IMPORTED_ESTATE_FENCE_MAX_X;
         int minZ = base.getZ() + IMPORTED_ESTATE_FENCE_MIN_Z;
         int maxZ = base.getZ() + IMPORTED_ESTATE_FENCE_MAX_Z;
-        int excludedMinX = base.getX() + HOUSE_ORIGIN_X - BREATHING_MARGIN;
-        int excludedMaxX = base.getX() + IMPORTED_HOUSE_MAX_X + BREATHING_MARGIN;
-        int excludedMinZ = base.getZ() + HOUSE_ORIGIN_Z - BREATHING_MARGIN;
-        int excludedMaxZ = base.getZ() + IMPORTED_HOUSE_MAX_Z + BREATHING_MARGIN;
 
         convertNaturalTreesToCherryInRing(level, minX, maxX, minZ, maxZ,
-                excludedMinX, excludedMaxX, excludedMinZ, excludedMaxZ);
+                1, 0, 1, 0);
     }
 
     private static void convertCastlePerimeterTreesToCherry(ServerLevel level, BlockPos base) {
@@ -3621,8 +3623,8 @@ public class StarterPortalEvents {
                     continue;
                 }
                 int surfaceY = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
-                int scanMinY = Math.max(minBuildY, surfaceY - 12);
-                int scanMaxY = Math.min(maxBuildY, surfaceY + 48);
+                int scanMinY = Math.max(minBuildY, surfaceY - 10);
+                int scanMaxY = Math.min(maxBuildY, surfaceY + 34);
                 boolean convertedAny = false;
                 for (int y = scanMinY; y <= scanMaxY; y++) {
                     mutable.set(x, y, z);

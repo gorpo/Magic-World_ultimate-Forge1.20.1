@@ -1620,3 +1620,10 @@ Validacao:
 - Usuario pediu commit/push imediato para nao perder versionamento antes de continuar testes.
 - Alteracoes incluidas: seed dropdown sem sobreposicao; EntityCulling portado; defaults Criativo/Facil; loading com logo menor e painel mais transparente; casa do fim da rua reposicionada e sem gramado extra; santuario rebaixado e com porta voltada para a casa; entradas da casa grande perto dos currais desobstruidas; cerejeiras restritas ao espaco do jogador/castelo.
 - Observacao: compileJava foi iniciado e interrompido pelo usuario nesta rodada; proxima sessao deve rodar ./gradlew.bat compileJava --stacktrace e depois ./gradlew.bat build --stacktrace.
+
+## Handoff 2026-06-06 - ajuste pos-prints casa/santuario
+- Usuario reportou aviso Can't keep up durante geracao; provavelmente pico de geracao inicial. Foi reduzido o range vertical de conversao das arvores para aliviar custo, mas a geracao grande ainda pode causar aviso pontual.
+- Casa do fim da rua: StarterPortalEvents.starterRoadEndHouseOrigin agora base.offset(-5, -4, -90). Template starter_house_1 usa Rotation.CLOCKWISE_180 com pivot central. Porta/decoracao recalculada por size para coordenada rotacionada.
+- Santuario: roadEndMagicSanctuaryOrigin agora base.offset(-54, -4, -8), width 36, entrada leste em x ~= -18 relativa ao base, voltada para a casa.
+- Cerejeiras: convertMainHousePerimeterTreesToCherry cobre todo o terreno cercado sem excluir o footprint amplo da casa; scan vertical reduzido para surfaceY -10 ate surfaceY +34.
+- Validacao executada: ./gradlew.bat compileJava --stacktrace = BUILD SUCCESSFUL.

@@ -928,3 +928,12 @@ Validacao e processo:
 - Geracao nova: entradas da casa grande perto dos currais limpas por dentro e por fora, mantendo iluminacao embutida.
 - Geracao nova: borda viva e arvores naturais dentro do terreno da casa principal passam para cerejeira; conversao fica limitada aos limites do terreno e ao perimetro do castelo.
 - Validacao: compileJava foi iniciado mas interrompido pelo usuario para priorizar commit/versionamento; precisa rodar depois.
+
+## Registro 2026-06-06 - ajuste casa/santuario/cerejeiras
+- Casa do fim da rua: template rotacionado 180 graus para a porta ficar de frente para a rua.
+- Casa do fim da rua: origem ajustada para base + (-5, -4, -90), deslocando lateralmente para centralizar e avancando a construcao para colar 2 blocos no eixo da rua.
+- Casa do fim da rua: decoracao da porta agora usa a coordenada da porta rotacionada, mantendo acesso no mesmo nivel da rua.
+- Santuario: reposicionado para a boca ficar cerca de 15 blocos apos a rua, em direcao ao morro/castelo, com entrada voltada para a casa.
+- Cerejeiras: conversao da casa principal nao exclui mais o footprint grande da estrutura, para converter tambem arvores verdes dentro do terreno do jogador.
+- Performance: varredura vertical da conversao de arvores foi reduzida para diminuir custo no carregamento inicial.
+- Validacao: ./gradlew.bat compileJava --stacktrace passou.
