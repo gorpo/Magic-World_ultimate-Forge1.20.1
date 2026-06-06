@@ -476,3 +476,16 @@ Teste pendente:
 Teste pendente:
 
 - Abrir o pause menu e confirmar alinhamento visual dos tres botoes inferiores.
+
+## Ajustes finos de terreno, rua, mina e castelo - 2026-06-06
+
+- A limpeza ao redor da casa importada foi limitada para nao apagar partes decorativas/estruturais da frente.
+- Ruas receberam acabamento de meia altura com slabs nas laterais.
+- Foram adicionadas faixas de estabilizacao para fechar buracos perto do limite, da casa e das plantacoes.
+- A casa da mina agora reforca piso, paredes, telhado e porta depois da decoracao para evitar que aparecam somente armaduras/itens.
+- Os residents do castelo agora descem para chao caminhavel quando o ponto original esta alto demais.
+- Build passou com `./gradlew.bat build`.
+
+Teste pendente:
+
+- Criar mundo novo e validar visualmente frente da casa, ruas, predio da mina, villagers do castelo e buracos perto das plantacoes.

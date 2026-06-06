@@ -813,3 +813,25 @@ Teste manual:
 
 - Abrir um mundo, apertar ESC.
 - Conferir `Mods` em uma linha, `MagicWorld` na linha seguinte e botao de saida abaixo, todos alinhados e sem sobreposicao.
+
+## Bloco em 2026-06-06 - ajustes finos de terreno, rua, mina e castelo
+
+- Corrigido `prepareBreathingSurface(...)` para nao apagar blocos estruturais/decorativos na frente da casa importada.
+- A limpeza ao redor da casa agora remove apenas terreno natural, plantas, fluidos e blocos substituiveis.
+- Ruas principais e caminhos entre estruturas receberam acabamento lateral com `SMOOTH_STONE_SLAB`, criando meia linha de bloco sem elevar a rua inteira.
+- Adicionado `stabilizeEstateOpenGapTerrain(...)` para fechar faixas abertas:
+  - lateral oeste/perto do limite;
+  - fundos/lado da casa;
+  - linha faltante perto das plantacoes.
+- A casa da mina recebeu `reinforceStoneTreasureMineHouseShell(...)`, recolocando piso, paredes, telhado e porta depois da decoracao para evitar aparecerem apenas armaduras/itens.
+- Villagers/estacoes do castelo agora preferem chao caminhavel proximo quando o ponto original esta alto demais, mesmo que exista teto no ponto alto.
+- Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
+
+Teste manual:
+
+- Criar mundo novo.
+- Conferir frente da casa importada.
+- Conferir meia-linha de slabs nas ruas.
+- Conferir se o predio da mina aparece junto com armaduras e baus.
+- Conferir se villagers/casas do castelo nao ficam presos no ar.
+- Conferir fechamento da lateral perto do limite e da linha faltante perto das plantacoes.

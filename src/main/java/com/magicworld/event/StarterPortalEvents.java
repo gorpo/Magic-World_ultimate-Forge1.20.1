@@ -466,13 +466,36 @@ public class StarterPortalEvents {
                 }
 
                 mutable.set(origin.getX() + x, origin.getY() - 1, origin.getZ() + z);
-                level.setBlock(mutable, Blocks.GRASS_BLOCK.defaultBlockState(), 2);
+                if (canPatchHousePerimeterGround(level.getBlockState(mutable))) {
+                    level.setBlock(mutable, Blocks.GRASS_BLOCK.defaultBlockState(), 2);
+                }
                 for (int y = 0; y <= 18; y++) {
                     mutable.set(origin.getX() + x, origin.getY() + y, origin.getZ() + z);
-                    level.setBlock(mutable, Blocks.AIR.defaultBlockState(), 2);
+                    if (isBreathingSurfaceCleanupBlock(level.getBlockState(mutable))) {
+                        level.setBlock(mutable, Blocks.AIR.defaultBlockState(), 2);
+                    }
                 }
             }
         }
+    }
+
+    private static boolean isBreathingSurfaceCleanupBlock(BlockState state) {
+        return state.isAir()
+                || state.getFluidState().isSource()
+                || canPatchHousePerimeterGround(state)
+                || state.is(Blocks.GRASS)
+                || state.is(Blocks.TALL_GRASS)
+                || state.is(Blocks.FERN)
+                || state.is(Blocks.LARGE_FERN)
+                || state.is(Blocks.VINE)
+                || state.is(Blocks.POPPY)
+                || state.is(Blocks.DANDELION)
+                || state.is(Blocks.BLUE_ORCHID)
+                || state.is(Blocks.ALLIUM)
+                || state.is(Blocks.AZURE_BLUET)
+                || state.is(Blocks.RED_TULIP)
+                || state.is(Blocks.OXEYE_DAISY)
+                || state.is(Blocks.CORNFLOWER);
     }
 
     private static void buildImportedEstateFarms(ServerLevel level, BlockPos base) {
@@ -491,6 +514,7 @@ public class StarterPortalEvents {
         buildPlantationWorkerSettlement(level, base);
         buildAnimalCaretakerSettlement(level, base);
         buildStarterEstateRoads(level, base);
+        stabilizeEstateOpenGapTerrain(level, base);
         stabilizeGreenVillageDistrictTerrain(level, base);
         buildGreenVillageSquare(level, base);
         buildStoneTreasureMineHouse(level, base.offset(67, -1, 46));
@@ -838,6 +862,8 @@ public class StarterPortalEvents {
                 level.setBlock(pos.above(), Blocks.AIR.defaultBlockState(), 2);
                 level.setBlock(pos.above(2), Blocks.AIR.defaultBlockState(), 2);
             }
+            placeRoadShoulderSlab(level, center.relative(side, -3));
+            placeRoadShoulderSlab(level, center.relative(side, 3));
             if (step > 0 && step % 16 == 0) {
                 placeLampPost(level, center.relative(side, 4));
                 placeLampPost(level, center.relative(side, -4));
@@ -859,12 +885,29 @@ public class StarterPortalEvents {
                     level.setBlock(road.above(), Blocks.AIR.defaultBlockState(), 2);
                 }
             }
+            for (int x = -2; x <= 2; x++) {
+                placeRoadShoulderSlab(level, filledGroundAt(level, pos.offset(x, 0, -2)));
+                placeRoadShoulderSlab(level, filledGroundAt(level, pos.offset(x, 0, 2)));
+            }
+            for (int z = -1; z <= 1; z++) {
+                placeRoadShoulderSlab(level, filledGroundAt(level, pos.offset(-2, 0, z)));
+                placeRoadShoulderSlab(level, filledGroundAt(level, pos.offset(2, 0, z)));
+            }
             if (pos.getX() != to.getX()) {
                 pos = pos.offset(dx, 0, 0);
             } else if (pos.getZ() != to.getZ()) {
                 pos = pos.offset(0, 0, dz);
             }
         }
+    }
+
+    private static void placeRoadShoulderSlab(ServerLevel level, BlockPos pos) {
+        if (!canPatchHousePerimeterGround(level.getBlockState(pos)) && !level.getBlockState(pos).is(Blocks.GRASS_BLOCK)) {
+            return;
+        }
+        level.setBlock(pos.below(), Blocks.DIRT.defaultBlockState(), 2);
+        level.setBlock(pos, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 2);
+        level.setBlock(pos.above(), Blocks.AIR.defaultBlockState(), 2);
     }
 
     private static void buildEnhancedEstateLighting(ServerLevel level, BlockPos base) {
@@ -908,6 +951,26 @@ public class StarterPortalEvents {
                         level.setBlock(clear, Blocks.AIR.defaultBlockState(), 2);
                     }
                 }
+            }
+        }
+    }
+
+    private static void stabilizeEstateOpenGapTerrain(ServerLevel level, BlockPos base) {
+        stabilizeNaturalTerrainRect(level, base, -128, -86, -76, 80);
+        stabilizeNaturalTerrainRect(level, base, -100, 44, 54, 80);
+        stabilizeNaturalTerrainRect(level, base, -128, -84, -50, -5);
+    }
+
+    private static void stabilizeNaturalTerrainRect(ServerLevel level, BlockPos base, int minX, int maxX, int minZ, int maxZ) {
+        for (int x = minX; x <= maxX; x++) {
+            for (int z = minZ; z <= maxZ; z++) {
+                if (x >= HOUSE_ORIGIN_X - 1
+                        && x <= IMPORTED_HOUSE_MAX_X + 1
+                        && z >= HOUSE_ORIGIN_Z - 1
+                        && z <= IMPORTED_HOUSE_MAX_Z + 1) {
+                    continue;
+                }
+                fillHousePerimeterColumn(level, base, x, z);
             }
         }
     }
@@ -1012,6 +1075,28 @@ public class StarterPortalEvents {
         }
 
         decorateMineHouse(level, center);
+        reinforceStoneTreasureMineHouseShell(level, center);
+    }
+
+    private static void reinforceStoneTreasureMineHouseShell(ServerLevel level, BlockPos center) {
+        for (int x = -5; x <= 4; x++) {
+            for (int z = -5; z <= 4; z++) {
+                boolean wall = x == -5 || x == 4 || z == -5 || z == 4;
+                level.setBlock(center.offset(x, -1, z), Blocks.COBBLED_DEEPSLATE.defaultBlockState(), 2);
+                level.setBlock(center.offset(x, 0, z), Blocks.POLISHED_DEEPSLATE.defaultBlockState(), 2);
+                if (wall) {
+                    for (int y = 1; y <= 5; y++) {
+                        level.setBlock(center.offset(x, y, z), mineHouseWallBlock(x, y, z), 2);
+                    }
+                }
+            }
+        }
+        for (int x = -6; x <= 5; x++) {
+            for (int z = -6; z <= 5; z++) {
+                level.setBlock(center.offset(x, 6, z), Blocks.DEEPSLATE_BRICKS.defaultBlockState(), 2);
+            }
+        }
+        placeHouseDoor(level, center.offset(0, 1, -5), Direction.NORTH);
     }
 
     private static BlockState mineHouseWallBlock(int x, int y, int z) {
@@ -2115,12 +2200,16 @@ public class StarterPortalEvents {
             ItemStack... supplies
     ) {
         BlockPos spot = findSafeInteriorFloor(level, requested, 8, 18);
+        BlockPos groundSpot = findWalkableGroundNear(level, requested, 80, 160);
+        if (groundSpot != null && requested.getY() > groundSpot.getY() + 8) {
+            spot = groundSpot;
+        }
         if (spot == null) {
             spot = castleGroundResidentSpot(level, requested);
         } else if (!hasSolidCeilingAbove(level, spot, 8)) {
-            BlockPos groundSpot = findWalkableGroundNear(level, spot, 64, 96);
-            if (groundSpot != null && spot.getY() > groundSpot.getY() + 8) {
-                spot = groundSpot;
+            BlockPos lowerGroundSpot = findWalkableGroundNear(level, spot, 64, 96);
+            if (lowerGroundSpot != null && spot.getY() > lowerGroundSpot.getY() + 8) {
+                spot = lowerGroundSpot;
             }
         }
         AABB nearby = new AABB(spot).inflate(28.0D, 20.0D, 28.0D);
@@ -2138,7 +2227,7 @@ public class StarterPortalEvents {
     }
 
     private static BlockPos castleGroundResidentSpot(ServerLevel level, BlockPos requested) {
-        BlockPos walkable = findWalkableGroundNear(level, requested, 48, 32);
+        BlockPos walkable = findWalkableGroundNear(level, requested, 80, 160);
         if (walkable != null) {
             return walkable;
         }
