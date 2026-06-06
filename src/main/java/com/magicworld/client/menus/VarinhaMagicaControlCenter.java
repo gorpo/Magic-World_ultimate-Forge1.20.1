@@ -15,6 +15,7 @@ public final class VarinhaMagicaControlCenter {
             List<PremiumEntry> entries
     ) {
 
+        MenuEntryFactory.open(entries, PremiumMenuScreen.MenuTab.GRAPHICS_PROFILES, "Graficos", "GraphicsProfilesMenu", Items.SPYGLASS);
         MenuEntryFactory.open(entries, PremiumMenuScreen.MenuTab.MOB_SPAWNER, "Mob Spawner", "MobSpawnerMenu", Items.SPAWNER);
         MenuEntryFactory.open(entries, PremiumMenuScreen.MenuTab.WEATHER_CONTROL, "Controle de clima", "WeatherControlMenu", Items.WATER_BUCKET);
         MenuEntryFactory.open(entries, PremiumMenuScreen.MenuTab.BIOME_TELEPORT, "Teleportar bioma", "BiomeTeleportMenu", Items.COMPASS);

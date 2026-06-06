@@ -599,25 +599,56 @@ public class ClientEvents {
                 }
             }
 
-            if (findPauseButton(widgets, "magicworld", "magic world") != null) {
-                return;
-            }
-
+            AbstractWidget optionsButton = findPauseButton(widgets, "options", "opcoes", "opcoes...");
+            AbstractWidget modsButton = findPauseButton(widgets, "mods");
             AbstractWidget lanButton = findPauseButton(widgets, "open to lan", "abrir em lan", "lan");
-            if (lanButton == null) {
+            AbstractWidget quitButton = findPauseButton(widgets, "save and quit", "disconnect", "salvar e sair", "sair para");
+            AbstractWidget magicButton = findPauseButton(widgets, "magicworld", "magic world");
+            AbstractWidget anchorButton = lanButton != null ? lanButton : optionsButton;
+
+            if (anchorButton == null) {
                 return;
             }
 
-            event.addListener(Button.builder(Component.literal("MagicWorld"),
-                            button -> Minecraft.getInstance().setScreen(new MagicWorldCentralPauseScreen(pauseScreen)))
-                    .bounds(
-                            lanButton.getX(),
-                            lanButton.getY() + lanButton.getHeight() + 4,
-                            lanButton.getWidth(),
-                            lanButton.getHeight()
-                    )
-                    .tooltip(Tooltip.create(Component.literal("Abre os atalhos magicos do Magic World.")))
-                    .build());
+            int buttonWidth = quitButton != null
+                    ? Math.max(quitButton.getWidth(), anchorButton.getWidth())
+                    : anchorButton.getWidth();
+            int buttonHeight = anchorButton.getHeight();
+            int buttonX = pauseScreen.width / 2 - buttonWidth / 2;
+            int gap = Math.max(4, verticalGapNear(anchorButton, widgets));
+            int modsY = anchorButton.getY() + anchorButton.getHeight() + gap;
+            int magicY = modsY + buttonHeight + gap;
+            int quitY = magicY + buttonHeight + gap;
+
+            if (modsButton != null) {
+                modsButton.setWidth(buttonWidth);
+                modsButton.setX(buttonX);
+                modsButton.setY(modsY);
+            } else {
+                event.addListener(Button.builder(Component.literal("Mods"),
+                                button -> Minecraft.getInstance().setScreen(new ModListScreen(pauseScreen)))
+                        .bounds(buttonX, modsY, buttonWidth, buttonHeight)
+                        .tooltip(Tooltip.create(Component.literal("Abre a lista de mods carregados.")))
+                        .build());
+            }
+
+            if (magicButton != null) {
+                magicButton.setWidth(buttonWidth);
+                magicButton.setX(buttonX);
+                magicButton.setY(magicY);
+            } else {
+                event.addListener(Button.builder(Component.literal("MagicWorld"),
+                                button -> Minecraft.getInstance().setScreen(new MagicWorldCentralPauseScreen(pauseScreen)))
+                        .bounds(buttonX, magicY, buttonWidth, buttonHeight)
+                        .tooltip(Tooltip.create(Component.literal("Abre os atalhos magicos do Magic World.")))
+                        .build());
+            }
+
+            if (quitButton != null) {
+                quitButton.setWidth(buttonWidth);
+                quitButton.setX(buttonX);
+                quitButton.setY(quitY);
+            }
         }
 
         private static AbstractWidget findPauseButton(List<AbstractWidget> widgets, String... needles) {

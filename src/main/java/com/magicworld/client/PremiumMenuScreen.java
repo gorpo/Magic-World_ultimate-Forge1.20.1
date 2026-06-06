@@ -5,6 +5,7 @@ import com.magicworld.client.menus.BiomeTeleportMenu;
 import com.magicworld.client.menus.BossControlMenu;
 import com.magicworld.client.menus.DimensionMenu;
 import com.magicworld.client.menus.DungeonSpawnerMenu;
+import com.magicworld.client.menus.GraphicsProfilesMenu;
 import com.magicworld.client.menus.LuckyBlockMenu;
 import com.magicworld.client.menus.VarinhaMagicaControlCenter;
 import com.magicworld.client.menus.MobSpawnerMenu;
@@ -52,6 +53,10 @@ import net.minecraft.world.item.Items;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import net.minecraft.Util;
+import net.minecraftforge.fml.ModList;
 
 public class PremiumMenuScreen extends Screen {
 
@@ -124,6 +129,12 @@ public class PremiumMenuScreen extends Screen {
 
     private static final int PREVIEW_TEXTURE_SIZE =
             256;
+    private static final int TAB_HEIGHT =
+            16;
+    private static final int TAB_ROW_GAP =
+            3;
+    private static final int TAB_MIN_WIDTH =
+            58;
 
     private PremiumList premiumList;
 
@@ -171,6 +182,7 @@ public class PremiumMenuScreen extends Screen {
         SPAWN_CONSTRUCTIONS("Constru."),
         COMMANDS_GATE("Cmds"),
         CONTROL_CENTER("Sistema"),
+        GRAPHICS_PROFILES("Graficos"),
         MOB_SPAWNER("Mobs"),
         WEATHER_CONTROL("Clima"),
         BIOME_TELEPORT("Biomas"),
@@ -269,6 +281,10 @@ public class PremiumMenuScreen extends Screen {
 
         else if (activeTab == MenuTab.CONTROL_CENTER) {
             VarinhaMagicaControlCenter.add(premiumEntries);
+        }
+
+        else if (activeTab == MenuTab.GRAPHICS_PROFILES) {
+            GraphicsProfilesMenu.add(premiumEntries);
         }
 
         else if (activeTab == MenuTab.MOB_SPAWNER) {
@@ -972,6 +988,7 @@ public class PremiumMenuScreen extends Screen {
         if (activeTab == MenuTab.SPAWN_CONSTRUCTIONS) return "Construcoes spawnaveis";
         if (activeTab == MenuTab.COMMANDS_GATE) return "Ativar menus que usam comandos";
         if (activeTab == MenuTab.CONTROL_CENTER) return "Sistema premium";
+        if (activeTab == MenuTab.GRAPHICS_PROFILES) return "Perfis graficos, resource packs e shaders";
         return activeTab.getTitle();
     }
 
@@ -1441,7 +1458,7 @@ public class PremiumMenuScreen extends Screen {
                     getTabX(i);
 
             int tabY =
-                    getTabY();
+                    getTabY(i);
 
             int tabWidth =
                     getTabWidth();
@@ -1453,14 +1470,14 @@ public class PremiumMenuScreen extends Screen {
                     mouseX >= tabX
                             && mouseX <= tabX + tabWidth
                             && mouseY >= tabY
-                            && mouseY <= tabY + 16;
+                            && mouseY <= tabY + TAB_HEIGHT;
 
             drawMinecraftButton(
                     guiGraphics,
                     tabX,
                     tabY,
                     tabWidth,
-                    16,
+                    TAB_HEIGHT,
                     tabs[i].getTitle(),
                     mouseX,
                     mouseY,
@@ -1603,12 +1620,12 @@ public class PremiumMenuScreen extends Screen {
                     getTabX(i);
 
             int tabY =
-                    getTabY();
+                    getTabY(i);
 
             if (mouseX >= tabX
                     && mouseX <= tabX + getTabWidth()
                     && mouseY >= tabY
-                    && mouseY <= tabY + 16) {
+                    && mouseY <= tabY + TAB_HEIGHT) {
 
                 return tabs[i];
             }
@@ -1622,7 +1639,7 @@ public class PremiumMenuScreen extends Screen {
     }
 
     private int getPanelHeight() {
-        return Math.min(220, height - 24);
+        return Math.min(260, height - 24);
     }
 
     private int getPanelX() {
@@ -1634,7 +1651,7 @@ public class PremiumMenuScreen extends Screen {
     }
 
     private int getListTop() {
-        return getPanelY() + 56;
+        return getPanelY() + 56 + (getTabRows() - 1) * (TAB_HEIGHT + TAB_ROW_GAP);
     }
 
     private int getListBottom() {
@@ -1642,17 +1659,40 @@ public class PremiumMenuScreen extends Screen {
     }
 
     private int getTabWidth() {
-        return (getPanelWidth() - 20) / visibleTabs().length;
+        return (getPanelWidth() - 20) / getTabsPerRow();
     }
 
     private int getTabX(
             int index
     ) {
-        return getPanelX() + 10 + index * getTabWidth();
+        return getPanelX() + 10 + (index % getTabsPerRow()) * getTabWidth();
     }
 
-    private int getTabY() {
-        return getPanelY() + 34;
+    private int getTabY(int index) {
+        return getPanelY() + 34 + (index / getTabsPerRow()) * (TAB_HEIGHT + TAB_ROW_GAP);
+    }
+
+    private int getTabsPerRow() {
+        int tabCount =
+                visibleTabs().length;
+
+        int availableWidth =
+                Math.max(TAB_MIN_WIDTH, getPanelWidth() - 20);
+
+        int maxTabs =
+                Math.max(1, availableWidth / TAB_MIN_WIDTH);
+
+        return Math.max(1, Math.min(tabCount, maxTabs));
+    }
+
+    private int getTabRows() {
+        int tabCount =
+                visibleTabs().length;
+
+        int tabsPerRow =
+                getTabsPerRow();
+
+        return Math.max(1, (tabCount + tabsPerRow - 1) / tabsPerRow);
     }
 
     private MenuTab[] visibleTabs() {
@@ -2388,6 +2428,7 @@ public class PremiumMenuScreen extends Screen {
         return tab == MenuTab.SPAWN_ITEMS
                 || tab == MenuTab.SPAWN_VILLAGES
                 || tab == MenuTab.SPAWN_CONSTRUCTIONS
+                || tab == MenuTab.GRAPHICS_PROFILES
                 || tab == MenuTab.MOB_SPAWNER
                 || tab == MenuTab.WEATHER_CONTROL
                 || tab == MenuTab.BIOME_TELEPORT
@@ -2415,6 +2456,7 @@ public class PremiumMenuScreen extends Screen {
     ) {
 
         return tab == MenuTab.MOB_SPAWNER
+                || tab == MenuTab.GRAPHICS_PROFILES
                 || tab == MenuTab.WEATHER_CONTROL
                 || tab == MenuTab.BIOME_TELEPORT
                 || tab == MenuTab.DIMENSION_MENU
@@ -2443,8 +2485,31 @@ public class PremiumMenuScreen extends Screen {
 
         if (command == null
                 || command.trim().isEmpty()
-                || minecraft == null
-                || minecraft.player == null
+                || minecraft == null) {
+            return;
+        }
+
+        if (command.startsWith("GRAPHICS_PROFILE:")) {
+            applyGraphicsProfile(command.substring("GRAPHICS_PROFILE:".length()));
+            return;
+        }
+
+        if (command.equals("OPEN_RESOURCEPACKS_FOLDER")) {
+            openRunFolder("resourcepacks");
+            return;
+        }
+
+        if (command.equals("OPEN_SHADERPACKS_FOLDER")) {
+            openRunFolder("shaderpacks");
+            return;
+        }
+
+        if (command.equals("CHECK_SHADER_LOADER")) {
+            checkShaderLoader();
+            return;
+        }
+
+        if (minecraft.player == null
                 || minecraft.getConnection() == null) {
             return;
         }
@@ -2462,6 +2527,46 @@ public class PremiumMenuScreen extends Screen {
         }
 
         minecraft.getConnection().sendCommand(command);
+    }
+
+    private void applyGraphicsProfile(String profileName) {
+        try {
+            MagicWorldGraphicsProfile.valueOf(profileName)
+                    .apply(minecraft);
+        } catch (IllegalArgumentException exception) {
+            sendClientMessage("Perfil grafico invalido: " + profileName);
+        }
+    }
+
+    private void openRunFolder(String folderName) {
+        Path folder =
+                minecraft.gameDirectory.toPath()
+                        .resolve(folderName);
+
+        try {
+            Files.createDirectories(folder);
+            Util.getPlatform()
+                    .openFile(folder.toFile());
+            sendClientMessage("Pasta aberta: " + folder);
+        } catch (Exception exception) {
+            sendClientMessage("Nao foi possivel abrir a pasta: " + folder);
+        }
+    }
+
+    private void checkShaderLoader() {
+        boolean hasOculus =
+                ModList.get()
+                        .isLoaded("oculus");
+        boolean hasIris =
+                ModList.get()
+                        .isLoaded("iris");
+
+        if (hasOculus || hasIris) {
+            sendClientMessage("Loader de shaders detectado. Use o menu dele para ativar o shaderpack.");
+            return;
+        }
+
+        sendClientMessage("Nenhum loader de shaders detectado. Forge 1.20.1 precisa de Oculus/Iris compat para usar shaderpacks.");
     }
 
     private void teleportToBiome(String biomeId) {

@@ -18,6 +18,23 @@ public final class MagicWorldMenuTheme {
     private MagicWorldMenuTheme() {
     }
 
+    public static void drawFrame(
+            GuiGraphics graphics,
+            int x,
+            int y,
+            int width,
+            int height
+    ) {
+        graphics.fill(x + 4, y + 5, x + width + 4, y + height + 5, SHADOW);
+        graphics.fill(x, y, x + width, y + height, PANEL);
+        graphics.fill(x, y, x + width, y + 1, GOLD);
+        graphics.fill(x, y, x + 1, y + height, GOLD);
+        graphics.fill(x, y + height - 1, x + width, y + height, GOLD_DARK);
+        graphics.fill(x + width - 1, y, x + width, y + height, GOLD_DARK);
+        graphics.fill(x + 3, y + 3, x + width - 3, y + 4, BLUE);
+        graphics.fill(x + 3, y + height - 4, x + width - 3, y + height - 3, BLUE_DARK);
+    }
+
     public static void drawButton(
             GuiGraphics graphics,
             Font font,

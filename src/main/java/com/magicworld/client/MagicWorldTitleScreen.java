@@ -108,7 +108,7 @@ public class MagicWorldTitleScreen extends Screen {
     }
 
     private int getLogoWidth() {
-        return Math.max(180, Math.min(MENU_WIDTH, width / 5));
+        return Math.max(132, Math.min(218, width / 7));
     }
 
     private int getQuickButtonY() {

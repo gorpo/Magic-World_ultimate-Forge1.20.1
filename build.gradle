@@ -64,6 +64,8 @@ minecraft {
 
             jvmArgs '-Xms4G', '-Xmx8G'
             args '--mixin.config', 'magicworld.mixins.json'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
 
             // Recommended logging data for a userdev environment
             // The markers can be added/remove as needed separated by commas.
@@ -120,9 +122,9 @@ repositories {
 
     // If you have mod jar dependencies in ./libs, you can declare them as a repository like so.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html#sub:flat_dir_resolver
-    // flatDir {
-    //     dir 'libs'
-    // }
+    flatDir {
+        dir 'run/dev-mods'
+    }
 }
 
 dependencies {
@@ -132,6 +134,23 @@ dependencies {
     // If the group id is "net.minecraft" and the artifact id is one of ["client", "server", "joined"],
     // then special handling is done to allow a setup of a vanilla dependency without the use of an external repository.
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+
+    def optionalDevMod = { String dependency, String jarName ->
+        if (file("run/dev-mods/${jarName}.jar").exists()) {
+            runtimeOnly fg.deobf("local:${dependency}")
+        }
+    }
+
+    optionalDevMod("citresewn:1.20.1-5", "citresewn-1.20.1-5")
+    optionalDevMod("DistantHorizons:3.0.3-b-1.20.1-fabric-forge", "DistantHorizons-3.0.3-b-1.20.1-fabric-forge")
+    optionalDevMod("embeddium:0.3.31+mc1.20.1", "embeddium-0.3.31+mc1.20.1")
+    optionalDevMod("entity_model_features:3.2.4-1.20.1-forge", "entity_model_features-3.2.4-1.20.1-forge")
+    optionalDevMod("entity_texture_features_1.20.1-forge:7.1", "entity_texture_features_1.20.1-forge-7.1")
+    optionalDevMod("entityculling-forge:1.10.2-mc1.20.1", "entityculling-forge-1.10.2-mc1.20.1")
+    optionalDevMod("ferritecore:6.0.1-forge", "ferritecore-6.0.1-forge")
+    optionalDevMod("fusion:1.2.12-forge-mc1.20.1", "fusion-1.2.12-forge-mc1.20.1")
+    optionalDevMod("modernfix-forge:5.27.44+mc1.20.1", "modernfix-forge-5.27.44+mc1.20.1")
+    optionalDevMod("oculus-mc1.20.1:1.8.0", "oculus-mc1.20.1-1.8.0")
 
     // Example mod dependency with JEI - using fg.deobf() ensures the dependency is remapped to your development mappings
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime

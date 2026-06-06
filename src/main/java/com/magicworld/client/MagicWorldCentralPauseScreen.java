@@ -20,7 +20,7 @@ public class MagicWorldCentralPauseScreen extends Screen {
         int left = width / 2 - panelWidth / 2;
         int top = Math.max(12, height / 2 - 150);
         int buttonWidth = (panelWidth - 36 - 8) / 2;
-        int y = top + 104;
+        int y = top + 84;
 
         addRenderableWidget(new MagicWorldMenuButton(left + 12, y, panelWidth - 24, 20,
                 Component.literal("Abrir menu completo da varinha"),
@@ -62,7 +62,7 @@ public class MagicWorldCentralPauseScreen extends Screen {
         int panelHeight = Math.min(320, height - 18);
         int left = width / 2 - panelWidth / 2;
         int top = Math.max(8, height / 2 - panelHeight / 2);
-        int logoWidth = Math.min(250, panelWidth - 110);
+        int logoWidth = Math.min(120, Math.max(92, panelWidth / 3));
         int logoHeight = logoWidth * MagicWorldStaticBackground.LOGO_HEIGHT / MagicWorldStaticBackground.LOGO_WIDTH;
 
         MagicWorldStaticBackground.draw(graphics, width, height);
@@ -73,7 +73,7 @@ public class MagicWorldCentralPauseScreen extends Screen {
         graphics.blit(
                 MagicWorldStaticBackground.FULL_LOGO,
                 width / 2 - logoWidth / 2,
-                top + 12,
+                top + 10,
                 logoWidth,
                 logoHeight,
                 0,
@@ -83,8 +83,8 @@ public class MagicWorldCentralPauseScreen extends Screen {
                 MagicWorldStaticBackground.LOGO_WIDTH,
                 MagicWorldStaticBackground.LOGO_HEIGHT
         );
-        graphics.drawCenteredString(font, title, width / 2, top + 76, 0xFFFFFFFF);
-        graphics.drawCenteredString(font, Component.literal("Atalhos rapidos, varinha e mundo"), width / 2, top + 92, 0xFFFFE0A3);
+        graphics.drawCenteredString(font, title, width / 2, top + 48, 0xFFFFFFFF);
+        graphics.drawCenteredString(font, Component.literal("Atalhos rapidos, varinha e mundo"), width / 2, top + 64, 0xFFFFE0A3);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 

@@ -25,6 +25,15 @@ Se a sessao cair ou outro agente continuar:
 6. Nao portar nada fora do escopo atual sem pedido novo do usuario.
 7. Atualizar este handoff ao final de cada bloco de trabalho.
 
+## Regra atual para mods externos
+
+- Usar mods soltos em `run/mods` durante esta fase.
+- Futuramente teremos um pacote all-in-one do MagicWorld, mas isso fica para depois de estabilizar o port.
+- Nao tentar embutir Oculus, Embeddium, mods de resource pack ou performance dentro do jar do MagicWorld agora.
+- Lista registrada em `docs/MODS_RECOMMENDED.md`.
+- Shaderpack em `run/shaderpacks` nao funciona sozinho em Forge puro; precisa de Oculus/Iris compat. Para Forge 1.20.1, usar Oculus + Embeddium.
+- Baixar sempre arquivos `Forge 1.20.1`; nao usar Fabric nem NeoForge nesta base.
+
 ## Escopo autorizado nesta etapa
 
 Portar somente:
@@ -555,3 +564,252 @@ Teste manual necessario:
 6. Conferir currais sem camada interna alta e com animais presos.
 7. Conferir se estruturas dos villagers do castelo nao ficam voando.
 8. Conferir se o predio da mina e a mina aparecem no gramado.
+
+## Bloco em 2026-06-05 - mods externos, packs e menu grafico
+
+Pedido:
+
+- Listar os mods externos necessarios para shaders/resource packs.
+- Registrar que futuramente teremos um pacote all-in-one, mas por enquanto os mods ficam soltos em `run/mods`.
+- Corrigir resource packs locais da pasta `run` para Forge/Minecraft 1.20.1.
+- Portar o menu grafico do NeoForge de forma compativel com Forge 1.20.1.
+
+Feito:
+
+- Criado `docs/MODS_RECOMMENDED.md` com lista de mods para baixar em `run/mods`.
+- Registrada a regra de trabalho:
+  - usar mods soltos em `run/mods` agora;
+  - futuro all-in-one so depois da estabilizacao;
+  - baixar sempre `Forge 1.20.1`, nunca `Fabric` ou `NeoForge` nesta base.
+- Verificado que os resource packs locais usam recursos OptiFine:
+  - `assets/minecraft/optifine/`;
+  - `ctm/`;
+  - `cem/`;
+  - colormaps.
+- Criado `tools/magicworld_packs.py` para:
+  - corrigir `pack.mcmeta` dos ZIPs locais para `pack_format: 15`;
+  - habilitar os resource packs em `run/options.txt`;
+  - gerar `docs/PACKS_MANIFEST.json` com tamanho, quantidade de entradas e SHA-256.
+- Corrigidos localmente os quatro packs:
+  - `MagicWorldResource_1.20.1-256x.zip`;
+  - `MagicWorldResource_1.20.1-models.zip`;
+  - `MagicWorldResource_1.20.1-addon.zip`;
+  - `MagicWorldResource_1.20.1-bonus.zip`.
+- `run/options.txt` agora lista esses packs com `file/...` e `incompatibleResourcePacks:[]`.
+- Portado/adaptado `MagicWorldGraphicsProfile` do NeoForge para Forge 1.20.1:
+  - usa `GraphicsStatus` e `net.minecraft.client.ParticleStatus`;
+  - aplica distancia de renderizacao, simulacao, particulas, nuvens, modo grafico, distancia de entidades, oclusao ambiente e limite de FPS.
+- Criado `GraphicsProfilesMenu` no Forge:
+  - perfis Ultra fraco, Fraco, Intermediario, Medio, Forte e Ultra forte;
+  - abrir pasta `resourcepacks`;
+  - abrir pasta `shaderpacks`;
+  - verificar se Oculus/Iris compat esta instalado.
+- Adicionada entrada `Graficos` no menu `Sistema`.
+- Validado com `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+
+Observacao importante:
+
+- Shaderpack sozinho em `run/shaderpacks` nao renderiza no Forge puro.
+- Para Forge 1.20.1, usar Oculus + Embeddium em `run/mods`.
+- Os ZIPs grandes em `run/resourcepacks` continuam fora do Git por limite normal do GitHub; apenas script/manifesto/documentacao entram no repositorio.
+
+## Bloco em 2026-06-05 - logo menor, central ESC e menu grafico visual
+
+Pedido:
+
+- Reduzir a logo da tela inicial porque estava grande/pixelada e invadindo textos.
+- Corrigir o menu `MagicWorld` ao lado/abaixo de Mods no pause para abrir a mesma central do NeoForge.
+- Corrigir abas/botoes comprimidos do menu premium.
+- Dar ao menu grafico icone/texto mais coerente com o NeoForge.
+
+Feito:
+
+- `MagicWorldTitleScreen#getLogoWidth()` reduzido para escala menor e mais proxima da proporcao visual do Minecraft.
+- Portado do NeoForge para Forge o pacote leve `com.magicworld.central`:
+  - `MagicWorldCentralData`;
+  - `MagicWorldCentralSnapshot`;
+  - `MagicWorldCentralSector`;
+  - `MagicWorldCentralResidentPlan`.
+- Criadas telas Forge:
+  - `MagicWorldCentralOverviewScreen`;
+  - `MagicWorldCentralDetailScreen`;
+  - `MagicWorldCentralUi`.
+- `ClientEvents#tunePauseMenu` agora faz o botao `MagicWorld` abrir `MagicWorldCentralOverviewScreen`, nao mais a tela curta de atalhos.
+- `MagicWorldMenuTheme` ganhou `drawFrame(...)` para as telas da central usarem moldura Magic World.
+- `PremiumMenuScreen` recebeu o calculo de abas em multiplas linhas portado do NeoForge:
+  - `TAB_HEIGHT`;
+  - `TAB_ROW_GAP`;
+  - `TAB_MIN_WIDTH`;
+  - `getTabsPerRow()`;
+  - `getTabRows()`.
+- O menu grafico em `Sistema` agora usa `Items.SPYGLASS` e textos voltados a Oculus/Embeddium/resourcepacks.
+- Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
+
+Observacao:
+
+- `mods/mods.txt` aparece deletado no Git, mas isso nao foi alterado nesta etapa. Nao commitar sem confirmacao do usuario.
+
+## Bloco em 2026-06-05 - terreno importado, limite vivo e villagers no chao
+
+Pedido:
+
+- Corrigir a area inicial importada porque havia buracos, chao incompleto e estruturas fora/soltas.
+- Respeitar o limite de arvores/folhas do NeoForge como area fechada da propriedade.
+- Fazer villagers do castelo e estacoes irem para o chao quando nao houver piso interno seguro.
+- Garantir que a mina/gramado e estruturas internas sejam geradas sobre base plana.
+
+Feito:
+
+- `StarterPortalEvents` agora prepara uma fundacao global antes da casa e antes das fazendas.
+- A fundacao usa os limites fixos do NeoForge:
+  - X: `-128..122`;
+  - Z: `-76..80`.
+- A fundacao:
+  - preenche subsolo com dirt;
+  - coloca gramado em `base - 1`;
+  - limpa ar acima ate 24 blocos;
+  - preserva blocos protegidos como baus, portais, gateway, end portal frame e bedrock.
+- O footprint da casa importada e preservado para nao apagar a estrutura colocada pelo template.
+- O limite da propriedade deixou de ser so flores soltas e passou a usar a logica viva do NeoForge:
+  - arbustos de folhas;
+  - flowering azalea leaves;
+  - pequenas arvores de borda;
+  - aberturas ocasionais controladas.
+- `buildImportedEstateFarms` continua gerando:
+  - fazendas;
+  - currais;
+  - trabalhadores;
+  - ruas;
+  - praca verde;
+  - mina em `base.offset(67, -1, 46)`;
+  - iluminacao.
+- `castleGroundResidentSpot` foi corrigido:
+  - antes podia manter coordenada alta antiga;
+  - agora procura chao caminhavel proximo e usa isso como fallback quando nao acha piso interno seguro.
+- Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
+
+Teste manual necessario:
+
+- Criar mundo novo.
+- Confirmar se o gramado da area inicial esta preenchido sem buracos.
+- Conferir se o limite lateral aparece com folhas/arvores delimitando a area.
+- Conferir se a mina aparece no gramado.
+- Conferir se villagers/estacoes do castelo nao ficam mais no ar.
+- Conferir se estruturas novas nao ficaram fora do limite visual da propriedade.
+
+## Bloco em 2026-06-05 - fix botao MagicWorld no ESC
+
+- Corrigido `ClientEvents#tunePauseMenu`.
+- O Forge agora reposiciona o botao `Mods` como o NeoForge:
+  - largura reduzida;
+  - alinhado abaixo de `Opcoes`.
+- O botao `MagicWorld` nao sobrepoe mais o botao `Mods`.
+- O clique em `MagicWorld` voltou a abrir `MagicWorldCentralPauseScreen`, igual ao fluxo do NeoForge para o ESC.
+- Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
+
+## Bloco em 2026-06-05 - logo pequena no menu ESC
+
+- A logo gigante estava em `MagicWorldCentralPauseScreen`, nao na tela inicial.
+- Reduzido `logoWidth` do menu ESC de ate `250px` para no maximo `120px`.
+- Titulo/subtitulo e botoes foram reposicionados para acompanhar a logo menor.
+- Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
+
+## Bloco em 2026-06-05 - abrigos dos villagers do castelo no chao
+
+- Corrigido `spawnCastleResident(...)` em `StarterPortalEvents`.
+- Antes: se encontrasse um piso alto sem teto, aceitava a coordenada e `decorateCastleResidentStation(...)` criava abrigo/cama/mesa/baú no ar.
+- Agora: se o ponto nao tem teto e existe chao caminhavel proximo bem abaixo, o resident/abrigo desce para esse chao antes da decoracao.
+- Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
+
+Teste manual:
+
+- Criar mundo novo.
+- Conferir os abrigos/estacoes dos villagers do castelo que antes ficavam flutuando.
+
+## Bloco em 2026-06-05 - buracos no entorno da casa
+
+- Corrigido entorno lateral/fundos da casa importada em `StarterPortalEvents`.
+- Criado `stabilizeImportedHousePerimeterTerrain(...)`.
+- A correção roda depois da casa ser colocada.
+- Ela preenche um anel ao redor da casa:
+  - dentro dos limites da propriedade;
+  - sem entrar no footprint da casa;
+  - sem limpar estruturas;
+  - preenchendo suporte abaixo com dirt;
+  - colocando gramado na altura do terreno quando a coluna esta em ar/fluido/bloco natural.
+- Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
+
+Teste manual:
+
+- Criar mundo novo.
+- Conferir laterais e fundos da casa, especialmente os buracos mostrados nos prints.
+
+## Bloco em 2026-06-05 - praca verde dentro do limite
+
+- Corrigido `StarterPortalEvents#buildGreenVillageSquare`.
+- A praca verde estava em `base.offset(-54, 0, 96)`, fora do limite da propriedade (`Z maximo 80`).
+- A praca agora nasce em `base.offset(-106, -1, 34)`, dentro do setor verde protegido.
+- As duas casas da praca foram reposicionadas para `base.offset(-124, -1, 50)` e `base.offset(-101, -1, 50)`, evitando invadir o footprint da casa importada.
+- Criado `stabilizeGreenVillageDistrictTerrain(...)` para preencher o gramado e fechar vaos no distrito verde (`X -126..-84`, `Z 0..70`).
+- Adicionadas ruas internas ligando o setor verde ao eixo oeste da propriedade.
+- Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
+
+Teste manual:
+
+- Criar mundo novo.
+- Conferir se casas, construcao comunitaria e ruas da praca verde aparecem dentro do limite de folhas/arvores.
+- Conferir se o vao mostrado nos prints nessa regiao foi fechado com gramado.
+- Confirmar se nenhuma parte da praca atravessa a casa importada.
+
+Nota:
+
+- `mods/mods.txt` ainda aparece deletado no Git, mas essa delecao nao foi feita nesta etapa e segue sem commit ate confirmacao.
+
+## Bloco em 2026-06-05 - portal original e casa da mina
+
+- Corrigido `StarterPortalEvents` para recuperar decoracao do portal no estilo NeoForge.
+- `buildStarterPortal(...)` agora chama:
+  - `decoratePortalGarden(...)`;
+  - `clearPortalGrassRing(...)`.
+- O jardim do portal voltou a gerar:
+  - flores;
+  - musgo;
+  - samambaias;
+  - azaleias;
+  - lampioes extras;
+  - fogueiras com vidro azul;
+  - animais nomeados ao redor do portal: papagaios, coelhos e allay.
+- Corrigida a casa da mina:
+  - antes o Forge recalculava altura com `filledGroundAt(...)`;
+  - agora usa a ancora fixa do NeoForge em `base.offset(67, -1, 46)` sem heightmap;
+  - isso evita separar predio, bau, armaduras e mina subterranea.
+- A casa da mina recebeu:
+  - baus internos;
+  - suportes de armadura com couro, malha, ferro, ouro, diamante e netherite;
+  - banners externos;
+  - decoracao de oficina/forja;
+  - lampioes adicionais.
+- Mantida a logica de villagers do castelo que procura chao caminhavel quando o ponto original fica alto/sem teto.
+- Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
+
+Teste manual:
+
+- Criar mundo novo.
+- Conferir se o portal aparece com jardim/decoracao/animais ao redor.
+- Conferir se a casa da mina aparece no gramado entre castelo e casa, exatamente sobre a mina subterranea.
+- Conferir se os baus e suportes de armadura da mina nao aparecem quebrados/soltos no chao.
+- Conferir se villagers/estacoes do castelo nao ficam flutuando sem acesso ao chao.
+
+## Bloco em 2026-06-05 - layout dos botoes Mods e MagicWorld no ESC
+
+- Corrigido `ClientEvents#tunePauseMenu`.
+- O botao `Mods` nao fica mais pequeno nem espremido ao lado/abaixo de outro botao.
+- `Mods` agora usa uma linha propria, centralizada.
+- `MagicWorld` agora usa a linha abaixo, com mesma largura, altura e alinhamento.
+- O botao de sair/salvar e sair e empurrado para baixo quando existe, evitando sobreposicao.
+- Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
+
+Teste manual:
+
+- Abrir um mundo, apertar ESC.
+- Conferir `Mods` em uma linha, `MagicWorld` na linha seguinte e botao de saida abaixo, todos alinhados e sem sobreposicao.
