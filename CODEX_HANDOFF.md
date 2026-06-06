@@ -180,7 +180,7 @@ Feito:
 - `ClientEvents` recebeu painel Magic World na tela `CreateWorldScreen`:
   - botao `Magic World` na criacao de mundo;
   - painel com Portal, Castelo, Fazendas, Aura, PC, Dificuldade, Modo, Criar Mundo e Voltar;
-  - comandos/cheats sao forÃƒÂ§ados quando opcoes Magic World exigem comandos;
+  - comandos/cheats sao forÃƒÆ’Ã‚Â§ados quando opcoes Magic World exigem comandos;
   - botao Criar Mundo chama o fluxo vanilla por reflexao, depois de sincronizar modo/dificuldade/comandos.
 - Background estatico foi ampliado para telas de selecao/criacao de mundo, opcoes, multiplayer, packs, mods e `LevelLoadingScreen`.
 - Validado com `./gradlew.bat build`: BUILD SUCCESSFUL em Java 17.
@@ -717,7 +717,7 @@ Teste manual necessario:
 ## Bloco em 2026-06-05 - abrigos dos villagers do castelo no chao
 
 - Corrigido `spawnCastleResident(...)` em `StarterPortalEvents`.
-- Antes: se encontrasse um piso alto sem teto, aceitava a coordenada e `decorateCastleResidentStation(...)` criava abrigo/cama/mesa/baÃƒÂº no ar.
+- Antes: se encontrasse um piso alto sem teto, aceitava a coordenada e `decorateCastleResidentStation(...)` criava abrigo/cama/mesa/baÃƒÆ’Ã‚Âº no ar.
 - Agora: se o ponto nao tem teto e existe chao caminhavel proximo bem abaixo, o resident/abrigo desce para esse chao antes da decoracao.
 - Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
 
@@ -730,7 +730,7 @@ Teste manual:
 
 - Corrigido entorno lateral/fundos da casa importada em `StarterPortalEvents`.
 - Criado `stabilizeImportedHousePerimeterTerrain(...)`.
-- A correÃƒÂ§ÃƒÂ£o roda depois da casa ser colocada.
+- A correÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o roda depois da casa ser colocada.
 - Ela preenche um anel ao redor da casa:
   - dentro dos limites da propriedade;
   - sem entrar no footprint da casa;
@@ -973,7 +973,7 @@ Teste visual pendente:
   - normaliza a rua frontal e adiciona acabamento lateral de slab;
   - preenche somente vazios de ar no nivel do solo, preservando agua e blocos existentes;
   - exclui a area da mina do preenchimento geral;
-  - reconstrÃƒÂ³i a casa da mina por ultimo.
+  - reconstrÃƒÆ’Ã‚Â³i a casa da mina por ultimo.
 - O NBT da casa Forge e NeoForge possui o mesmo SHA-256:
   - `160F27F53D3163CF32C4E4F854618C080DBD52E2564E22B486B48827187F491D`.
 - A casa da mina recebeu novamente paredes, janelas, telhado com escadas, entrada, decoracao, baus e armaduras internas.
@@ -1162,8 +1162,8 @@ Menu grafico:
 - Mixins dedicados, com alvos exatos, substituem selecao, foco, checkboxes e barra de rolagem pelo ciano `0xFF00D9FF`.
 - Botoes de suporte/doacao continuam ocultos.
 - Portado `MagicWorldClientCompat` do NeoForge para Forge 1.20.1:
-  - forÃƒÂ§a `showDhOptionsButtonInMinecraftUi = false`;
-  - forÃƒÂ§a `renderingApi = "OPEN_GL"`.
+  - forÃƒÆ’Ã‚Â§a `showDhOptionsButtonInMinecraftUi = false`;
+  - forÃƒÆ’Ã‚Â§a `renderingApi = "OPEN_GL"`.
 
 Propriedade e casas:
 
@@ -1325,7 +1325,7 @@ Implementado:
 - `MagicWorldStaticBackground` agora usa os assets que existem no pacote atual:
   - `magicworld:textures/gui/title_background_static.png`;
   - `magicworld:textures/gui/title_logo.png`.
-- As dimensoes da logo foram ajustadas para `512x171`, compatÃƒÂ­veis com `title_logo.png`.
+- As dimensoes da logo foram ajustadas para `512x171`, compatÃƒÆ’Ã‚Â­veis com `title_logo.png`.
 - Esta correcao evita o fallback preto/magenta antes do commit online.
 
 Validacao:
@@ -1513,7 +1513,7 @@ Implementado:
 - `buildRoadEndMagicSanctuary` agora:
   - carrega os chunks da estrada/santuario antes de mexer na area;
   - estende a estrada do oeste a partir de `base.offset(-76,-1,0)` ate a entrada leste do santuario;
-  - constrÃƒÂ³i o santuario depois da estrada, com o mesmo conteudo premium anterior.
+  - constrÃƒÆ’Ã‚Â³i o santuario depois da estrada, com o mesmo conteudo premium anterior.
 - Novos helpers:
   - `forceLoadStructureArea`;
   - `forceLoadAreaBetween`.
@@ -1577,9 +1577,9 @@ Implementado:
 
 - `CURRENT_ESTATE_REPAIR_VERSION` elevado para `18`.
 - `handleEstateTask` ganhou etapa `6` em `97%`, mensagem `Carregando santuario magico do fim da rua...`.
-- O santuÃƒÂ¡rio e construido antes do `ESTATE_CREATED_KEY` e antes do progresso `100%`.
+- O santuÃƒÆ’Ã‚Â¡rio e construido antes do `ESTATE_CREATED_KEY` e antes do progresso `100%`.
 - `repairExistingEstate` chama `buildRoadEndMagicSanctuary` para saves ja existentes.
-- O santuÃƒÂ¡rio tem shell proprio com piso colorido/iluminado, paredes decoradas, teto de calcite/amethyst, redstone blocks, redstone lamps, glowstone e sea lanterns.
+- O santuÃƒÆ’Ã‚Â¡rio tem shell proprio com piso colorido/iluminado, paredes decoradas, teto de calcite/amethyst, redstone blocks, redstone lamps, glowstone e sea lanterns.
 - A parede leste e as laterais recebem baus/barris preenchidos por `fillContainersWithAllRegisteredItems`.
 - Ha bau de varinhas, bau premium, bau de ferramentas, estacoes de trabalho, mesa central, sino, banners, paineis decorativos, plantas, armor stands para couro/malha/ferro/ouro/diamante/netherite/Draconic Aether, allays, parrots e rabbits.
 
@@ -1702,3 +1702,57 @@ Validacao:
 - Mina: entrada no centro da casa da mina estava sendo fechada pelo reforco depois de a ladder ser criada.
 - Fix: chamada `reopenTreasureMineEntrance(level, center)` apos `reinforceStoneTreasureMineHouseShell`; ela recoloca ladder no bloco central, remove o bloco acima e garante stone bricks de apoio ao sul para conectar com as ladders abaixo.
 - Validacao: `./gradlew.bat compileJava --stacktrace` = BUILD SUCCESSFUL.
+
+## Handoff 2026-06-06 - casa das bruxas no bloco apontado
+- Pedido atual: mover a casa das bruxas exatamente para o ponto do print, mantendo a porta/fachada virada para onde ja estava.
+- Print atual: jogador em `Block 37 70 124`; bloco apontado em `Targeted Block 37 69 124`.
+- `witchCovenAnchor(base)` agora retorna `base.offset(97,0,94)`, mantendo o ponto apontado como centro da casa compacta/cercado quando a base historica e `X -60 / Z 30`.
+- A porta e o portao continuam no lado oeste (`Direction.WEST`); nao foi alterada a rotacao/fachada.
+- `buildWitchCovenHouse` agora usa `floorY = base.getY() - 1` em vez de `heightmap - 2`, fixando o piso no nivel do bloco apontado e evitando variacao por relevo, folhas ou arvores.
+- Validacao: `./gradlew.bat compileJava --stacktrace` = BUILD SUCCESSFUL; `git diff --check` sem erros.
+
+## Handoff 2026-06-06 - casa das bruxas ponto correto na mata
+- Usuario reportou que nao havia casa no local esperado e enviou novo print.
+- Coordenadas do print novo: jogador em `Block 69 74 -5`, alvo em `Targeted Block 69 73 -5`.
+- Causa do erro anterior: a casa tinha sido movida para `X 37 / Z 124`, fora do ponto real conferido.
+- Fix aplicado: `witchCovenAnchor(base)` agora retorna `base.offset(129,0,-35)`, posicionando centro da casa/cercado em `X 69 / Z -5` com base historica `X -60 / Z 30`.
+- Altura segue fixa com `floorY = base.getY() - 1`, piso esperado em `Y 73`; porta/portao continuam no lado oeste.
+- Validacao: `./gradlew.bat clean compileJava --stacktrace` = BUILD SUCCESSFUL; `git diff --check` sem erros.
+
+## Handoff 2026-06-06 - casa das bruxas no miolo das arvores
+- Usuario reportou que a casa das bruxas voltou para posicao antiga/errada e enviou print visual sem F3.
+- Referencia definitiva deste ajuste: o X da mira no meio das arvores entre os currais/fazendas e a casa de pedra da mina.
+- Save local do print: base real `MagicWorldForgeStarterEstateBaseX/Y/Z = -80/64/-352`; jogador em `-28.685 / 112.419 / -352.440`, rotacao `-95.101 / 67.350`.
+- Calculado pelo save/visual: o centro da casa deve ficar no miolo da mata em torno de `base.offset(68,0,-2)`.
+- Fix aplicado: `witchCovenAnchor(base)` mudou de `base.offset(129,0,-35)` para `base.offset(68,0,-2)`.
+- Mantido: casa compacta `12x12`, cercado `16x16`, `floorY = base.getY() - 1`, porta/portao no lado oeste (`Direction.WEST`).
+- Validacao: `./gradlew.bat clean compileJava --stacktrace` = BUILD SUCCESSFUL; `git diff --check` sem erros.
+
+## Handoff 2026-06-06 - bruxas preservadas, efeitos invisiveis e spawn frontal
+- Problema: a casa das bruxas aparecia, mas as bruxas sumiam. Causa encontrada: `Witch` herda de `Monster` e as rotinas globais de limpeza do terreno/aldeoes removiam todos os monstros, apagando tambem as bruxas amigaveis.
+- Fix: limpezas de monstros agora preservam entidades com NBT `MagicWorldFriendlyWitch`; `spawnFriendlyWitch` passou a criar a entidade manualmente com `EntityType.WITCH.create`, raio de duplicidade pequeno e `addFreshEntityWithPassengers`, sem depender das checagens vanilla de spawn.
+- Reparo automatico: `maintainEstateLife` e `handleWitchCovenSupport` chamam `ensureCompactWitchCovenResidents`, garantindo as 3 bruxas na casa compacta se o save estiver sem elas.
+- Brilhos no jogador: efeitos de premium e suporte das bruxas agora usam `hiddenEffect(..., false, false, false)`, removendo particulas/icone visual sem tirar os poderes.
+- Spawn: `findEstateSpawn` deixou de procurar piso interno e agora usa a estrada/frente da casa principal (`IMPORTED_HOUSE_MAX_Z + 3`) com heightmap de superficie e limpeza de dois blocos de ar; login tambem atualiza o respawn para esse ponto.
+- Validacao: `./gradlew.bat clean compileJava --stacktrace` passou.
+
+## Handoff 2026-06-06 - bruxas moveis e otimizacao de ticks
+- Problemas reportados: as bruxas nao se moviam e o jogo perdeu muito FPS depois da casa das bruxas/novo spawn.
+- Causa da imobilidade: `spawnFriendlyWitch` e `handleWitchCovenSupport` aplicavam `setNoAi(true)`.
+- Fix de comportamento: bruxas amigaveis usam IA ativa, ficam restritas ao entorno da casa e o evento `LivingChangeTargetEvent` impede que adquiram alvo.
+- Causa principal de peso recente: `ensureCompactWitchCovenResidents` chamava a populacao completa a cada suporte/manutencao, incluindo duas buscas de morcegos com AABB de `256` blocos.
+- Fix de residentes: reparo periodico verifica apenas as tres bruxas; morcegos so sao criados durante a construcao.
+- `maintainEstateLife` deixou de varrer/reconfigurar toda a propriedade e remover monstros em areas enormes a cada 10 segundos; agora executa apenas a verificacao pequena de reproducao dos currais, uma vez por minuto e perto da propriedade.
+- Portais funcionais agora sao verificados a cada 10 ticks e somente perto da praca; reparo visual caiu para uma vez por minuto. O efeito ambiente usa a posicao conhecida do portal em vez de procurar blocos em um volume grande.
+- `AuraEvents` deixou de enviar `onUpdateAbilities()` todo tick e atualiza sobrevivencia/efeitos a cada 10 ticks.
+- Validacao: `./gradlew.bat compileJava --stacktrace` e `./gradlew.bat build --stacktrace` passaram; `git diff --check` sem erros.
+
+## Handoff 2026-06-06 - reforma correta do Rancho da Plantacao
+- Os novos prints identificaram definitivamente o predio alvo como o rancho/deposito central da plantacao, entre as casas dos agricultores e as quatro lavouras.
+- Evidencias visuais: moradores `Morador do Rancho da Plantacao`, agricultores das casas 1/2 ao redor, salao quase vazio e ancora do codigo `base.offset(-119, -1, -76)`.
+- A tentativa anterior de reformar a Casa Verde 2 foi removida do fluxo ativo; ela voltou para `buildSimplePlantationWorkerHouse` na ancora original `base.offset(-101, -1, 50)`.
+- O rancho agora usa `buildGrandPlantationWarehouse`: paredes medievais de pedra/madeira, muitas janelas, quatro portas com acessos livres, telhado alto com dormers e chamine.
+- Interior: arquivo de baus/barris dimensionado para conter todos os itens registrados, ferramentas, estacoes de trabalho/forja, camas, galeria de armaduras, quadros, plantas, teias, morcegos e iluminacao rustica.
+- Subsolo: escada oculta por alcapoes e sala de tesouro dourada com baus de preciosidades, beacon, ovo do dragao, ender chest, armaduras e decoracao.
+- Reparo da propriedade elevado para versao `21`, garantindo a reconstrucao unica no save existente ao entrar.
+- Validacao: `./gradlew.bat build --stacktrace` passou; `git diff --check` sem erros.

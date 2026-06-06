@@ -1,125 +1,195 @@
-# Magic World Ultimate
+# Magic World Ultimate - Forge 1.20.1
 
 <p align="center">
-  <img src="screenshots/banner_mod_github.png" alt="Magic World Ultimate" width="900" />
-</p>
-
-Bem-vindo ao lado jogavel do MagicWorld. Este mod coloca uma varinha magica no Minecraft Java 1.20.1 com Forge 47.4.10 e abre menus para criar aventuras, chamar estruturas, brincar com clima, tempo, criaturas, portais, bosses, itens e poderes especiais.
-
-O MagicWorld foi feito para parecer um mundo de fantasia completo. Para a experiencia ficar bonita de verdade, use os tres pacotes juntos: o mod faz a magia acontecer, o resource pack pinta o mundo com texturas 256x, e o shader acende luz, ceu, agua e brilho.
-
-## A aventura completa tem 3 pecas
-
-<table>
-  <tr>
-    <td align="center" width="33%">
-      <a href="https://github.com/gorpo/MagicWorld-MagicWand_Mod">
-        <img src="screenshots/banner_mod_github.png" alt="MagicWorld Mod" width="260">
-      </a>
-      <br>
-      <strong>1. Magic World Ultimate</strong>
-      <br>
-      A varinha, os menus, comandos, criaturas, estruturas e sistemas de gameplay.
-    </td>
-    <td align="center" width="33%">
-      <a href="https://github.com/gorpo/MagicWorld256x-ResourcePack">
-        <img src="screenshots/banner_resourcepack_github.png" alt="MagicWorld Resource Pack" width="260">
-      </a>
-      <br>
-      <strong>2. MagicWorld 256x Resource Pack</strong>
-      <br>
-      Texturas, modelos, itens, blocos, UI, panorama e visual de fantasia.
-    </td>
-    <td align="center" width="33%">
-      <a href="https://github.com/gorpo/MagicWorld_Shadders">
-        <img src="screenshots/banner_shadder_github_melhorado.png" alt="MagicWorld Shadders" width="260">
-      </a>
-      <br>
-      <strong>3. MagicWorld Shadders Extreme</strong>
-      <br>
-      Luz magica, ceu colorido, agua, reflexos, nuvens, chuva, bloom e atmosfera.
-    </td>
-  </tr>
-</table>
-
-## ðŸŽ¬ Magic World Preview
-
-<p align="center">
-  <a href="https://youtu.be/CSA4T5G2GI8" target="_blank">
-    <img src="https://img.youtube.com/vi/CSA4T5G2GI8/maxresdefault.jpg" alt="Magic World Preview" width="100%">
-  </a>
+  <img src="screenshots/banner_principal.png" alt="Magic World Ultimate" width="100%" />
 </p>
 
 <p align="center">
-  <a href="https://youtu.be/CSA4T5G2GI8" target="_blank">
-    <img src="https://img.shields.io/badge/â–¶%20Assistir%20no%20YouTube-red?style=for-the-badge" alt="Assistir no YouTube">
-  </a>
+  <strong>Um mundo de fantasia magica medieval para Minecraft Java 1.20.1 com Forge.</strong><br>
+  <strong>Mod + Resource Pack + Shader Pack em uma experiencia unica.</strong>
 </p>
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Minecraft-1.20.1-2f8f46?style=for-the-badge" alt="Minecraft 1.20.1">
+  <img src="https://img.shields.io/badge/Forge-47.4.10-f2a900?style=for-the-badge" alt="Forge 47.4.10">
+  <img src="https://img.shields.io/badge/Java-17-007396?style=for-the-badge" alt="Java 17">
+  <img src="https://img.shields.io/badge/Status-Final%20Forge%201.20.1-00a8ff?style=for-the-badge" alt="Final Forge 1.20.1">
+</p>
+
+## O que e o Magic World Ultimate
+
+Magic World Ultimate transforma o Minecraft em uma aventura de fantasia magica. O jogador recebe uma varinha, menus especiais, poderes, estruturas, portais, fazendas, castelo, santuarios, personagens, areas tematicas e um visual criado para funcionar junto com resource pack e shader.
+
+Esta versao e o port final para **Minecraft Forge 1.20.1**. Ela nasceu do projeto NeoForge, mas foi adaptada para a base Forge antiga, com APIs, menus, mixins, estruturas e geracao de mundo ajustados para `Forge 47.4.10`.
+
+A experiencia completa tem tres partes:
+
+| Parte | Funcao | Resultado |
+| --- | --- | --- |
+| Magic World Mod | Varinha, menus, estruturas, comandos, entidades, sistemas premium e propriedade inicial. | O mundo reage a magia do jogador. |
+| MagicWorld 256x Resource Pack | Texturas, modelos, blocos, itens, UI, panorama e identidade visual. | O Minecraft ganha aparencia de fantasia medieval premium. |
+| MagicWorld Shadders Extreme | Luz, ceu, agua, sombras, bloom e atmosfera. | A aventura fica cinematografica e encantada. |
+
+## Historia da aventura
+
+Em uma noite calma, quando as montanhas ainda estavam cobertas por neblina e as florestas pareciam dormir, uma luz azul apareceu sobre o mundo. Ela nao caiu como meteoro. Ela desceu devagar, como se escolhesse onde pousar. Quando tocou a grama, abriu um circulo de energia e revelou o primeiro sinal do Magic World.
+
+A partir desse ponto, o mundo comum deixou de ser apenas sobrevivencia. A varinha magica acordou, os portais antigos voltaram a pulsar, as estradas ganharam destino e uma propriedade inteira passou a surgir ao redor do jogador. A casa principal se tornou o ponto seguro. O castelo apareceu como fortaleza distante. As fazendas ganharam trabalhadores. A mina recebeu tesouros e escadas. O fim da rua deixou de ser vazio e passou a guardar novas construcoes.
+
+No final da estrada existe uma casa nova, colocada como marco de chegada para quem segue o caminho ate o ultimo bloco da rua. Perto dali, o santuario magico fica escondido na direcao do morro, como uma caverna ritual iluminada, criada para parecer descoberta e nao apenas colocada no terreno. A entrada mira de volta para a casa principal, como se o santuario protegesse o coracao da propriedade.
+
+Na mata, a casa das bruxas guarda uma historia propria. Ela nao e um lugar de inimigos. E um refugio antigo, pequeno, fechado por cerca, com portao, placa de aviso, teias, morcegos, caldeiroes, lareira, chamine, feno, aboboras iluminadas, camas e baus de pocoes e itens magicos. Tres bruxas vivem ali como aliadas do jogador. Quando o jogador chega perto, elas nao atacam: o lugar funciona como um ponto de apoio arcano, protegendo e favorecendo quem pertence ao Magic World.
+
+Assim, a propriedade inicial deixa de ser apenas uma casa com castelo. Ela vira um pequeno reino jogavel: casa, castelo, fazendas, trabalhadores, ruas, mina, santuario, casa do fim da rua, casa das bruxas e caminhos para novas aventuras.
+
+<p align="center">
+  <img src="screenshots/printdojogo1a.png" alt="Magic World print 1" width="32%">
+  <img src="screenshots/printdojogo2a.png" alt="Magic World print 2" width="32%">
+  <img src="screenshots/printdojogo3a.png" alt="Magic World print 3" width="32%">
+</p>
+<p align="center">
+  <img src="screenshots/printdojogo4a.png" alt="Magic World print 4" width="32%">
+  <img src="screenshots/printdojogo5a.png" alt="Magic World print 5" width="32%">
+  <img src="screenshots/printdojogo6a.png" alt="Magic World print 6" width="32%">
+</p>
 
 ## Baixar do jeito certo
 
-Para jogar, confira sempre a aba **Releases**. Ela e o lugar certo para baixar os arquivos prontos, sem precisar compilar nada.
+Use sempre a aba **Releases** dos repositorios oficiais. Ela contem os arquivos prontos para jogar, sem precisar compilar.
 
-- Mod: [Magic World Ultimate Releases](https://github.com/gorpo/MagicWorld-MagicWand_Mod/releases)
+- Mod Forge 1.20.1: [Magic World Ultimate Releases](https://github.com/gorpo/MagicWorld-MagicWand_Mod/releases)
 - Download direto Forge 1.20.1 v1.3: [MagicWorld-MagicWand_Mod_1.20.1-1.3.0.jar](https://github.com/gorpo/MagicWorld-MagicWand_Mod/releases/download/v1.3-forge-1.20.1/MagicWorld-MagicWand_Mod_1.20.1-1.3.0.jar)
 - Resource Pack: [MagicWorld 256x Resource Pack Releases](https://github.com/gorpo/MagicWorld256x-ResourcePack/releases)
-- Shader: [MagicWorld Shadders Releases](https://github.com/gorpo/MagicWorld_Shadders/releases)
-- Seed recomendada: 8500081009970950196
+- Shader Pack: [MagicWorld Shadders Releases](https://github.com/gorpo/MagicWorld_Shadders/releases)
+- Seed recomendada: `8500081009970950196`
 
-Para criancas: se voce nao souber abrir as pastas do Minecraft, chame um adulto para ajudar. E mais seguro e mais rapido.
+Para criancas: se voce nao souber abrir as pastas do Minecraft, chame um adulto para ajudar.
 
-## Downgrade Forge 1.20.1 com estate inicial
-
-Esta versao tambem recebeu o port do sistema Magic World criado no NeoForge:
-
-- Ao entrar no primeiro mundo, o mod abre uma tela de carregamento com etapas do que esta sendo criado.
-- O loading mostra casa, fazendas/animais, portal, castelo, dragao e a finalizacao das estruturas.
-- Quando tudo termina, a tela fecha sozinha. Nao existe mais botao final de confirmacao.
-- A casa e o castelo usam estruturas NBT importadas do projeto principal, com limpeza acima e margem de 8 blocos ao redor.
-- O portal foi deixado atravessavel e pode ativar a experiencia premium por proximidade ou clique.
-- Na tela de criar mundo existe um botao `Magic World: ON/OFF`; ele fica preso na posicao correta quando a janela e redimensionada.
-
-## Instalar o mod no Minecraft
+## Instalar o mod
 
 1. Instale o **Minecraft Java Edition 1.20.1**.
 2. Instale o **Forge 47.4.10** para Minecraft 1.20.1.
-3. Abra a pagina de [Releases do mod](https://github.com/gorpo/MagicWorld-MagicWand_Mod/releases).
-4. Baixe o arquivo `.jar` do MagicWorld, por exemplo `MagicWorld-MagicWand_Mod_1.20.1-1.3.0.jar`.
-5. No Windows, pressione `Win + R`, digite `%appdata%\.minecraft` e aperte Enter.
-6. Coloque o `.jar` dentro da pasta `.minecraft/mods`.
-7. Abra o Minecraft com o perfil Forge.
-8. Entre no mundo e pressione `H` para abrir o menu da Magic Wand.
+3. Baixe o `.jar` do Magic World na aba Releases.
+4. No Windows, pressione `Win + R`, digite `%appdata%\.minecraft` e aperte Enter.
+5. Coloque o `.jar` do mod em `.minecraft/mods`.
+6. Abra o Minecraft usando o perfil Forge.
+7. Crie um mundo novo pelo menu Magic World.
+8. Dentro do mundo, pressione `H` para abrir o menu da Magic Wand.
 
 ## Instalar a experiencia completa
 
-Depois do mod, instale tambem os outros dois pacotes.
+Depois do mod, instale tambem o resource pack e o shader.
 
-1. Resource pack: baixe os quatro ZIPs nas [Releases do Resource Pack](https://github.com/gorpo/MagicWorld256x-ResourcePack/releases).
+1. Baixe os quatro ZIPs do Resource Pack nas Releases.
 2. Coloque os ZIPs em `.minecraft/resourcepacks`.
-3. Na tela de resource packs, deixe o pacote base `256x` por baixo e os complementos por cima. A ordem recomendada de prioridade, de cima para baixo, e:
+3. Na tela de pacotes de recursos, deixe o pacote base por baixo e os complementos por cima.
+4. Ordem recomendada de prioridade, de cima para baixo:
    - `MagicWorldResource_1.20.1-bonus`
    - `MagicWorldResource_1.20.1-addon`
    - `MagicWorldResource_1.20.1-models`
    - `MagicWorldResource_1.20.1-256x`
-4. Shader: baixe `MagicWorld_Shaders_Extreme_v1.0.zip` nas [Releases do Shader](https://github.com/gorpo/MagicWorld_Shadders/releases).
-5. Coloque o shader em `.minecraft/shaderpacks`.
-6. Use OptiFine, Oculus ou Iris para ativar o shader dentro do jogo.
+5. Baixe `MagicWorld_Shaders_Extreme_v1.0.zip` nas Releases do Shader.
+6. Coloque o shader em `.minecraft/shaderpacks`.
+7. Use Oculus, Iris ou outro carregador compativel com sua instalacao para ativar o shader.
+
+## Propriedade inicial Magic World
+
+Ao criar um mundo novo, o mod monta a area inicial em etapas e mostra uma tela de loading propria. A geracao foi dividida para reduzir pico de travamento e mostrar claramente o que esta sendo criado.
+
+A propriedade inicial inclui:
+
+- Casa principal importada por NBT, com area segura, baus, decoracao e ponto de spawn.
+- Castelo importado, com moradores, baus, salao e pontos de defesa.
+- Fazendas e currais com animais, trabalhadores e acesso limpo.
+- Portal inicial premium, atravessavel, com ativacao por proximidade/clique.
+- Praca de portais funcionais para dimensoes e retorno.
+- Mina de pedra com escada conectada, baus e itens de mineracao.
+- Ruas e caminhos internos ligando casa, fazendas, castelo, mina e estruturas externas.
+- Casa nova no fim da rua, rotacionada para a porta ficar voltada para a estrada.
+- santuario magico no morro, com entrada voltada para a casa principal.
+- Casa das bruxas na mata, compacta, decorada e com tres bruxas aliadas.
+- Cerejeiras apenas no entorno das estruturas do jogador, sem espalhar arvores tematicas fora do espaco correto.
+- Iluminacao reforcada para reduzir monstros e deixar a propriedade legivel de noite.
+
+Para testar mudancas de estrutura, crie sempre um mundo novo. Esta versao foi pensada para gerar areas fixas em coordenadas fixas durante a criacao do mapa, nao para tentar consertar saves antigos indefinidamente.
+
+## Casa das bruxas
+
+A casa das bruxas e uma estrutura tematica pequena, com footprint compacto e cercado ao redor. Ela foi criada para parecer um ponto secreto de apoio magico dentro da mata.
+
+Ela contem:
+
+- casa compacta `12x12`;
+- cercado `16x16` com portao;
+- placa de aviso com `fiquem longe daqui`;
+- tres camas;
+- tres bruxas vanilla marcadas como aliadas Magic World;
+- caldeirao, brewing stand, enchanting table, livros, mesa e cadeiras;
+- lareira, chamine, feno, aboboras iluminadas, teias e morcegos;
+- baus com pocoes, ingredientes, itens magicos, armas e armaduras;
+- suporte magico ao jogador perto da casa, com efeitos positivos e limpeza de monstros comuns na area.
+
+As bruxas nao foram pensadas como inimigas para assustar. Elas fazem parte da historia da propriedade e funcionam como guardias arcanas da mata.
+
+## Casa do fim da rua e santuario
+
+A estrada principal agora tem destino. No final dela, a casa nova aparece alinhada com a rua, no nivel de acesso correto e com a porta virada para o caminho. Ela serve como marco visual de fim de estrada e como expansao natural da vila inicial.
+
+O santuario fica do outro lado da casa principal, entrando no morro embaixo da regiao do castelo sem interferir no castelo. A entrada fica voltada para a casa, como se fosse uma caverna ritual descoberta no terreno. Ele usa blocos luminosos, detalhes magicos e atmosfera de templo escondido.
+
+## Menu Magic World
+
+A tela de criacao de mundo recebeu um painel Magic World proprio. Ele facilita testes e criacao de mapas novos.
+
+Recursos do painel:
+
+- Botao `Magic World: ON/OFF`.
+- Criacao de mundo com estruturas iniciais.
+- Seletor de seed com popup opaco para nao sobrepor textos e botoes.
+- Campo de seed manual.
+- Modo criativo como padrao para facilitar testes.
+- Dificuldade facil como padrao.
+- Opcoes de portal, castelo, fazendas, aura, PC e ajustes de mundo.
+
+O menu grafico tambem recebeu identidade Magic World, com ajustes para Embeddium/Oculus e acesso ao Distant Horizons sem deixar icones soltos sobrepondo telas vanilla.
 
 ## O que a varinha faz
 
-- Abre um menu premium pela tecla `H`.
-- Transforma blocos comuns em versoes especiais.
-- Chama animais, inimigos, NPCs, bosses e criaturas de fantasia.
-- Cria itens, armaduras, ferramentas, poderes, pets e montarias.
-- Gera vilas, construcoes, dungeons e estruturas famosas do Minecraft.
-- Teleporta para biomas e dimensoes.
-- Controla clima, tempo, portais, particulas, eventos e hordas.
-- Usa previews visuais para as criancas escolherem melhor cada aventura.
+A tecla `H` abre o menu principal da Magic Wand.
+
+A varinha permite:
+
+- transformar blocos comuns em versoes especiais;
+- transformar animais e criaturas;
+- chamar animais, NPCs, bosses e mobs;
+- criar itens, ferramentas, armaduras, poderes, pets e montarias;
+- abrir menus de clima, tempo, dimensoes, portais, biomas e eventos;
+- teleportar para locais e dimensoes;
+- executar comandos de suporte quando o mundo permite cheats/permissoes;
+- acessar submenus de construcao, estruturas, dungeons e recompensas.
+
+## Itens e armaduras
+
+O mod registra a varinha magica e itens proprios do Magic World.
+
+Itens principais:
+
+| Item | ID | Funcao |
+| --- | --- | --- |
+| Varinha Magica | `magicworld:varinha_magica` | Item principal do mod e chave dos menus magicos. |
+| Draconic Aether Helmet | `magicworld:draconic_aether_helmet` | Armadura custom de fantasia magica. |
+| Draconic Aether Chestplate | `magicworld:draconic_aether_chestplate` | Peitoral custom do set Draconic Aether. |
+| Draconic Aether Leggings | `magicworld:draconic_aether_leggings` | Calca custom do set Draconic Aether. |
+| Draconic Aether Boots | `magicworld:draconic_aether_boots` | Botas custom do set Draconic Aether. |
+
+<p align="center">
+  <img src="screenshots/mod_item_varinha_magica.png" alt="Varinha magica" width="90">
+  <img src="screenshots/resource_item_netherite_sword.png" alt="Espada" width="64">
+  <img src="screenshots/resource_item_netherite_pickaxe.png" alt="Picareta" width="64">
+  <img src="screenshots/resource_item_diamond_chestplate.png" alt="Armadura" width="64">
+</p>
 
 ## Galeria da aventura
-
-Estas imagens mostram o conjunto completo em acao: mod, resource pack e shader trabalhando juntos.
 
 <table>
   <tr>
@@ -138,7 +208,7 @@ Estas imagens mostram o conjunto completo em acao: mod, resource pack e shader t
 
 <table>
   <tr>
-    <td align="center"><img src="screenshots/UI.png" width="220"><br>Interface</td>
+    <td align="center"><img src="screenshots/referencia_menus.png" width="220"><br>Interface</td>
     <td align="center"><img src="screenshots/sistema.png" width="220"><br>Sistema premium</td>
     <td align="center"><img src="screenshots/varinhas_png.png" width="220"><br>Varinhas</td>
     <td align="center"><img src="screenshots/varinha_magica.png" width="220"><br>Magic Wand</td>
@@ -155,17 +225,9 @@ Estas imagens mostram o conjunto completo em acao: mod, resource pack e shader t
     <td align="center"><img src="screenshots/criados.png" width="220"><br>Criados</td>
     <td align="center"><img src="screenshots/cmds.png" width="220"><br>Comandos</td>
   </tr>
-  <tr>
-    <td align="center"><img src="screenshots/cmds_desativar.png" width="220"><br>Desativar comandos</td>
-    <td align="center"><img src="screenshots/icone_mod.png" width="220"><br>Icone do mod</td>
-    <td align="center"><img src="screenshots/logo.png" width="220"><br>Logo</td>
-    <td align="center"><img src="screenshots/wallpaper.png" width="220"><br>Wallpaper</td>
-  </tr>
 </table>
 
 ## Menus da Magic Wand
-
-Os previews abaixo sao usados dentro do proprio menu. Eles ajudam a escolher rapido qual poder brincar.
 
 <table>
   <tr>
@@ -184,82 +246,80 @@ Os previews abaixo sao usados dentro do proprio menu. Eles ajudam a escolher rap
     <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/premium_powers.png" width="96"><br>Poderes</td>
     <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/lucky_block.png" width="96"><br>Lucky Block</td>
   </tr>
-  <tr>
-    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/village_plains.png" width="96"><br>Vilas</td>
-    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/ancient_city.png" width="96"><br>Ancient City</td>
-    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/bastion_remnant.png" width="96"><br>Bastion</td>
-    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/end_city.png" width="96"><br>End City</td>
-    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/stronghold.png" width="96"><br>Stronghold</td>
-    <td align="center"><img src="src/main/resources/assets/magicworld/textures/gui/previews/troll_menu.png" width="96"><br>Troll Menu</td>
-  </tr>
 </table>
 
-## Galeria dos outros pacotes
+## Mods graficos e recomendados
 
-Estas imagens lembram que o mod fica melhor quando anda junto com o resource pack e o shader.
+Esta base Forge foi preparada para conviver com mods graficos e de desempenho da linha 1.20.1, especialmente durante desenvolvimento/teste:
 
-<table>
-  <tr>
-    <td align="center"><img src="screenshots/256x.png" width="180"><br>Base 256x</td>
-    <td align="center"><img src="screenshots/models.png" width="180"><br>Models</td>
-    <td align="center"><img src="screenshots/addon.png" width="180"><br>Addon</td>
-    <td align="center"><img src="screenshots/bonus.png" width="180"><br>Bonus</td>
-    <td align="center"><img src="screenshots/textura.png" width="180"><br>Texturas</td>
-  </tr>
-  <tr>
-    <td align="center"><img src="screenshots/sprite.png" width="180"><br>Sprites</td>
-    <td align="center"><img src="screenshots/logo_craft.png" width="180"><br>Logo Craft</td>
-    <td align="center"><img src="screenshots/logo_full.png" width="180"><br>Logo Full</td>
-    <td align="center"><img src="screenshots/icone_resourcepack.png" width="180"><br>Icone Resource</td>
-    <td align="center"><img src="screenshots/banner_javaedition.png" width="180"><br>Java Edition</td>
-  </tr>
-</table>
+- Embeddium: menu grafico e otimizacao de renderizacao.
+- Oculus: shaders no Forge 1.20.1.
+- Distant Horizons: horizontes distantes e LODs.
+- Entity Culling: corte de entidades ocultas para aliviar renderizacao.
+- Entity Texture Features e Entity Model Features: suporte visual avancado para entidades.
+- FerriteCore e ModernFix: reducao de memoria e melhorias de estabilidade.
 
-<details>
-<summary>Ver panoramas e banners</summary>
+Esses mods externos devem ser usados em versoes compativeis com **Minecraft 1.20.1 Forge**. Nao use arquivos Fabric ou NeoForge nesta base Forge.
 
-<table>
-  <tr>
-    <td align="center"><img src="screenshots/panorama1.png" width="220"><br>Panorama 1</td>
-    <td align="center"><img src="screenshots/panorama2.png" width="220"><br>Panorama 2</td>
-    <td align="center"><img src="screenshots/panorama3.png" width="220"><br>Panorama 3</td>
-  </tr>
-  <tr>
-    <td align="center"><img src="screenshots/panorama4.png" width="220"><br>Panorama 4</td>
-    <td align="center"><img src="screenshots/panorama5.png" width="220"><br>Panorama 5</td>
-    <td align="center"><img src="screenshots/panorama6.png" width="220"><br>Panorama 6</td>
-  </tr>
-  <tr>
-    <td align="center"><img src="screenshots/banner_resourcepack_github.png" width="220"><br>Resource Pack</td>
-    <td align="center"><img src="screenshots/banner_shadder_github.png" width="220"><br>Shader</td>
-    <td align="center"><img src="screenshots/banner_shadder_github_melhorado.png" width="220"><br>Shader melhorado</td>
-  </tr>
-</table>
+## Compatibilidade
 
-</details>
+| Item | Versao |
+| --- | --- |
+| Minecraft | Java Edition 1.20.1 |
+| Mod loader | Forge 47.4.10 |
+| Java | 17 |
+| Mod ID | `magicworld` |
+| Branch de trabalho | `Inicio-Port-Neoforge` |
+| Resource Pack recomendado | MagicWorld 256x Resource Pack |
+| Shader Pack recomendado | MagicWorld Shadders Extreme |
 
 ## Build local
 
-Se voce quer compilar o projeto em vez de baixar pela aba Releases:
+Para compilar o projeto localmente:
 
 ```powershell
-.\gradlew.bat build
+.\gradlew.bat build --stacktrace
 ```
 
-O `.jar` compilado fica em:
+Para uma verificacao rapida de Java:
+
+```powershell
+.\gradlew.bat compileJava --stacktrace
+```
+
+O `.jar` gerado fica em:
 
 ```text
 build/libs/
 ```
 
-## Compatibilidade
+## Recomendacoes de teste
 
-- Minecraft Java Edition `1.20.1`
-- Minecraft Forge `47.4.10`
-- Java `17`
-- Resource pack recomendado: [MagicWorld256x-ResourcePack](https://github.com/gorpo/MagicWorld256x-ResourcePack)
-- Shader recomendado: [MagicWorld_Shadders](https://github.com/gorpo/MagicWorld_Shadders)
+- Reinicie o cliente Minecraft depois de alterar codigo Java, mixins, telas ou configs graficas.
+- Gere mundo novo para validar estruturas da propriedade inicial.
+- Use o painel Magic World na criacao do mundo para escolher seed, modo e dificuldade.
+- Se uma estrutura nao aparecer, confirme primeiro se o mundo foi criado depois da ultima build.
+- Testes visuais devem ser feitos no jogo; a validacao de codigo pode ser feita por Gradle.
 
-## Autor
+## Creditos
 
-GuiPaluch
+- Criacao, direcao e identidade do projeto: **GuiPaluch / Magic World**.
+- Base original de sistemas e identidade: Magic World Ultimate NeoForge.
+- Port, adaptacao Forge 1.20.1, organizacao tecnica e documentacao: apoio Codex.
+- Comunidade Minecraft, Forge, NeoForge e ecossistema de modding Java.
+
+## Avisos importantes
+
+- Este README descreve a versao Forge 1.20.1 final em andamento.
+- O projeto NeoForge e referencia historica; esta base deve usar arquivos Forge 1.20.1.
+- O pacote completo depende da combinacao Mod + Resource Pack + Shader Pack.
+- Menus que executam comandos podem exigir cheats/permissao no mundo.
+- Nao publique binarios novos sem revisar Releases e nomes finais.
+
+<p align="center">
+  <img src="screenshots/banner_principal.png" alt="Magic World Ultimate" width="100%" />
+</p>
+
+<p align="center">
+  <strong>Entre no portal, equipe sua armadura, acenda sua varinha e descubra um Minecraft transformado pela magia do Magic World.</strong>
+</p>

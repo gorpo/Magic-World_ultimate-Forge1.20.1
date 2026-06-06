@@ -54,20 +54,27 @@ public class AuraEvents {
             return;
         }
 
+        float walkingSpeed = player.isSprinting() ? 0.18F : 0.1F;
+        boolean abilitiesChanged = !player.getAbilities().mayBuild
+                || Math.abs(player.getAbilities().getWalkingSpeed() - walkingSpeed) > 0.001F;
         player.getAbilities().mayBuild = true;
-        player.getAbilities().setWalkingSpeed(player.isSprinting() ? 0.18F : 0.1F);
-        player.onUpdateAbilities();
+        player.getAbilities().setWalkingSpeed(walkingSpeed);
+        if (abilitiesChanged) {
+            player.onUpdateAbilities();
+        }
 
-        player.setRemainingFireTicks(0);
-        player.extinguishFire();
-        player.setAirSupply(player.getMaxAirSupply());
-        player.setTicksFrozen(0);
-        player.getFoodData().eat(20, 1.0F);
+        if (player.tickCount % 10 == 0) {
+            player.setRemainingFireTicks(0);
+            player.extinguishFire();
+            player.setAirSupply(player.getMaxAirSupply());
+            player.setTicksFrozen(0);
+            player.getFoodData().eat(20, 1.0F);
 
-        addInvisibleEffect(player, MobEffects.FIRE_RESISTANCE, 2);
-        addInvisibleEffect(player, MobEffects.WATER_BREATHING, 0);
-        addInvisibleEffect(player, MobEffects.DIG_SPEED, 4);
-        addInvisibleEffect(player, MobEffects.SATURATION, 0);
+            addInvisibleEffect(player, MobEffects.FIRE_RESISTANCE, 2);
+            addInvisibleEffect(player, MobEffects.WATER_BREATHING, 0);
+            addInvisibleEffect(player, MobEffects.DIG_SPEED, 4);
+            addInvisibleEffect(player, MobEffects.SATURATION, 0);
+        }
 
         if (player.horizontalCollision && player.onGround()) {
             player.jumpFromGround();

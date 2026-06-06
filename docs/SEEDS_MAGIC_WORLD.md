@@ -50,9 +50,3 @@ Regras:
 - Paraiso: `69420070680859076`
 - Magnific: `2048005618087379093`
 - Biomas Pertos: `8500081009970950196`
-- Vale Cerejeira: `6823084440019132920`
-- Ilha das Vilas: `2218715947278290213`
-- Montanhas Magicas: `460628901`
-- Cidade Antiga: `4189766944005904899`
-- Bosque e Mansao: `-845619040004837621`
-- Cerejeiras Raras: `65434353559200`

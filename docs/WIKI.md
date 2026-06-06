@@ -1012,3 +1012,55 @@ Validacao e processo:
 - Causa encontrada: `decorateMineHouse` criava a ladder no shaft, mas `reinforceStoneTreasureMineHouseShell` sobrescrevia o primeiro bloco da entrada com polished deepslate/cobbled deepslate.
 - Foi adicionada `reopenTreasureMineEntrance` depois do reforco, recolocando a ladder no bloco central, limpando o bloco acima e garantindo apoio de stone bricks atras.
 - Validacao: `./gradlew.bat compileJava --stacktrace` passou.
+
+## Registro 2026-06-06 - casa das bruxas no bloco apontado
+- Pedido: trazer a casa das bruxas exatamente para o bloco apontado no print, mantendo a face/porta virada para onde estava.
+- Coordenada lida do print: jogador em `Block 37 70 124`, alvo em `Targeted Block 37 69 124`.
+- `witchCovenAnchor(base)` agora usa `base.offset(97,0,94)`, que bate no centro `X 37 / Z 124` com base historica `X -60 / Z 30`.
+- A casa compacta continua `12x12`, cercado `16x16`, porta e portao no lado oeste (`Direction.WEST`).
+- `buildWitchCovenHouse` deixou de calcular altura por heightmap; `floorY = base.getY() - 1` para o piso ficar no nivel exato do bloco apontado (`Y 69` nesse mapa), sem variar por arvore, folha ou relevo local.
+- Validacao: `./gradlew.bat compileJava --stacktrace` passou; `git diff --check` sem erros.
+
+## Registro 2026-06-06 - casa das bruxas ponto correto na mata
+- Novo print mostrou o local real esperado da casa das bruxas: jogador em `Block 69 74 -5`, alvo em `Targeted Block 69 73 -5`.
+- O ajuste anterior para `X 37 / Z 124` ficava longe do ponto conferido pelo usuario.
+- `witchCovenAnchor(base)` foi corrigido para `base.offset(129,0,-35)`, que posiciona o centro da casa/cercado em `X 69 / Z -5` com base historica `X -60 / Z 30`.
+- Altura mantida por `floorY = base.getY() - 1`, deixando o piso em `Y 73` nesse mapa.
+- Fachada mantida: porta e portao continuam no lado oeste (`Direction.WEST`).
+- Validacao: `./gradlew.bat clean compileJava --stacktrace` passou; `git diff --check` sem erros.
+
+## Registro 2026-06-06 - casa das bruxas no miolo das arvores
+- Novo print visual sem F3 mostrou que a casa das bruxas ainda estava voltando para uma posicao antiga/errada.
+- Referencia usada: o X da mira aponta para o miolo das arvores entre os currais/fazendas e a casa de pedra da mina, nao para a borda antiga perto da casa principal.
+- O save local do print estava em base real `MagicWorldForgeStarterEstateBaseX/Y/Z = -80/64/-352`, jogador em `-28.685 / 112.419 / -352.440`, rotacao `-95.101 / 67.350`.
+- A mira nessa posicao aponta para a mata em torno de `base.offset(68,0,-2)`.
+- `witchCovenAnchor(base)` foi corrigido de `base.offset(129,0,-35)` para `base.offset(68,0,-2)`.
+- A casa continua compacta `12x12`, cercado `16x16`, piso em `base.getY() - 1` e porta/portao no lado oeste (`Direction.WEST`).
+- Validacao: `./gradlew.bat clean compileJava --stacktrace` passou; `git diff --check` sem erros.
+
+## Registro 2026-06-06 - bruxas preservadas, efeitos invisiveis e spawn frontal
+- Problema: a casa das bruxas aparecia, mas as bruxas sumiam. Causa encontrada: `Witch` herda de `Monster` e as rotinas globais de limpeza do terreno/aldeoes removiam todos os monstros, apagando tambem as bruxas amigaveis.
+- Fix: limpezas de monstros agora preservam entidades com NBT `MagicWorldFriendlyWitch`; `spawnFriendlyWitch` passou a criar a entidade manualmente com `EntityType.WITCH.create`, raio de duplicidade pequeno e `addFreshEntityWithPassengers`, sem depender das checagens vanilla de spawn.
+- Reparo automatico: `maintainEstateLife` e `handleWitchCovenSupport` chamam `ensureCompactWitchCovenResidents`, garantindo as 3 bruxas na casa compacta se o save estiver sem elas.
+- Brilhos no jogador: efeitos de premium e suporte das bruxas agora usam `hiddenEffect(..., false, false, false)`, removendo particulas/icone visual sem tirar os poderes.
+- Spawn: `findEstateSpawn` deixou de procurar piso interno e agora usa a estrada/frente da casa principal (`IMPORTED_HOUSE_MAX_Z + 3`) com heightmap de superficie e limpeza de dois blocos de ar; login tambem atualiza o respawn para esse ponto.
+- Validacao: `./gradlew.bat clean compileJava --stacktrace` passou.
+
+## Registro 2026-06-06 - bruxas moveis e desempenho
+- As bruxas ficavam paradas porque recebiam `setNoAi(true)` na criacao e novamente no suporte periodico.
+- Agora elas usam IA ativa, circulam dentro de uma restricao ao redor da casa e nao atacam porque `LivingChangeTargetEvent` remove qualquer novo alvo das bruxas marcadas com `MagicWorldFriendlyWitch`.
+- O reparo automatico deixou de chamar a populacao completa da casa; ele verifica apenas as tres bruxas. Isso remove buscas repetidas de morcegos em AABB de `256` blocos.
+- A manutencao global da propriedade deixou de varrer aldeoes, guardioes, monstros e animais em uma area enorme a cada 10 segundos. Restou apenas a verificacao pequena de reproducao dos currais, uma vez por minuto e perto da propriedade.
+- Portais funcionais so fazem calculos perto da praca, a cada 10 ticks, e reparos visuais uma vez por minuto. Efeitos do portal inicial usam sua posicao conhecida, sem busca volumetrica de blocos.
+- A aura so envia atualizacao de habilidades quando algo muda e renova protecoes a cada 10 ticks, reduzindo pacotes e trabalho por tick.
+- Validacao: `./gradlew.bat compileJava --stacktrace` e `./gradlew.bat build --stacktrace` passaram; `git diff --check` sem erros.
+
+## Registro 2026-06-06 - casarao medieval no Rancho da Plantacao
+- O predio mostrado nos prints e o rancho/deposito central da plantacao em `base.offset(-119, -1, -76)`, reconhecido pelos moradores do rancho e pelas casas/lavouras ao redor.
+- A Casa Verde 2 nao e o alvo e voltou para sua casa simples original.
+- O rancho recebeu quatro portas funcionais, acessos limpos, muitas janelas, paredes de pedra e madeira, telhado medieval alto com dormers e chamine.
+- Uma parede interna virou arquivo de baus e barris com capacidade calculada para todos os itens registrados do jogo/modpack.
+- O salao recebeu ferramentas, forja, fornos, estacoes uteis, armaduras, quadros, plantas, decoracoes, teias, morcegos e lanternas rusticas.
+- O acesso oculto por alcapoes leva a uma camara subterranea dourada com tesouros, baus, itens raros e armaduras.
+- `CURRENT_ESTATE_REPAIR_VERSION = 21` aplica a reforma uma vez no save existente.
+- Validacao: `./gradlew.bat build --stacktrace` passou; `git diff --check` sem erros.

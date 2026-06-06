@@ -70,13 +70,7 @@ public class ClientEvents {
                 new SeedPreset("Magic World", "2048005618087379093"),
                 new SeedPreset("Paraiso", "69420070680859076"),
                 new SeedPreset("Magnific", "2048005618087379093"),
-                new SeedPreset("Biomas Pertos", "8500081009970950196"),
-                new SeedPreset("Vale Cerejeira", "6823084440019132920"),
-                new SeedPreset("Ilha das Vilas", "2218715947278290213"),
-                new SeedPreset("Montanhas Magicas", "460628901"),
-                new SeedPreset("Cidade Antiga", "4189766944005904899"),
-                new SeedPreset("Bosque e Mansao", "-845619040004837621"),
-                new SeedPreset("Cerejeiras Raras", "65434353559200")
+                new SeedPreset("Biomas Pertos", "8500081009970950196")
         };
 
         private record SeedPreset(String label, String seed) {
