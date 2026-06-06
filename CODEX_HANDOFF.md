@@ -1640,3 +1640,16 @@ Validacao:
 - clearStructureVolume da casa do fim da rua usa margem 3.
 - decorateStarterRoadEndHouseFront nao usa mais buildHousePathToFarm/fillGroundAt; adicionada buildStarterRoadEndHouseEntrance para criar acesso direto no nivel da porta sem colocar smooth stone sobre o template.
 - Validacao executada: ./gradlew.bat compileJava --stacktrace = BUILD SUCCESSFUL.
+
+## Handoff 2026-06-06 - casa das bruxas e casa fim da rua limpa
+- Branch: Inicio-Port-Neoforge.
+- Pedido implementado: casa de bruxas na mata do print, com ponto absoluto observado `447 103 -87` convertido para `witchCovenAnchor(base) = base.offset(507, 0, -117)` usando a base historica aproximada `-60 74 30` registrada nos prints anteriores.
+- A geracao agora tem etapa `7` em `98%` (`Carregando casa das bruxas na mata...`) depois do santuario em `97%`, evitando construir santuario e casa das bruxas no mesmo tick.
+- A casa das bruxas usa origem calculada a partir do portao: portao no ponto indicado, casa 34 blocos para oeste e 12 para norte, largura 28, profundidade 24, porta voltada para leste/entrada visivel.
+- Conteudo: cerca, portao, placa `fiquem longe` / `daqui`, 3 quartos, mesa/cadeiras, canto de alquimia, caldeiroes, lareira/chamine, teias, morcegos, feno, jack o lanterns, cogumelos, iluminacao com soul lantern/lantern/glowstone.
+- Baus: pocoes diversas, varinha Magic World, Totem, livros, XP bottles, ender pearls, blaze/ghast/spider ingredients, armaduras Draconic Aether/netherite/diamond, armas, escudo, flechas e foguetes.
+- Bruxas: 3 entidades Witch marcadas com `MagicWorldFriendlyWitch`, persistentes, invulneraveis e NoAI para nao hostilizar; `handleWitchCovenSupport` aplica buffs ao jogador perto da casa e remove monstros comuns da area.
+- Casa NBT do fim da rua: mantida em `starterRoadEndHouseOrigin(base) = base.offset(-5, 1, -74)` com `Rotation.CLOCKWISE_180`; removidos `decorateStarterRoadEndHouseFront` e `buildStarterRoadEndHouseEntrance`; suporte agora e apenas dirt invisivel, sem cobblestone/plataforma/caminho/postes/mobs por cima da estrutura.
+- `repairExistingEstate` tambem chama `buildWitchCovenHouse` se o reparo existente for executado em save antigo; nao foi elevado `CURRENT_ESTATE_REPAIR_VERSION` nesta rodada para respeitar a regra do usuario de testar em mapas novos.
+- Validacao executada: `./gradlew.bat compileJava --stacktrace` = BUILD SUCCESSFUL; `./gradlew.bat build --stacktrace` = BUILD SUCCESSFUL; `git diff --check` = sem erros.
+- Cliente nao foi aberto pelo Codex.

@@ -949,3 +949,17 @@ Validacao e processo:
 - Casa do fim da rua: limpeza do volume aumentada para margem 3 para remover terreno/pedra que encoste na estrutura.
 - Casa do fim da rua: caminho generico baseado em surface scan foi removido desta casa; agora a entrada usa acesso dedicado no nivel da porta para nao gerar pedras por cima da construcao.
 - Validacao: ./gradlew.bat compileJava --stacktrace passou.
+
+## Registro 2026-06-06 - casa das bruxas e reimport limpo
+- Pedido atual: criar uma casa de bruxas no ponto do print da mata, com decoracao tematica, caldeiroes, feno, teias, morcegos, lareira, chamine, cerca, portao, placa e 3 bruxas funcionais a favor do jogador.
+- Coordenada usada: o print mostra Block `447 103 -87`; como os registros anteriores indicam base historica aproximada `-60 74 30`, a ancora relativa ficou `witchCovenAnchor(base) = base.offset(507, 0, -117)`.
+- A casa nasce com o portao no ponto indicado e se estende para oeste/para tras, entrando na mata/morro; a entrada principal fica limpa e visivel.
+- A geracao inicial ganhou etapa propria em `98%`: `Carregando casa das bruxas na mata...`, separada do santuario para reduzir pico de tick pesado.
+- A casa inclui cerca de dark oak, portao, placa um bloco a esquerda do portao com `fiquem longe` / `daqui`, quartos para 3 bruxas, mesa, cadeiras, biblioteca, canto de alquimia, caldeiroes, lareira, chamine, jack o lanterns, feno, cogumelos, teias e luzes.
+- Foram adicionados baus internos com pocoes, varinha Magic World, itens magicos, ingredientes, armas, escudos, flechas e armaduras Draconic Aether/netherite/diamond.
+- Foram criadas 3 bruxas vanilla marcadas com NBT `MagicWorldFriendlyWitch`, persistentes, invulneraveis e com NoAI para nao atacar o jogador.
+- Perto da casa, `handleWitchCovenSupport` aplica regeneracao, resistencia, fire resistance, night vision e luck ao jogador; tambem remove monstros comuns na area sem remover as bruxas marcadas.
+- Morcegos nomeados foram adicionados na casa/mata.
+- A casa do fim da rua manteve `starterRoadEndHouseOrigin(base) = base.offset(-5, 1, -74)` e rotacao 180 graus, mas agora e reimportada limpa: sem caminho extra, sem postes, sem mobs, sem plantas e sem base visivel de cobblestone por cima/ao redor.
+- Validacao: `./gradlew.bat compileJava --stacktrace`, `./gradlew.bat build --stacktrace` e `git diff --check` passaram.
+- Cliente Minecraft nao foi aberto pelo Codex; teste visual fica com o usuario.
