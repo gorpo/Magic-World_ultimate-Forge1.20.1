@@ -963,3 +963,8 @@ Validacao e processo:
 - A casa do fim da rua manteve `starterRoadEndHouseOrigin(base) = base.offset(-5, 1, -74)` e rotacao 180 graus, mas agora e reimportada limpa: sem caminho extra, sem postes, sem mobs, sem plantas e sem base visivel de cobblestone por cima/ao redor.
 - Validacao: `./gradlew.bat compileJava --stacktrace`, `./gradlew.bat build --stacktrace` e `git diff --check` passaram.
 - Cliente Minecraft nao foi aberto pelo Codex; teste visual fica com o usuario.
+
+## Registro 2026-06-06 - casa das bruxas -1Y
+- Ajuste visual apos print: a casa das bruxas ficou um bloco alta em relacao a rua/terreno frontal.
+- `buildWitchCovenHouse` agora calcula `floorY` com `heightmap - 2`, baixando casa, cerca, entrada, piso e decoracao juntos em 1 bloco.
+- Validacao parcial: `./gradlew.bat compileJava --stacktrace` passou.

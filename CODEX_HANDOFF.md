@@ -1653,3 +1653,9 @@ Validacao:
 - `repairExistingEstate` tambem chama `buildWitchCovenHouse` se o reparo existente for executado em save antigo; nao foi elevado `CURRENT_ESTATE_REPAIR_VERSION` nesta rodada para respeitar a regra do usuario de testar em mapas novos.
 - Validacao executada: `./gradlew.bat compileJava --stacktrace` = BUILD SUCCESSFUL; `./gradlew.bat build --stacktrace` = BUILD SUCCESSFUL; `git diff --check` = sem erros.
 - Cliente nao foi aberto pelo Codex.
+
+## Handoff 2026-06-06 - casa das bruxas -1Y
+- Usuario pediu pelo print: `desca a casa um bloco`.
+- A casa afetada e a casa das bruxas recem-criada.
+- Alteracao: `buildWitchCovenHouse` usa `floorY = heightmap - 2` em vez de `heightmap - 1`, baixando todo o conjunto em 1 bloco.
+- Validacao parcial: `./gradlew.bat compileJava --stacktrace` = BUILD SUCCESSFUL.

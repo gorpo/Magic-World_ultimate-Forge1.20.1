@@ -999,7 +999,7 @@ public class StarterPortalEvents {
 
     private static void buildWitchCovenHouse(ServerLevel level, BlockPos base) {
         BlockPos anchor = witchCovenAnchor(base);
-        int floorY = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, anchor.getX(), anchor.getZ()) - 1;
+        int floorY = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, anchor.getX(), anchor.getZ()) - 2;
         BlockPos gateAnchor = new BlockPos(anchor.getX(), floorY, anchor.getZ());
         BlockPos origin = gateAnchor.offset(-34, 0, -12);
         int width = 28;
