@@ -1335,6 +1335,25 @@ Validacao:
 - `git diff --check`: sem erros; apenas avisos esperados de CRLF no Windows.
 - Cliente nao foi aberto pelo Codex; o usuario testa o cliente.
 
+## Revisao do dropdown de seeds - 2026-06-06 15:42:01 -03:00
+
+Pedido atual:
+
+- Revisar a ultima alteracao para nao deixar erro.
+
+Implementado:
+
+- Identificado risco de a lista com 10 seeds sair da tela em resolucoes menores quando abrisse sempre para baixo.
+- `MagicSeedDropdown` agora calcula o topo da lista dinamicamente: abre para baixo quando couber e abre para cima quando nao couber.
+- Mantido o tratamento de clique em `ScreenEvent.MouseButtonPressed.Pre`, consumindo cliques do dropdown antes dos botoes por baixo.
+
+Validacao:
+
+- `./gradlew.bat compileJava --stacktrace`: BUILD SUCCESSFUL.
+- `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+- `git diff --check`: sem erros; apenas avisos esperados de CRLF no Windows.
+- Cliente nao foi aberto pelo Codex; o usuario testa o cliente.
+
 ## Ajuste da casa grande, cerejeiras e casas dos animais - 2026-06-06 14:58:27 -03:00
 
 Pedido atual:

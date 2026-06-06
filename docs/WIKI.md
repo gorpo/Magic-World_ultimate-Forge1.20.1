@@ -760,6 +760,14 @@ Validacao e processo:
 - Validado com `compileJava`, `build` e `git diff --check`; todos passaram.
 - O Codex valida somente com Gradle e nao abre o cliente.
 
+## Revisao do dropdown de seeds - 2026-06-06 15:42:01 -03:00
+
+- Revisada a ultima alteracao do menu `Magic World` para reduzir risco de erro visual em telas menores.
+- O dropdown de seeds agora abre para baixo quando ha espaco e abre automaticamente para cima quando a lista nao cabe abaixo do botao.
+- O clique do dropdown continua sendo consumido antes dos outros botoes, evitando acionamento acidental de `Criar Mundo` ou `Voltar` por baixo da lista.
+- Validado com `compileJava`, `build` e `git diff --check`; todos passaram.
+- O Codex valida somente com Gradle e nao abre o cliente.
+
 ## Seeds no menu Magic World - 2026-06-06 15:30:59 -03:00
 
 - A aba `Magic World` da tela de criacao de mundo agora tem campo `Seed manual` e dropdown de seeds predefinidas.

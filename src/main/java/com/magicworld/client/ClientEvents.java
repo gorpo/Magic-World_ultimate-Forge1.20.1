@@ -790,7 +790,7 @@ public class ClientEvents {
                 }
 
                 int rowHeight = getHeight();
-                int listTop = getY() + getHeight() + 2;
+                int listTop = listTop(rowHeight);
                 for (int i = 0; i < presets.size(); i++) {
                     int rowTop = listTop + i * rowHeight;
                     boolean hovered = mouseX >= getX()
@@ -822,7 +822,7 @@ public class ClientEvents {
 
                 if (expanded) {
                     int rowHeight = getHeight();
-                    int listTop = getY() + getHeight() + 2;
+                    int listTop = listTop(rowHeight);
                     boolean insideList = mouseX >= getX()
                             && mouseX < getX() + getWidth()
                             && mouseY >= listTop
@@ -840,6 +840,22 @@ public class ClientEvents {
                 }
 
                 return false;
+            }
+
+            private int listTop(int rowHeight) {
+                int preferredTop = getY() + getHeight() + 2;
+                int listHeight = presets.size() * rowHeight;
+                int screenBottom = Minecraft.getInstance().getWindow().getGuiScaledHeight() - 6;
+                if (preferredTop + listHeight <= screenBottom) {
+                    return preferredTop;
+                }
+
+                int aboveTop = getY() - listHeight - 2;
+                if (aboveTop >= 6) {
+                    return aboveTop;
+                }
+
+                return Math.max(6, screenBottom - listHeight);
             }
 
             private String selectedLabel() {
