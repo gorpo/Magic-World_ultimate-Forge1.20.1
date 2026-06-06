@@ -1627,3 +1627,9 @@ Validacao:
 - Santuario: roadEndMagicSanctuaryOrigin agora base.offset(-54, -4, -8), width 36, entrada leste em x ~= -18 relativa ao base, voltada para a casa.
 - Cerejeiras: convertMainHousePerimeterTreesToCherry cobre todo o terreno cercado sem excluir o footprint amplo da casa; scan vertical reduzido para surfaceY -10 ate surfaceY +34.
 - Validacao executada: ./gradlew.bat compileJava --stacktrace = BUILD SUCCESSFUL.
+
+## Handoff 2026-06-06 - overlay menu criacao
+- Corrigida sobreposicao visual no painel Magic World da tela Criar Mundo.
+- MagicCreateWorldLineCover agora cobre a tela inteira quando o painel esta aberto; MagicCreateWorldBackdrop ficou mais opaco.
+- MagicCreateWorldInfo foi reduzido para duas linhas curtas para nao invadir os botoes em escala GUI grande.
+- Validacao executada: ./gradlew.bat compileJava --stacktrace = BUILD SUCCESSFUL.

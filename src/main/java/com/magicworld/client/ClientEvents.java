@@ -207,7 +207,7 @@ public class ClientEvents {
             });
 
             List<AbstractWidget> magicWidgets = List.of(
-                    new MagicCreateWorldLineCover(0, layout.lineCoverY(), screen.width, 8),
+                    new MagicCreateWorldLineCover(0, 0, screen.width, screen.height),
                     new MagicCreateWorldBackdrop(left - 12, top - 10, gridWidth + 24, MAGIC_PANEL_HEIGHT + 20),
                     new MagicCreateWorldTitle(left, top + 2, gridWidth, 18, Minecraft.getInstance().font, Component.literal("MAGIC WORLD")),
                     new MagicCreateWorldInfo(left, top + 25, gridWidth, Math.max(72, buttonsTop - top - 34), Minecraft.getInstance().font),
@@ -447,7 +447,7 @@ public class ClientEvents {
             panel.magicTabButton().setY(magicButtonY(panel.vanillaWidgets()));
             panel.magicTabButton().setWidth(magicButtonWidth(panel.vanillaWidgets()));
 
-            setBounds(panel.magicWidgets().get(0), 0, layout.lineCoverY(), screen.width, 8);
+            setBounds(panel.magicWidgets().get(0), 0, 0, screen.width, screen.height);
             setBounds(panel.magicWidgets().get(1), left - 12, top - 10, gridWidth + 24, MAGIC_PANEL_HEIGHT + 20);
             setBounds(panel.magicWidgets().get(2), left, top + 2, gridWidth, 18);
             setBounds(panel.magicWidgets().get(3), left, top + 25, gridWidth, Math.max(72, buttonsTop - top - 34));
@@ -1036,7 +1036,7 @@ public class ClientEvents {
 
         @Override
         protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            graphics.fill(getX(), getY(), getX() + getWidth(), getY() + getHeight(), 0xAA000000);
+            graphics.fill(getX(), getY(), getX() + getWidth(), getY() + getHeight(), 0xF2050916);
             graphics.renderOutline(getX(), getY(), getWidth(), getHeight(), 0x44D9A441);
             graphics.renderOutline(getX() + 3, getY() + 3, getWidth() - 6, getHeight() - 6, 0x3322D3FF);
         }
@@ -1054,7 +1054,7 @@ public class ClientEvents {
 
         @Override
         protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            graphics.fill(getX(), getY(), getX() + getWidth(), getY() + getHeight(), 0xBB000000);
+            graphics.fill(getX(), getY(), getX() + getWidth(), getY() + getHeight(), 0xD8000000);
         }
 
         @Override
@@ -1107,27 +1107,12 @@ public class ClientEvents {
 
         @Override
         protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            int left = getX() + 14;
-            int right = getX() + getWidth() / 2 + 10;
-            int columnWidth = getWidth() / 2 - 24;
-            int top = getY();
-
-            drawSectionHeader(graphics, left, top, columnWidth, "MENUS");
-            drawSectionHeader(graphics, right, top, columnWidth, "PERFIS DE PC");
-
-            int lineY = top + 18;
-            for (String line : LEFT_LINES) {
-                graphics.drawString(font, line, left, lineY + 1, 0xAA000000);
-                graphics.drawString(font, line, left, lineY, 0xFFE8F2FF);
-                lineY += 14;
-            }
-
-            lineY = top + 18;
-            for (String line : RIGHT_LINES) {
-                graphics.drawString(font, line, right, lineY + 1, 0xAA000000);
-                graphics.drawString(font, line, right, lineY, 0xFFE8F2FF);
-                lineY += 14;
-            }
+            int centerX = getX() + getWidth() / 2;
+            int top = getY() + 4;
+            graphics.drawCenteredString(font, Component.literal("Escolha as opcoes do novo mundo"), centerX + 1, top + 1, 0xAA000000);
+            graphics.drawCenteredString(font, Component.literal("Escolha as opcoes do novo mundo"), centerX, top, 0xFFFFE6A6);
+            graphics.drawCenteredString(font, Component.literal("Seed, modo, dificuldade e perfil ficam isolados aqui."), centerX + 1, top + 15, 0xAA000000);
+            graphics.drawCenteredString(font, Component.literal("Seed, modo, dificuldade e perfil ficam isolados aqui."), centerX, top + 14, 0xFFBFD7FF);
         }
 
         private void drawSectionHeader(GuiGraphics graphics, int x, int y, int width, String text) {

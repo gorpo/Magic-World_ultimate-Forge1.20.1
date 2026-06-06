@@ -937,3 +937,9 @@ Validacao e processo:
 - Cerejeiras: conversao da casa principal nao exclui mais o footprint grande da estrutura, para converter tambem arvores verdes dentro do terreno do jogador.
 - Performance: varredura vertical da conversao de arvores foi reduzida para diminuir custo no carregamento inicial.
 - Validacao: ./gradlew.bat compileJava --stacktrace passou.
+
+## Registro 2026-06-06 - correcao sobreposicao menu Magic World
+- Menu de criacao Magic World: quando aberto, agora aplica uma camada escura de tela inteira antes do painel para esconder textos/widgets vanilla por baixo.
+- Painel central do Magic World ficou praticamente opaco para impedir leitura cruzada com o menu original.
+- Texto informativo interno foi reduzido para duas linhas curtas, removendo listas longas que ficavam sobre os botoes em GUI scale alta.
+- Validacao: ./gradlew.bat compileJava --stacktrace passou.
