@@ -489,3 +489,15 @@ Teste pendente:
 Teste pendente:
 
 - Criar mundo novo e validar visualmente frente da casa, ruas, predio da mina, villagers do castelo e buracos perto das plantacoes.
+
+## Menu secreto do pause - 2026-06-06
+
+- O menu `ESC > MagicWorld` recebeu de volta o botao `Menu secreto do Minecraft`.
+- Foi criada a tela `MagicWorldSecretMinecraftScreen` em Forge 1.20.1.
+- Abas disponiveis: Jogador, Mundo, Teleporte, Itens e Resources.
+- Acoes de servidor foram adicionadas ao `MagicWorldNetwork` para poderes, itens, gamemode, gamerules, spawn, kits e teleporte.
+- Build passou com `./gradlew.bat build`.
+
+Teste pendente:
+
+- Abrir `ESC > MagicWorld > Menu secreto do Minecraft` e conferir se as abas e acoes funcionam.

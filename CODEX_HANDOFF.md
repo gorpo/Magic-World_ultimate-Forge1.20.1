@@ -835,3 +835,33 @@ Teste manual:
 - Conferir se o predio da mina aparece junto com armaduras e baus.
 - Conferir se villagers/casas do castelo nao ficam presos no ar.
 - Conferir fechamento da lateral perto do limite e da linha faltante perto das plantacoes.
+
+## Bloco em 2026-06-06 - menu secreto do pause
+
+- Portado o `MagicWorldSecretMinecraftScreen` do NeoForge para Forge 1.20.1.
+- `MagicWorldCentralPauseScreen` voltou a ter o botao `Menu secreto do Minecraft`.
+- O menu secreto contem abas:
+  - Jogador;
+  - Mundo;
+  - Teleporte;
+  - Itens;
+  - Resources.
+- A aba de itens lista o registro vanilla/modded e envia `secret_give:<id>` ao servidor.
+- `MagicWorldNetwork` agora trata as acoes secretas:
+  - dar item;
+  - god mode/protecao/velocidade sem particulas visiveis;
+  - limpar efeitos;
+  - criativo/sobrevivencia;
+  - keep inventory on/off;
+  - random tick normal/rapido/turbo/lento;
+  - spawn aqui/spawn na casa;
+  - subir +64;
+  - kits Nether/Fim.
+- A acao visual `resource_magicworld` foi adaptada para Forge atual: mostra instrucao e recarrega resource packs, pois o controller visual do NeoForge ainda nao existe nesta base.
+- Validado com `./gradlew.bat build`: BUILD SUCCESSFUL.
+
+Teste manual:
+
+- Entrar no mundo, apertar ESC, clicar `MagicWorld`.
+- Abrir `Menu secreto do Minecraft`.
+- Validar abas, rolagem, clique em itens e acoes principais.
