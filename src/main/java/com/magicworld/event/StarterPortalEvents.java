@@ -24,8 +24,10 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.RelativeMovement;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -96,7 +98,7 @@ public class StarterPortalEvents {
     private static final int IMPORTED_HOUSE_MAX_Z = HOUSE_ORIGIN_Z + IMPORTED_HOUSE_SIZE_Z;
     private static final int CASTLE_SIZE_X = 265;
     private static final int CASTLE_SIZE_Z = 221;
-    private static final int CURRENT_ESTATE_REPAIR_VERSION = 3;
+    private static final int CURRENT_ESTATE_REPAIR_VERSION = 5;
 
     private static final Map<UUID, EstateTask> TASKS = new HashMap<>();
     private static final Set<UUID> PLAYERS_TOUCHING_STARTER_PORTAL = new HashSet<>();
@@ -125,7 +127,7 @@ public class StarterPortalEvents {
                 && data.getInt(ESTATE_REPAIR_VERSION_KEY) < CURRENT_ESTATE_REPAIR_VERSION) {
             repairExistingEstate(levelFor(player), estateBaseFromPlayer(player));
             data.putInt(ESTATE_REPAIR_VERSION_KEY, CURRENT_ESTATE_REPAIR_VERSION);
-            player.sendSystemMessage(Component.literal("Magic World: propriedade e casarao decorado reparados."));
+            player.sendSystemMessage(Component.literal("Magic World: casarao, menu, villagers e rua reparados."));
         }
 
         if (!MagicWorldWorldOptions.isStarterEstateEnabled()
@@ -327,6 +329,10 @@ public class StarterPortalEvents {
         restoreImportedHouseStructure(level, base);
         stabilizeEstateAirGaps(level, base);
         normalizeImportedHouseFrontRoad(level, base);
+        buildPlantationWorkerSettlement(level, base);
+        buildAnimalCaretakerSettlement(level, base);
+        buildGreenVillageSquare(level, base);
+        buildEnhancedEstateLighting(level, base);
         buildStoneTreasureMineHouse(level, base.offset(67, -1, 46));
     }
 
@@ -666,16 +672,19 @@ public class StarterPortalEvents {
         buildPlantationWorkerWarehouse(level, warehouse);
         for (int i = 0; i < houses.length; i++) {
             buildSimplePlantationWorkerHouse(level, houses[i], Direction.SOUTH, Direction.NORTH);
+            decorateWorkerHome(level, houses[i], 14, 10, "Casa da Plantacao " + (i + 1));
             buildHousePathToFarm(level, plantationWorkerHouseDoorPos(houses[i], Direction.SOUTH), Direction.SOUTH, 8);
             buildHousePathToFarm(level, plantationWorkerHouseDoorPos(houses[i], Direction.NORTH), Direction.NORTH, 10);
-            for (int villager = 0; villager < 2; villager++) {
-                spawnWorkerVillager(level, houses[i].offset(2 + villager * 4, 1, villager % 2 == 0 ? 7 : 3),
+            int beds = countBedsInArea(level, houses[i], 14, 7, 10);
+            for (int villager = 0; villager < beds; villager++) {
+                spawnWorkerVillager(level, houses[i].offset(2 + (villager % 3) * 3, 1, villager % 2 == 0 ? 7 : 3),
                         "Agricultor da Plantacao Casa " + (i + 1) + "-" + (villager + 1),
                         warehouseCenter, farmCenters[i], Items.WHEAT);
             }
         }
 
-        for (int i = 0; i < 4; i++) {
+        int warehouseBeds = countBedsInArea(level, warehouse, 22, 9, 16);
+        for (int i = 0; i < warehouseBeds; i++) {
             spawnWorkerVillager(level, warehouseCenter.offset(-3 + i * 2, 0, i % 2 == 0 ? 2 : -2),
                     "Morador do Rancho da Plantacao " + (i + 1), warehouseCenter, farmCenters[i % farmCenters.length], Items.CARROT);
         }
@@ -684,6 +693,7 @@ public class StarterPortalEvents {
             level.setBlock(center, Blocks.COMPOSTER.defaultBlockState(), 2);
             placeLampPost(level, center.offset(0, -1, -11));
         }
+        spawnNamed(level, EntityType.IRON_GOLEM, warehouseCenter.offset(0, 0, 4), "Guardiao da Plantacao");
     }
 
     private static void buildAnimalCaretakerSettlement(ServerLevel level, BlockPos base) {
@@ -696,8 +706,10 @@ public class StarterPortalEvents {
 
         for (int i = 0; i < houses.length; i++) {
             buildCaretakerHouse(level, houses[i], Direction.WEST);
+            decorateWorkerHome(level, houses[i], 12, 8, "Casa dos Animais " + (i + 1));
             buildHousePathToFarm(level, houseDoorPos(houses[i], Direction.WEST), Direction.WEST, 8);
-            for (int villager = 0; villager < 2; villager++) {
+            int beds = countBedsInArea(level, houses[i], 12, 6, 8);
+            for (int villager = 0; villager < beds; villager++) {
                 spawnWorkerVillager(level, houses[i].offset(4, 1, 3 + villager * 2),
                         "Cuidador da Fazenda Casa " + (i + 1) + "-" + (villager + 1),
                         houses[i].offset(5, 1, 4), farmCenter, Items.WHEAT);
@@ -705,6 +717,7 @@ public class StarterPortalEvents {
         }
 
         buildAnimalFoodStripFarm(level, foodFarm, 4, 32);
+        spawnNamed(level, EntityType.IRON_GOLEM, farmCenter.offset(0, 1, 0), "Guardiao dos Animais");
     }
 
     private static void buildSimplePlantationWorkerHouse(ServerLevel level, BlockPos corner, Direction mainDoorFacing, Direction backDoorFacing) {
@@ -858,6 +871,87 @@ public class StarterPortalEvents {
         level.setBlock(corner.offset(6, 4, 4), Blocks.LANTERN.defaultBlockState(), 2);
         putItems(level, corner.offset(10, 1, 2), new ItemStack(Items.WHEAT, 64), new ItemStack(Items.LEAD, 16), new ItemStack(Items.NAME_TAG, 8));
         placeLampPost(level, houseDoorPos(corner, doorFacing).relative(doorFacing, 4).below());
+    }
+
+    private static void decorateWorkerHome(ServerLevel level, BlockPos corner, int width, int depth, String label) {
+        BlockPos table = corner.offset(width / 2, 1, depth / 2);
+        level.setBlock(table, Blocks.OAK_FENCE.defaultBlockState(), 2);
+        level.setBlock(table.above(), Blocks.LIGHT_BLUE_CARPET.defaultBlockState(), 2);
+        level.setBlock(table.north(), Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH), 2);
+        level.setBlock(table.south(), Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH), 2);
+        level.setBlock(table.east(), Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.WEST), 2);
+        level.setBlock(table.west(), Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.EAST), 2);
+
+        level.setBlock(corner.offset(width - 2, 1, 2), Blocks.SMOKER.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.WEST), 2);
+        level.setBlock(corner.offset(width - 2, 1, 3), Blocks.BLAST_FURNACE.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.WEST), 2);
+        level.setBlock(corner.offset(width - 2, 1, 4), Blocks.BARREL.defaultBlockState(), 2);
+        level.setBlock(corner.offset(width - 2, 1, 5), Blocks.CRAFTING_TABLE.defaultBlockState(), 2);
+        level.setBlock(corner.offset(2, 1, depth - 2), Blocks.BOOKSHELF.defaultBlockState(), 2);
+        level.setBlock(corner.offset(3, 1, depth - 2), Blocks.LECTERN.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH), 2);
+
+        for (BlockPos light : new BlockPos[] {
+                corner.offset(width / 2, 4, depth / 2),
+                corner.offset(3, 4, 3),
+                corner.offset(width - 3, 4, depth - 3)
+        }) {
+            level.setBlock(light, Blocks.SEA_LANTERN.defaultBlockState(), 2);
+        }
+
+        for (BlockPos pot : new BlockPos[] {
+                corner.offset(1, 1, 1),
+                corner.offset(width - 1, 1, 1),
+                corner.offset(1, 1, depth - 1),
+                corner.offset(width - 1, 1, depth - 1)
+        }) {
+            level.setBlock(pot, Blocks.POTTED_DANDELION.defaultBlockState(), 2);
+        }
+
+        for (BlockPos plant : new BlockPos[] {
+                corner.offset(-1, 1, 2),
+                corner.offset(-1, 1, depth - 2),
+                corner.offset(width + 1, 1, 2),
+                corner.offset(width + 1, 1, depth - 2)
+        }) {
+            if (level.getBlockState(plant).isAir() && level.getBlockState(plant.below()).isSolid()) {
+                level.setBlock(plant, Blocks.FLOWERING_AZALEA.defaultBlockState(), 2);
+            }
+        }
+
+        spawnNamed(level, EntityType.PARROT, corner.offset(width / 2, 2, depth - 2), "Ave " + label);
+    }
+
+    private static void spawnWorkersForHouseBeds(
+            ServerLevel level,
+            BlockPos corner,
+            int width,
+            int height,
+            int depth,
+            String namePrefix,
+            BlockPos home,
+            BlockPos farmCenter,
+            Item heldItem
+    ) {
+        int beds = countBedsInArea(level, corner, width, height, depth);
+        for (int villager = 0; villager < beds; villager++) {
+            spawnWorkerVillager(level, corner.offset(2 + (villager % 4) * 3, 1, 3 + (villager / 4) * 3),
+                    namePrefix + "-" + (villager + 1), home, farmCenter, heldItem);
+        }
+    }
+
+    private static int countBedsInArea(ServerLevel level, BlockPos corner, int width, int height, int depth) {
+        int beds = 0;
+        for (int x = 0; x <= width; x++) {
+            for (int y = 0; y <= height; y++) {
+                for (int z = 0; z <= depth; z++) {
+                    BlockState state = level.getBlockState(corner.offset(x, y, z));
+                    if (state.getBlock() instanceof BedBlock
+                            && state.getValue(BedBlock.PART) == BedPart.FOOT) {
+                        beds++;
+                    }
+                }
+            }
+        }
+        return beds;
     }
 
     private static void buildAnimalFoodStripFarm(ServerLevel level, BlockPos corner, int width, int depth) {
@@ -1027,8 +1121,10 @@ public class StarterPortalEvents {
     }
 
     private static void normalizeImportedHouseFrontRoad(ServerLevel level, BlockPos base) {
-        for (int z = 14; z <= IMPORTED_ESTATE_FENCE_MAX_Z - 2; z++) {
-            for (int x = -18; x <= 18; x++) {
+        int roadStartZ = IMPORTED_HOUSE_MAX_Z + 1;
+        int roadEndZ = IMPORTED_ESTATE_FENCE_MAX_Z - 1;
+        for (int z = roadStartZ; z <= roadEndZ; z++) {
+            for (int x = -20; x <= 20; x++) {
                 BlockPos road = base.offset(x, 0, z);
                 BlockState surface = Math.abs(x) <= 5
                         ? Blocks.POLISHED_ANDESITE.defaultBlockState()
@@ -1040,9 +1136,7 @@ public class StarterPortalEvents {
                     level.setBlock(road.below(), Blocks.DIRT.defaultBlockState(), 2);
                 }
                 level.setBlock(road, surface, 2);
-                if (Math.abs(x) == 8) {
-                    level.setBlock(road.above(), Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 2);
-                } else if (level.getBlockState(road.above()).canBeReplaced()) {
+                if (level.getBlockState(road.above()).canBeReplaced()) {
                     level.setBlock(road.above(), Blocks.AIR.defaultBlockState(), 2);
                 }
             }
@@ -1082,8 +1176,12 @@ public class StarterPortalEvents {
         level.setBlock(center, Blocks.BELL.defaultBlockState(), 2);
         level.setBlock(center.offset(0, 1, 0), Blocks.LANTERN.defaultBlockState(), 2);
         buildCommunityHall(level, center.offset(-8, 0, -28));
-        buildSimplePlantationWorkerHouse(level, base.offset(-124, -1, 50), Direction.SOUTH, Direction.NORTH);
-        buildSimplePlantationWorkerHouse(level, base.offset(-101, -1, 50), Direction.SOUTH, Direction.NORTH);
+        BlockPos greenHouseA = base.offset(-124, -1, 50);
+        BlockPos greenHouseB = base.offset(-101, -1, 50);
+        buildSimplePlantationWorkerHouse(level, greenHouseA, Direction.SOUTH, Direction.NORTH);
+        buildSimplePlantationWorkerHouse(level, greenHouseB, Direction.SOUTH, Direction.NORTH);
+        decorateWorkerHome(level, greenHouseA, 14, 10, "Casa Verde 1");
+        decorateWorkerHome(level, greenHouseB, 14, 10, "Casa Verde 2");
 
         for (BlockPos lamp : new BlockPos[] {
                 center.offset(-18, 0, -14), center.offset(18, 0, -14),
@@ -1095,8 +1193,11 @@ public class StarterPortalEvents {
 
         spawnAnimalGroup(level, EntityType.CAT, center.offset(-7, 1, 8), 3);
         spawnAnimalGroup(level, EntityType.PARROT, center.offset(7, 1, 8), 3);
+        spawnWorkersForHouseBeds(level, greenHouseA, 14, 7, 10, "Trabalhador da Casa Verde 1", greenHouseA.offset(7, 1, 5), center, Items.EMERALD);
+        spawnWorkersForHouseBeds(level, greenHouseB, 14, 7, 10, "Trabalhador da Casa Verde 2", greenHouseB.offset(7, 1, 5), center, Items.BREAD);
         spawnWorkerVillager(level, center.offset(-2, 1, 3), "Morador da Praca Verde 1", center, center, Items.EMERALD);
         spawnWorkerVillager(level, center.offset(2, 1, 3), "Morador da Praca Verde 2", center, center, Items.BREAD);
+        spawnNamed(level, EntityType.IRON_GOLEM, center.offset(0, 1, 7), "Guardiao da Praca Verde");
     }
 
     private static void buildCommunityHall(ServerLevel level, BlockPos corner) {
@@ -2048,7 +2149,11 @@ public class StarterPortalEvents {
                 new ItemStack(Items.SHIELD),
                 new ItemStack(Items.BOW),
                 new ItemStack(Items.ARROW, 64),
-                new ItemStack(MagicWorld.VARINHA_MAGICA.get()));
+                new ItemStack(MagicWorld.VARINHA_MAGICA.get()),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_HELMET.get()),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_CHESTPLATE.get()),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_LEGGINGS.get()),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_BOOTS.get()));
         putItems(level, chests[1],
                 new ItemStack(Items.COOKED_BEEF, 64),
                 new ItemStack(Items.BREAD, 64),
@@ -2082,6 +2187,7 @@ public class StarterPortalEvents {
         }
 
         decorateImportedHouseDoors(level, base);
+        decorateImportedHouseFrontFacade(level, base);
         expandImportedHouseWindows(level, base);
 
         for (BlockPos preferred : new BlockPos[] {
@@ -2107,6 +2213,51 @@ public class StarterPortalEvents {
                 Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS,
                 "Armadura de Netherite");
         spawnNamedMagicWorldArmorStand(level, base.offset(12, 1, 3));
+    }
+
+    private static void decorateImportedHouseFrontFacade(ServerLevel level, BlockPos base) {
+        int frontZ = IMPORTED_HOUSE_MAX_Z;
+        for (int y = 1; y <= 5; y++) {
+            level.setBlock(base.offset(-5, y, frontZ), Blocks.STONE_BRICKS.defaultBlockState(), 2);
+            level.setBlock(base.offset(5, y, frontZ), Blocks.STONE_BRICKS.defaultBlockState(), 2);
+        }
+        for (int x = -5; x <= 5; x++) {
+            if (x >= -2 && x <= 2) {
+                level.setBlock(base.offset(x, 4, frontZ), Blocks.CHISELED_STONE_BRICKS.defaultBlockState(), 2);
+            } else {
+                level.setBlock(base.offset(x, 4, frontZ), Blocks.STONE_BRICKS.defaultBlockState(), 2);
+            }
+            level.setBlock(base.offset(x, 5, frontZ), Blocks.DARK_OAK_STAIRS.defaultBlockState()
+                    .setValue(StairBlock.FACING, Direction.SOUTH), 2);
+        }
+        level.setBlock(base.offset(0, 6, frontZ), Blocks.SEA_LANTERN.defaultBlockState(), 2);
+        level.setBlock(base.offset(0, 7, frontZ), Blocks.LIGHT_BLUE_STAINED_GLASS.defaultBlockState(), 2);
+
+        for (int x : new int[] {-24, -23, -22, -21, -20, -19, -18, -17, -16, -15, -14, -13, -12,
+                12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24}) {
+            level.setBlock(base.offset(x, 1, frontZ), Blocks.STONE_BRICK_WALL.defaultBlockState(), 2);
+        }
+
+        for (int x : new int[] {-18, -17, -16, -14, -13, -12, 12, 13, 14, 16, 17, 18}) {
+            level.setBlock(base.offset(x, 2, frontZ), Blocks.LIGHT_BLUE_STAINED_GLASS_PANE.defaultBlockState(), 2);
+            level.setBlock(base.offset(x, 3, frontZ), Blocks.LIGHT_BLUE_STAINED_GLASS_PANE.defaultBlockState(), 2);
+        }
+
+        for (BlockPos lamp : new BlockPos[] {
+                base.offset(-7, 3, frontZ), base.offset(7, 3, frontZ),
+                base.offset(-26, 1, frontZ + 1), base.offset(26, 1, frontZ + 1)
+        }) {
+            level.setBlock(lamp, Blocks.SEA_LANTERN.defaultBlockState(), 2);
+        }
+
+        for (BlockPos plant : new BlockPos[] {
+                base.offset(-28, 1, frontZ + 1), base.offset(-27, 1, frontZ + 1),
+                base.offset(27, 1, frontZ + 1), base.offset(28, 1, frontZ + 1)
+        }) {
+            if (level.getBlockState(plant).isAir() && level.getBlockState(plant.below()).isSolid()) {
+                level.setBlock(plant, Blocks.FLOWERING_AZALEA.defaultBlockState(), 2);
+            }
+        }
     }
 
     private static void decorateImportedHouseDoors(ServerLevel level, BlockPos base) {
@@ -2265,7 +2416,11 @@ public class StarterPortalEvents {
                 new ItemStack(Items.NETHER_STAR, 8), new ItemStack(Items.BEACON, 4),
                 new ItemStack(Items.ENCHANTED_GOLDEN_APPLE, 16), new ItemStack(Items.TOTEM_OF_UNDYING, 8),
                 new ItemStack(Items.TRIDENT), new ItemStack(Items.HEART_OF_THE_SEA, 8),
-                new ItemStack(Items.CONDUIT, 4), new ItemStack(Items.NETHERITE_INGOT, 16));
+                new ItemStack(Items.CONDUIT, 4), new ItemStack(Items.NETHERITE_INGOT, 16),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_HELMET.get()),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_CHESTPLATE.get()),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_LEGGINGS.get()),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_BOOTS.get()));
 
         BlockPos usefulItems = placeSafeChest(level, base.offset(14, 1, 8), Direction.NORTH);
         putItems(level, usefulItems,
@@ -2278,17 +2433,11 @@ public class StarterPortalEvents {
 
     private static void spawnNamedMagicWorldArmorStand(ServerLevel level, BlockPos pos) {
         spawnArmorStand(level, pos,
-                namedArmor(Items.NETHERITE_HELMET, "Elmo Magic World"),
-                namedArmor(Items.NETHERITE_CHESTPLATE, "Peitoral Magic World"),
-                namedArmor(Items.NETHERITE_LEGGINGS, "Calcas Magic World"),
-                namedArmor(Items.NETHERITE_BOOTS, "Botas Magic World"),
-                "Armadura Magic World");
-    }
-
-    private static ItemStack namedArmor(Item item, String name) {
-        ItemStack stack = new ItemStack(item);
-        stack.setHoverName(Component.literal(name));
-        return stack;
+                new ItemStack(MagicWorld.DRACONIC_AETHER_HELMET.get()),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_CHESTPLATE.get()),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_LEGGINGS.get()),
+                new ItemStack(MagicWorld.DRACONIC_AETHER_BOOTS.get()),
+                "Armadura Draconic Aether");
     }
 
     private static void decorateCastleStarterLife(ServerLevel level, BlockPos center) {
@@ -2529,9 +2678,8 @@ public class StarterPortalEvents {
             if (entity instanceof Villager villager) {
                 villager.setCustomName(Component.literal(name));
                 villager.setCustomNameVisible(true);
-                villager.setPersistenceRequired();
                 villager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(heldItem));
-                villager.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 20 * 60, 0));
+                empowerMagicWorldVillager(villager, VillagerProfession.FARMER, spot, requested, 96);
             }
         }
         decorateCastleResidentStation(level, spot, facing, jobBlock, supplies);
@@ -2723,10 +2871,8 @@ public class StarterPortalEvents {
         if (entity instanceof Villager villager) {
             villager.setCustomName(Component.literal(name));
             villager.setCustomNameVisible(true);
-            villager.setPersistenceRequired();
             villager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(heldItem));
-            villager.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 20 * 60, 0));
-            villager.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 20 * 60, 0));
+            empowerMagicWorldVillager(villager, VillagerProfession.FARMER, home, farmCenter, 128);
             villager.getPersistentData().putInt("MagicWorldHomeX", home.getX());
             villager.getPersistentData().putInt("MagicWorldHomeY", home.getY());
             villager.getPersistentData().putInt("MagicWorldHomeZ", home.getZ());
@@ -2734,6 +2880,44 @@ public class StarterPortalEvents {
             villager.getPersistentData().putInt("MagicWorldFarmY", farmCenter.getY());
             villager.getPersistentData().putInt("MagicWorldFarmZ", farmCenter.getZ());
         }
+    }
+
+    private static void empowerMagicWorldVillager(
+            Villager villager,
+            VillagerProfession profession,
+            BlockPos home,
+            BlockPos work,
+            int workRadius
+    ) {
+        villager.setPersistenceRequired();
+        villager.setInvulnerable(true);
+        villager.setCanPickUpLoot(true);
+        villager.setVillagerData(villager.getVillagerData()
+                .setProfession(profession)
+                .setLevel(5));
+        if (villager.getAttribute(Attributes.MAX_HEALTH) != null) {
+            villager.getAttribute(Attributes.MAX_HEALTH).setBaseValue(80.0D);
+        }
+        if (villager.getAttribute(Attributes.MOVEMENT_SPEED) != null) {
+            villager.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.42D);
+        }
+        if (villager.getAttribute(Attributes.FOLLOW_RANGE) != null) {
+            villager.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(workRadius);
+        }
+        villager.setHealth(villager.getMaxHealth());
+        int longDuration = 20 * 60 * 60 * 8;
+        villager.addEffect(new MobEffectInstance(MobEffects.REGENERATION, longDuration, 4, true, false));
+        villager.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, longDuration, 4, true, false));
+        villager.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, longDuration, 1, true, false));
+        villager.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, longDuration, 1, true, false));
+        villager.addEffect(new MobEffectInstance(MobEffects.HERO_OF_THE_VILLAGE, longDuration, 4, true, false));
+        villager.getPersistentData().putInt("MagicWorldWorkRadius", workRadius);
+        villager.getPersistentData().putInt("MagicWorldHomeX", home.getX());
+        villager.getPersistentData().putInt("MagicWorldHomeY", home.getY());
+        villager.getPersistentData().putInt("MagicWorldHomeZ", home.getZ());
+        villager.getPersistentData().putInt("MagicWorldWorkX", work.getX());
+        villager.getPersistentData().putInt("MagicWorldWorkY", work.getY());
+        villager.getPersistentData().putInt("MagicWorldWorkZ", work.getZ());
     }
 
     private static BlockPos plantationWorkerHouseDoorPos(BlockPos corner, Direction doorFacing) {
@@ -2828,7 +3012,7 @@ public class StarterPortalEvents {
             mob.setPersistenceRequired();
         }
         if (entity instanceof Villager villager) {
-            villager.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 20 * 60, 0));
+            empowerMagicWorldVillager(villager, VillagerProfession.FARMER, pos, pos, 96);
         }
     }
 

@@ -20,6 +20,15 @@ import java.lang.reflect.Method;
 @Mixin(targets = "org.embeddedt.embeddium.gui.EmbeddiumVideoOptionsScreen", remap = false)
 public abstract class EmbeddiumVideoOptionsScreenMagicWorldMixin extends Screen {
     @Unique
+    private static final int MAGICWORLD_LEFT_FOOTER_HEIGHT = 68;
+    @Unique
+    private static final int MAGICWORLD_DH_BUTTON_HEIGHT = 18;
+    @Unique
+    private static final int MAGICWORLD_ACTION_BUTTON_HEIGHT = 18;
+    @Unique
+    private static final int MAGICWORLD_BUTTON_GAP = 4;
+
+    @Unique
     private MagicWorldDistantHorizonsButton magicworld$distantHorizonsButton;
 
     protected EmbeddiumVideoOptionsScreenMagicWorldMixin(Component title) {
@@ -69,7 +78,7 @@ public abstract class EmbeddiumVideoOptionsScreenMagicWorldMixin extends Screen 
     @Inject(method = "m_280273_", at = @At("HEAD"), cancellable = true, require = 0, remap = false)
     private void magicworld$renderBackground(GuiGraphics graphics, CallbackInfo callback) {
         MagicWorldStaticBackground.draw(graphics, this.width, this.height);
-        graphics.fill(0, 0, this.width, this.height, 0x55050A14);
+        graphics.fill(0, 0, this.width, this.height, 0xE6050A14);
         callback.cancel();
     }
 
@@ -95,8 +104,23 @@ public abstract class EmbeddiumVideoOptionsScreenMagicWorldMixin extends Screen 
     ) {
         magicworld$ensureDistantHorizonsButton();
         if (this.magicworld$distantHorizonsButton != null) {
+            int buttonX = this.magicworld$distantHorizonsButton.getX();
+            int buttonY = this.magicworld$distantHorizonsButton.getY();
+            int buttonWidth = this.magicworld$distantHorizonsButton.getWidth();
+            graphics.fill(buttonX - 4, buttonY - 4, buttonX + buttonWidth + 4, this.height - 4, 0xCC00111F);
+            graphics.renderOutline(buttonX - 4, buttonY - 4, buttonWidth + 8, this.height - buttonY, 0xCC00A9D6);
             this.magicworld$distantHorizonsButton.render(graphics, mouseX, mouseY, partialTick);
         }
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        magicworld$ensureDistantHorizonsButton();
+        if (this.magicworld$distantHorizonsButton != null
+                && this.magicworld$distantHorizonsButton.mouseClicked(mouseX, mouseY, button)) {
+            return true;
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     private void magicworld$ensureDistantHorizonsButton() {
@@ -105,15 +129,15 @@ public abstract class EmbeddiumVideoOptionsScreenMagicWorldMixin extends Screen 
         }
 
         int buttonX = magicworld$contentX() + 5;
-        int buttonY = Math.max(8, this.height - 68);
+        int buttonY = Math.max(8, this.height - MAGICWORLD_LEFT_FOOTER_HEIGHT);
         int buttonWidth = magicworld$leftPanelWidth() - 10;
 
-        if (buttonWidth >= 90) {
+        if (buttonWidth >= 70) {
             this.magicworld$distantHorizonsButton = this.addRenderableWidget(new MagicWorldDistantHorizonsButton(
                     buttonX,
                     buttonY,
                     buttonWidth,
-                    18,
+                    MAGICWORLD_DH_BUTTON_HEIGHT,
                     (Screen) (Object) this
             ));
         }
@@ -122,14 +146,14 @@ public abstract class EmbeddiumVideoOptionsScreenMagicWorldMixin extends Screen 
     private void magicworld$layoutFooterButtons() {
         int x = magicworld$contentX() + 5;
         int width = magicworld$leftPanelWidth() - 10;
-        int gap = 4;
+        int gap = MAGICWORLD_BUTTON_GAP;
         int half = Math.max(40, (width - gap) / 2);
         int firstRowY = Math.max(28, this.height - 46);
-        int secondRowY = Math.max(50, this.height - 24);
+        int secondRowY = Math.max(50, firstRowY + MAGICWORLD_ACTION_BUTTON_HEIGHT + gap);
 
-        magicworld$setWidgetBounds("closeButton", x, firstRowY, half, 18);
-        magicworld$setWidgetBounds("applyButton", x + half + gap, firstRowY, width - half - gap, 18);
-        magicworld$setWidgetBounds("undoButton", x, secondRowY, width, 18);
+        magicworld$setWidgetBounds("closeButton", x, firstRowY, half, MAGICWORLD_ACTION_BUTTON_HEIGHT);
+        magicworld$setWidgetBounds("applyButton", x + half + gap, firstRowY, width - half - gap, MAGICWORLD_ACTION_BUTTON_HEIGHT);
+        magicworld$setWidgetBounds("undoButton", x, secondRowY, width, MAGICWORLD_ACTION_BUTTON_HEIGHT);
     }
 
     private void magicworld$hideDonationButtons() {

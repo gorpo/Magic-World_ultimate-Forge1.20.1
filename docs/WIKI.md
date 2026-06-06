@@ -631,3 +631,54 @@ Este registro documenta o conjunto completo preparado para o commit de conclusao
 - Validacao final: `./gradlew.bat build --stacktrace` com `BUILD SUCCESSFUL`.
 - O cliente Minecraft nao deve ser aberto pelo Codex.
 - Testes visuais e funcionais dentro do cliente sao responsabilidade do usuario.
+
+## Correcao da frente da casa e rua nivelada - 2026-06-06 11:06:00 -03:00
+
+- Corrigido o reparo anterior da rua frontal.
+- Causa: `normalizeImportedHouseFrontRoad` reconstruia a rua de `z=14` ate `z=78`, mas a casa importada ocupa ate `z=75`; isso podia sobrescrever blocos da frente da casa e partes do muro depois da restauracao do NBT.
+- O reparo versionado foi elevado para a versao 4 para aplicar novamente no proximo login.
+- O reparo agora restaura a casa importada pelo NBT e so depois cria a rua fora do limite da estrutura.
+- A rua frontal agora comeca em `IMPORTED_HOUSE_MAX_Z + 1`, fora da casa, e usa blocos inteiros no nivel da casa.
+- O acabamento lateral com meio bloco foi removido desta faixa, atendendo a opcao de rua nivelada com bloco inteiro.
+- A frente/muro da casa deixa de ser substituida pela rotina da rua.
+- Validacao do Codex deve continuar somente com Gradle; o cliente Minecraft nao deve ser aberto.
+
+## Entrega reforcada do casarao, menu grafico e villagers - 2026-06-06 11:23:16 -03:00
+
+- Reparo versionado elevado para `MagicWorldForgeEstateRepairVersion=5`.
+- No proximo login, o reparo restaura novamente o NBT da casa importada e aplica explicitamente a fachada frontal.
+- A frente do casarao recebe arco/blocos acima da porta, guarnicao de pedra, muro frontal, janelas novas, luzes e plantas externas.
+- O interior do casarao recebe mais luzes, decoracao, baus premium e suportes de armadura em area central.
+- O conjunto personalizado `Draconic Aether` foi registrado de verdade no Forge 1.20.1:
+  - `draconic_aether_helmet`;
+  - `draconic_aether_chestplate`;
+  - `draconic_aether_leggings`;
+  - `draconic_aether_boots`.
+- Os baus e suportes passam a usar o set real `Draconic Aether`, alem do set Netherite.
+- O menu grafico Embeddium reserva rodape esquerdo, adiciona o botao `Horizontes Distantes` dentro do frame do Embeddium e tambem renderiza o botao com icone Magic World.
+- O background do menu grafico agora usa camada opaca para ocultar o jogo atras.
+- Cores, paineis, busca, linhas e contornos do Embeddium foram reforcados no tema ciano Magic World.
+- A rolagem circular entre paginas permanece ativa no `TabFrame`.
+- Casas de trabalhadores agora contam os pes de cama e geram um villager trabalhador por cama.
+- Villagers Magic World ficam persistentes, invulneraveis, com vida/velocidade/alcance aumentados, profissao nivel 5 e efeitos longos.
+- Cada casa de trabalhadores recebe decoracao interna/externa extra, fogao, bau/barril, mesa, cadeiras, luzes premium, plantas e uma ave.
+- Distritos recebem guardioes de ferro para impedir que inimigos ocupem os villagers.
+- Validacao feita pelo Codex: `./gradlew.bat compileJava --stacktrace` e `./gradlew.bat build --stacktrace`, ambos com `BUILD SUCCESSFUL`.
+- O cliente Minecraft continua sendo testado pelo usuario; o Codex nao deve executar `runClient`.
+
+## Fix do crash ao abrir Graficos - 2026-06-06 11:32:30 -03:00
+
+- Crash report analisado: `mouseClicked event handler` ao abrir Graficos.
+- Causa real: `NoClassDefFoundError: org/spongepowered/asm/synthetic/args/Args$1` dentro de `SodiumOptionsGUI.init`.
+- Origem no Magic World: uso de `@ModifyArgs` no mixin do Embeddium para reservar rodape esquerdo. Esse caminho gerava dependencia sintetica instavel no runtime Forge.
+- Correcao aplicada:
+  - removido `@ModifyArgs` do menu grafico;
+  - removida a criacao reflexiva de `FlatButtonWidget` interno do frame;
+  - mantido o botao proprio `MagicWorldDistantHorizonsButton` no rodape esquerdo, com icone Magic World;
+  - o clique no botao agora e tratado antes do frame do Embeddium para evitar o frame consumir o clique.
+- Auditoria do port NeoForge:
+  - rolagem circular ja esta portada em `EmbeddiumTabFrameCircularScrollMagicWorldMixin`;
+  - fundo opaco, cores ciano, contornos, busca, linhas, logo e icones laterais continuam portados;
+  - o mixin NeoForge de Iris nao tem classe equivalente direta no Oculus Forge 1.20.1; o Forge usa `IrisSodiumOptions` e injecoes no `SodiumGameOptionPages`, enquanto o titulo Oculus/Iris ja e renomeado pelo `EmbeddiumTabHeaderMagicWorldMixin`.
+- Validacao final desta correcao: `./gradlew.bat build --stacktrace` com `BUILD SUCCESSFUL`.
+- O Codex nao abriu o cliente Minecraft; o cliente continua sendo testado pelo usuario.

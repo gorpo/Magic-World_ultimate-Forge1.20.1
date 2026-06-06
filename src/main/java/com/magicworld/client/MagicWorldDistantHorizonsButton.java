@@ -65,6 +65,10 @@ public class MagicWorldDistantHorizonsButton extends AbstractWidget {
     }
 
     private void openDistantHorizonsScreen() {
+        openDistantHorizonsScreen(parent);
+    }
+
+    public static void openDistantHorizonsScreen(Screen parent) {
         for (String className : new String[] {
                 "com.seibel.distanthorizons.common.wrappers.gui.GetConfigScreen_forge",
                 "com.seibel.distanthorizons.common.wrappers.gui.GetConfigScreen"

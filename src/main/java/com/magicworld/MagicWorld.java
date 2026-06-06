@@ -11,6 +11,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.minecraftforge.common.MinecraftForge;
@@ -44,6 +46,18 @@ public class MagicWorld {
                                     .fireResistant()
                     )
             );
+
+    public static final RegistryObject<Item> DRACONIC_AETHER_HELMET =
+            registerDraconicArmor("draconic_aether_helmet", ArmorItem.Type.HELMET);
+
+    public static final RegistryObject<Item> DRACONIC_AETHER_CHESTPLATE =
+            registerDraconicArmor("draconic_aether_chestplate", ArmorItem.Type.CHESTPLATE);
+
+    public static final RegistryObject<Item> DRACONIC_AETHER_LEGGINGS =
+            registerDraconicArmor("draconic_aether_leggings", ArmorItem.Type.LEGGINGS);
+
+    public static final RegistryObject<Item> DRACONIC_AETHER_BOOTS =
+            registerDraconicArmor("draconic_aether_boots", ArmorItem.Type.BOOTS);
 
     public MagicWorld() {
         MagicWorldNetwork.register();
@@ -125,6 +139,26 @@ public class MagicWorld {
             event.accept(
                     VARINHA_MAGICA
             );
+            event.accept(DRACONIC_AETHER_HELMET);
+            event.accept(DRACONIC_AETHER_CHESTPLATE);
+            event.accept(DRACONIC_AETHER_LEGGINGS);
+            event.accept(DRACONIC_AETHER_BOOTS);
         }
+    }
+
+    private static RegistryObject<Item> registerDraconicArmor(
+            String name,
+            ArmorItem.Type type
+    ) {
+        return ITEMS.register(
+                name,
+                () -> new ArmorItem(
+                        ArmorMaterials.NETHERITE,
+                        type,
+                        new Item.Properties()
+                                .rarity(Rarity.EPIC)
+                                .fireResistant()
+                )
+        );
     }
 }

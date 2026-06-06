@@ -9,12 +9,14 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
                 "me.jellysquid.mods.sodium.client.gui.options.control.TickBoxControl$TickBoxControlElement",
                 "me.jellysquid.mods.sodium.client.gui.widgets.FlatButtonWidget",
                 "org.embeddedt.embeddium.gui.EmbeddiumVideoOptionsScreen",
-                "org.embeddedt.embeddium.gui.frame.OptionPageFrame"
+                "org.embeddedt.embeddium.gui.frame.OptionPageFrame",
+                "org.embeddedt.embeddium.gui.frame.components.SearchTextFieldComponent"
         },
         remap = false
 )
 public abstract class EmbeddiumAccentColorMagicWorldMixin {
     private static final int MAGICWORLD_CYAN = 0xFF00D9FF;
+    private static final int MAGICWORLD_PANEL = 0xCC00111F;
 
     @ModifyConstant(method = "m_88315_", constant = @Constant(intValue = -3179338), require = 0, remap = false)
     private int magicworld$replacePinkAccent(int original) {
@@ -44,5 +46,25 @@ public abstract class EmbeddiumAccentColorMagicWorldMixin {
     @ModifyConstant(method = "m_88315_", constant = @Constant(intValue = -8741218), require = 0, remap = false)
     private int magicworld$replaceThemeDark(int original) {
         return 0xCC00A9D6;
+    }
+
+    @ModifyConstant(method = "m_88315_", constant = @Constant(intValue = -536870912), require = 0, remap = false)
+    private int magicworld$replacePanelBackground(int original) {
+        return MAGICWORLD_PANEL;
+    }
+
+    @ModifyConstant(method = "m_88315_", constant = @Constant(intValue = -1879048192), require = 0, remap = false)
+    private int magicworld$replaceDeepPanelBackground(int original) {
+        return 0xE6000B16;
+    }
+
+    @ModifyConstant(method = "m_88315_", constant = @Constant(intValue = -3092272), require = 0, remap = false)
+    private int magicworld$replaceSearchText(int original) {
+        return MAGICWORLD_CYAN;
+    }
+
+    @ModifyConstant(method = "m_88315_", constant = @Constant(intValue = -16776961), require = 0, remap = false)
+    private int magicworld$replaceSearchCursor(int original) {
+        return MAGICWORLD_CYAN;
     }
 }

@@ -1001,3 +1001,62 @@ Teste visual pendente:
 - Validacao final executada antes do commit: `./gradlew.bat build --stacktrace`.
 - Resultado: `BUILD SUCCESSFUL`.
 - Nao executar `runClient`; o usuario realiza os testes no cliente.
+
+## Correcao pendente apos commit - 2026-06-06 11:06:00 -03:00
+
+- Usuario reportou que a frente da casa perdeu blocos/muro e que a rua ainda nao ficou nivelada na linha da casa.
+- Causa identificada: `normalizeImportedHouseFrontRoad` desenhava rua dentro do footprint da casa importada (`z=14..78`, enquanto `IMPORTED_HOUSE_MAX_Z=75`).
+- Correcao aplicada:
+  - `CURRENT_ESTATE_REPAIR_VERSION` elevado para 4;
+  - mensagem do reparo atualizada para frente/muro/rua;
+  - rua movida para fora da estrutura, iniciando em `IMPORTED_HOUSE_MAX_Z + 1`;
+  - removido meio bloco lateral nesta faixa;
+  - rua usa bloco inteiro no nivel `base.y`, alinhada com a casa.
+- Validacao final desta correcao: `./gradlew.bat build --stacktrace` com `BUILD SUCCESSFUL`.
+- Nao executar `runClient`; usuario testa o cliente.
+
+## Entrega reforcada concluida - 2026-06-06 11:23:16 -03:00
+
+- Usuario reportou que o casarao, Distant Horizons no menu grafico e villagers ainda nao estavam completos visualmente.
+- Reparo versionado elevado para 5.
+- Casarao:
+  - fachada explicita no sul da estrutura, fora da rotina automatica;
+  - arco/blocos acima da porta;
+  - muro/guarnicao frontal;
+  - janelas novas;
+  - luzes e plantas externas;
+  - baus premium, varinhas e armaduras no interior.
+- Armadura personalizada:
+  - registrados os itens Forge reais `Draconic Aether`;
+  - baus e suporte de armadura usam os itens reais, nao apenas Netherite renomeada.
+- Menu grafico:
+  - rodape esquerdo reservado por mixin;
+  - botao `Horizontes Distantes` adicionado ao frame do Embeddium por reflexao;
+  - overlay com icone Magic World ainda renderiza o botao no rodape esquerdo;
+  - background opaco oculta o jogo atras;
+  - cores/fundos/busca/contornos reforcados.
+- Villagers:
+  - casas contam camas e geram trabalhadores na mesma quantidade;
+  - villagers ficam invulneraveis, persistentes, nivel 5, alcance ampliado e efeitos longos;
+  - casas recebem mesa, cadeiras, fogao, bau/barril, luzes premium, plantas e uma ave;
+  - distritos recebem guardioes de ferro.
+- Validacao parcial passou com `./gradlew.bat compileJava --stacktrace`: BUILD SUCCESSFUL.
+- Validacao final passou com `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+- Nao executar `runClient`; usuario testa o cliente.
+
+## Fix do crash ao abrir Graficos - 2026-06-06 11:32:30 -03:00
+
+- Usuario testou o cliente e reportou crash ao clicar em Graficos.
+- Crash report novo: `crash-2026-06-06_11.27...txt`.
+- Erro principal: `NoClassDefFoundError: org/spongepowered/asm/synthetic/args/Args$1` em `SodiumOptionsGUI.init`.
+- Causa no patch anterior: `@ModifyArgs` em `EmbeddiumVideoOptionsScreenMagicWorldMixin` para reservar altura no frame do Embeddium.
+- Correcao:
+  - removido o `@ModifyArgs`;
+  - removida a criacao reflexiva de `FlatButtonWidget` dentro do frame;
+  - mantido botao proprio `MagicWorldDistantHorizonsButton` no rodape esquerdo;
+  - adicionado tratamento prioritario de `mouseClicked` para o botao do Distant Horizons antes do frame consumir o clique.
+- Auditoria NeoForge:
+  - rolagem circular ja existe no Forge via `EmbeddiumTabFrameCircularScrollMagicWorldMixin`;
+  - fundo opaco, logo, icones laterais, cores, linhas e busca estao cobertos pelos mixins Embeddium;
+  - mixin NeoForge `IrisConfigMagicWorldMixin` nao tem alvo identico no Oculus Forge 1.20.1; o jar usa `IrisSodiumOptions`/`MixinSodiumGameOptionPages`, e o titulo Oculus/Iris ja e renomeado por `EmbeddiumTabHeaderMagicWorldMixin`.
+- Validar somente com Gradle. Nao executar `runClient`.
