@@ -40,6 +40,7 @@ public class ClientEvents {
     public static void registerKeys(RegisterKeyMappingsEvent event) {
         KeyBindings.register();
         event.register(KeyBindings.OPEN_MENU_KEY);
+        MagicWorldClientCompat.prepareDistantHorizonsConfig();
     }
 
     @Mod.EventBusSubscriber(value = Dist.CLIENT)

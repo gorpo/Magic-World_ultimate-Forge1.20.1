@@ -6,9 +6,12 @@
   "client": [
     "EmbeddiumAccentColorMagicWorldMixin",
     "EmbeddiumDistantHorizonsTabIconMagicWorldMixin",
+    "EmbeddiumFlatButtonColorMagicWorldMixin",
     "EmbeddiumLineColorMagicWorldMixin",
+    "EmbeddiumScrollBarColorMagicWorldMixin",
     "EmbeddiumTabFrameCircularScrollMagicWorldMixin",
     "EmbeddiumTabHeaderMagicWorldMixin",
+    "EmbeddiumTickBoxColorMagicWorldMixin",
     "EmbeddiumVideoOptionsScreenMagicWorldMixin",
     "MagicWorldCreateWorldScreenBackgroundMixin",
     "MagicWorldLevelLoadingScreenMixin",

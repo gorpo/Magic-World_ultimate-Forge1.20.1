@@ -723,3 +723,28 @@ Este registro documenta o conjunto completo preparado para o commit de conclusao
 - Regra de validacao mantida: o Codex nao executa `runClient`; somente Gradle. O usuario testa visualmente no cliente.
 - `./gradlew.bat compileJava --stacktrace`: BUILD SUCCESSFUL.
 - `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+
+## Entrega completa do menu grafico, casas e villagers - 2026-06-06 13:42:26 -03:00
+
+- O print mais recente confirmou que `Horizontes Distantes` ja estava como aba real abaixo dos shaders.
+- O icone solto no rodape foi identificado como o `logoDim` nativo do Embeddium e agora e ocultado.
+- O background Magic World agora e desenhado depois do background nativo, impedindo que o mundo apareca atras do menu.
+- Checkboxes, selecoes, foco, linhas e barra de rolagem receberam mixins dedicados com o ciano exato do NeoForge.
+- A rolagem circular/infinita entre abas continua implementada no `TabFrame`.
+- Portada a preparacao do `DistantHorizons.toml` existente no NeoForge:
+  - remove o botao nativo do DH das telas vanilla;
+  - fixa a API de renderizacao OpenGL.
+- O reparo da propriedade foi elevado para a versao `8`.
+- A fachada do casarao importado, que existia mas nao era chamada, agora e aplicada.
+- O bau de varinhas do casarao fica completamente preenchido.
+- As casas grandes da plantacao receberam telhado inclinado, frontoes, vigas, novas janelas, mais luzes, decoracao, moveis e estacoes uteis.
+- O rancho grande recebeu bau cheio de varinhas, itens raros, armadura Netherite, armadura Draconic Aether, plantas e ave.
+- Cada casa conta camas e gera trabalhadores correspondentes.
+- Villagers da propriedade sao mantidos invulneraveis, nivel 5, fortalecidos e com raio minimo de 192 blocos.
+- Monstros dentro da propriedade sao removidos periodicamente.
+
+Validacao e processo:
+
+- Nao executar `runClient`; o usuario testa o cliente.
+- `./gradlew.bat compileJava --stacktrace`: BUILD SUCCESSFUL.
+- `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.

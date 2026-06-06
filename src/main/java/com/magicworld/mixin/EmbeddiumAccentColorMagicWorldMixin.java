@@ -6,9 +6,7 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
 @Mixin(
         targets = {
-                "me.jellysquid.mods.sodium.client.gui.options.control.TickBoxControl$TickBoxControlElement",
                 "me.jellysquid.mods.sodium.client.gui.options.control.SliderControl$Button",
-                "me.jellysquid.mods.sodium.client.gui.widgets.FlatButtonWidget",
                 "me.jellysquid.mods.sodium.client.gui.widgets.FlatButtonWidget$Style",
                 "org.embeddedt.embeddium.gui.EmbeddiumVideoOptionsScreen",
                 "org.embeddedt.embeddium.gui.frame.OptionPageFrame",
@@ -49,7 +47,7 @@ public abstract class EmbeddiumAccentColorMagicWorldMixin {
 
     @ModifyConstant(method = "m_88315_", constant = @Constant(intValue = -8741218), require = 0, remap = false)
     private int magicworld$replaceThemeDark(int original) {
-        return 0xCC00A9D6;
+        return MAGICWORLD_CYAN;
     }
 
     @ModifyConstant(method = "m_88315_", constant = @Constant(intValue = -536870912), require = 0, remap = false)

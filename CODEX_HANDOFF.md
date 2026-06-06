@@ -1135,3 +1135,59 @@ Validacao executada ate este registro:
 - `./gradlew.bat compileJava --stacktrace`: BUILD SUCCESSFUL.
 - `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
 - Cliente nao foi aberto.
+
+## Correcao completa do menu grafico, casas e villagers - 2026-06-06 13:42:26 -03:00
+
+Regra obrigatoria:
+
+- Nao executar `runClient` nem abrir o cliente Minecraft.
+- O usuario realiza os testes visuais e funcionais no cliente.
+- O Codex valida somente com tarefas Gradle.
+
+Diagnostico confirmado pelos prints:
+
+- `Horizontes Distantes` ja aparecia abaixo de `Pacote de sombreadores...`.
+- O icone solto no canto inferior esquerdo era o logo nativo `logoDim` do Embeddium.
+- O fundo Magic World era desenhado antes do background nativo e depois era sobrescrito pelo jogo.
+- Linhas selecionadas, checkboxes e barra de rolagem ainda usavam constantes rosas/cinzas do Embeddium.
+- A casa grande dos agricultores era a casa gerada da plantacao, nao somente a `imported_house.nbt`.
+- A rotina `decorateImportedHouseFrontFacade` existia, mas nao era chamada.
+
+Menu grafico:
+
+- O background Magic World agora e desenhado depois da chamada nativa do Embeddium, ocultando o jogo atras.
+- O logo nativo solto do Embeddium e movido para fora da tela em toda inicializacao/renderizacao.
+- `Horizontes Distantes` permanece como aba real logo abaixo dos shaders, com icone dentro da entrada.
+- A rolagem circular/infinita do `TabFrame` permanece ativa entre inicio/fim das paginas.
+- Mixins dedicados, com alvos exatos, substituem selecao, foco, checkboxes e barra de rolagem pelo ciano `0xFF00D9FF`.
+- Botoes de suporte/doacao continuam ocultos.
+- Portado `MagicWorldClientCompat` do NeoForge para Forge 1.20.1:
+  - força `showDhOptionsButtonInMinecraftUi = false`;
+  - força `renderingApi = "OPEN_GL"`.
+
+Propriedade e casas:
+
+- `CURRENT_ESTATE_REPAIR_VERSION` elevado para `8`; o reparo executara uma vez no proximo login.
+- A fachada frontal do casarao importado agora e realmente aplicada.
+- O bau de varinhas fica completamente preenchido.
+- Casas da plantacao receberam telhado inclinado, frontoes fechados, janelas superiores, mais janelas laterais, vigas externas e acabamento acima das portas.
+- Interior das casas recebeu mais luzes, mesa/cadeiras, tapetes, fogao, estacoes uteis, estantes, plantas e uma ave por casa.
+- O rancho grande recebeu janelas, telhado inclinado, luzes premium, decoracao, estacoes uteis, bau cheio de varinhas, bau de itens raros, armadura Netherite e armadura Draconic Aether.
+
+Villagers:
+
+- As rotinas de cada casa continuam contando camas e gerando um trabalhador por cama.
+- Busca por nomes usa toda a area da propriedade para impedir duplicatas quando villagers se afastam.
+- Todos os villagers da propriedade sao reforcados novamente a cada 200 ticks:
+  - invulneraveis e persistentes;
+  - vida maxima restaurada;
+  - profissao nivel 5;
+  - efeitos longos;
+  - raio de trabalho/restricao minimo de 192 blocos.
+- Monstros dentro da propriedade sao removidos na manutencao periodica para os villagers nao perderem tempo com inimigos.
+
+Validacao:
+
+- `./gradlew.bat compileJava --stacktrace`: BUILD SUCCESSFUL.
+- `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
+- Cliente nao foi aberto.

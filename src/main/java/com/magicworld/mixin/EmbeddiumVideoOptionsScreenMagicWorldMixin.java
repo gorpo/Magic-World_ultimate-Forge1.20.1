@@ -80,8 +80,17 @@ public abstract class EmbeddiumVideoOptionsScreenMagicWorldMixin extends Screen 
         callback.cancel();
     }
 
-    @Inject(method = "m_88315_", at = @At("HEAD"), require = 0, remap = false)
-    private void magicworld$renderGuaranteedBackground(
+    @Inject(
+            method = "m_88315_",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lorg/embeddedt/embeddium/gui/EmbeddiumVideoOptionsScreen;m_280273_(Lnet/minecraft/client/gui/GuiGraphics;)V",
+                    shift = At.Shift.AFTER
+            ),
+            require = 0,
+            remap = false
+    )
+    private void magicworld$renderGuaranteedBackgroundAfterNativeBackground(
             GuiGraphics graphics,
             int mouseX,
             int mouseY,
@@ -89,6 +98,9 @@ public abstract class EmbeddiumVideoOptionsScreenMagicWorldMixin extends Screen 
             CallbackInfo callback
     ) {
         magicworld$drawOpaqueBackground(graphics);
+        magicworld$hideNativeLogo();
+        magicworld$hideDonationButtons();
+        magicworld$layoutFooterButtons();
     }
 
     @Inject(method = "createShaderPackButton", at = @At("TAIL"), require = 0, remap = false)
@@ -127,6 +139,7 @@ public abstract class EmbeddiumVideoOptionsScreenMagicWorldMixin extends Screen 
     @Inject(method = "m_7856_", at = @At("TAIL"), require = 0, remap = false)
     private void magicworld$hideDonationButtonsAfterInit(CallbackInfo callback) {
         magicworld$hideDonationButtons();
+        magicworld$hideNativeLogo();
         magicworld$layoutFooterButtons();
     }
 
@@ -165,6 +178,11 @@ public abstract class EmbeddiumVideoOptionsScreenMagicWorldMixin extends Screen 
     private void magicworld$hideDonationButtons() {
         magicworld$hideWidget("donateButton");
         magicworld$hideWidget("hideDonateButton");
+    }
+
+    @Unique
+    private void magicworld$hideNativeLogo() {
+        magicworld$setDimField("logoDim", -1000, -1000, 0, 0);
     }
 
     @Unique
@@ -259,6 +277,28 @@ public abstract class EmbeddiumVideoOptionsScreenMagicWorldMixin extends Screen 
             }
         }
         return null;
+    }
+
+    @Unique
+    private void magicworld$setDimField(String fieldName, int x, int y, int width, int height) {
+        try {
+            Class<?> dimClass = Class.forName("me.jellysquid.mods.sodium.client.util.Dim2i");
+            Object dim = dimClass.getConstructor(int.class, int.class, int.class, int.class)
+                    .newInstance(x, y, width, height);
+            Class<?> type = this.getClass();
+            while (type != null) {
+                try {
+                    Field field = type.getDeclaredField(fieldName);
+                    field.setAccessible(true);
+                    field.set(this, dim);
+                    return;
+                } catch (NoSuchFieldException ignored) {
+                    type = type.getSuperclass();
+                }
+            }
+        } catch (ReflectiveOperationException ignored) {
+            // Optional Embeddium internals differ between versions.
+        }
     }
 
     @Unique
