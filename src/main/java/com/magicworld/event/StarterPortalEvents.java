@@ -4611,11 +4611,11 @@ public class StarterPortalEvents {
     }
 
     private static void handleOverworldFunctionalPortal(ServerPlayer player, BlockPos estateBase, BlockPos plaza) {
-        if (isPlayerInsideVerticalPortal(player, netherPortalCenter(plaza), 4.0D)) {
+        if (isPlayerInsideVerticalPortalCore(player, netherPortalCenter(plaza))) {
             teleportToFunctionalPortalDestination(player, Level.NETHER, estateBase.offset(0, 0, 128), FunctionalPortalKind.NETHER);
-        } else if (isPlayerNearFlatPortal(player, endPortalCenter(plaza), 3.5D)) {
+        } else if (isPlayerInsideFlatPortalCore(player, endPortalCenter(plaza))) {
             teleportToFunctionalPortalDestination(player, Level.END, estateBase.offset(96, 0, 96), FunctionalPortalKind.END_PORTAL);
-        } else if (isPlayerNearFlatPortal(player, gatewayPortalCenter(plaza), 3.5D)) {
+        } else if (isPlayerInsideFlatPortalCore(player, gatewayPortalCenter(plaza))) {
             teleportToFunctionalPortalDestination(player, Level.END, estateBase.offset(-96, 0, 96), FunctionalPortalKind.END_GATEWAY);
         }
     }
@@ -4629,7 +4629,7 @@ public class StarterPortalEvents {
             return;
         }
         ensureFunctionalPortalVisual(player.serverLevel(), returnPortal, kind);
-        if (isPlayerNearPortal(player, returnPortal, 4.5D) || isPlayerTouchingFunctionalPortalBlock(player, kind, 4)) {
+        if (isPlayerInsideReturnPortalCore(player, returnPortal, kind)) {
             teleportBackToEstate(player, estateBase);
         }
     }
@@ -4897,37 +4897,23 @@ public class StarterPortalEvents {
         };
     }
 
-    private static boolean isPlayerNearPortal(ServerPlayer player, BlockPos center, double radius) {
-        return player.position().distanceToSqr(center.getX() + 0.5D, center.getY() + 0.5D, center.getZ() + 0.5D) <= radius * radius;
-    }
-
-    private static boolean isPlayerInsideVerticalPortal(ServerPlayer player, BlockPos center, double radius) {
-        return Math.abs(player.getX() - (center.getX() + 0.5D)) <= radius
-                && Math.abs(player.getZ() - (center.getZ() + 0.5D)) <= radius
+    private static boolean isPlayerInsideVerticalPortalCore(ServerPlayer player, BlockPos center) {
+        return Math.abs(player.getX() - (center.getX() + 0.5D)) <= 0.85D
+                && Math.abs(player.getZ() - (center.getZ() + 0.5D)) <= 0.85D
                 && player.getY() >= center.getY()
                 && player.getY() <= center.getY() + 6.5D;
     }
 
-    private static boolean isPlayerNearFlatPortal(ServerPlayer player, BlockPos center, double radius) {
-        return Math.abs(player.getX() - (center.getX() + 0.5D)) <= radius
-                && Math.abs(player.getZ() - (center.getZ() + 0.5D)) <= radius
-                && Math.abs(player.getY() - center.getY()) <= 3.0D;
+    private static boolean isPlayerInsideFlatPortalCore(ServerPlayer player, BlockPos center) {
+        return Math.abs(player.getX() - (center.getX() + 0.5D)) <= 0.85D
+                && Math.abs(player.getZ() - (center.getZ() + 0.5D)) <= 0.85D
+                && Math.abs(player.getY() - center.getY()) <= 2.0D;
     }
 
-    private static boolean isPlayerTouchingFunctionalPortalBlock(ServerPlayer player, FunctionalPortalKind kind, int radius) {
-        ServerLevel level = player.serverLevel();
-        BlockPos center = player.blockPosition();
-        return isFunctionalPortalBlock(level.getBlockState(center), kind)
-                || isFunctionalPortalBlock(level.getBlockState(center.above()), kind)
-                || isFunctionalPortalBlock(level.getBlockState(center.below()), kind);
-    }
-
-    private static boolean isFunctionalPortalBlock(BlockState state, FunctionalPortalKind kind) {
-        return switch (kind) {
-            case NETHER -> state.is(Blocks.NETHER_PORTAL);
-            case END_PORTAL -> state.is(Blocks.END_PORTAL) || state.is(Blocks.END_PORTAL_FRAME);
-            case END_GATEWAY -> state.is(Blocks.END_GATEWAY);
-        };
+    private static boolean isPlayerInsideReturnPortalCore(ServerPlayer player, BlockPos center, FunctionalPortalKind kind) {
+        return kind == FunctionalPortalKind.NETHER
+                ? isPlayerInsideVerticalPortalCore(player, center)
+                : isPlayerInsideFlatPortalCore(player, center);
     }
 
     private static BlockPos resolveFunctionalSpawn(ServerLevel level, BlockPos requested) {
@@ -4991,7 +4977,7 @@ public class StarterPortalEvents {
         if (!isStarterPortalMarker(level, marker)) {
             marker = findNearestStarterPortalMarker(level, player.blockPosition(), 2);
         }
-        if (marker == null) {
+        if (marker == null || !isPlayerInsideStarterPortalCore(player, marker)) {
             PLAYERS_TOUCHING_STARTER_PORTAL.remove(player.getUUID());
             return;
         }
@@ -5012,6 +4998,13 @@ public class StarterPortalEvents {
         if (player.level() instanceof ServerLevel level) {
             MagicWorld.effects(level, marker);
         }
+    }
+
+    private static boolean isPlayerInsideStarterPortalCore(ServerPlayer player, BlockPos center) {
+        return Math.abs(player.getX() - (center.getX() + 0.5D)) <= 0.85D
+                && Math.abs(player.getZ() - (center.getZ() + 0.5D)) <= 0.85D
+                && player.getY() >= center.getY()
+                && player.getY() <= center.getY() + 6.5D;
     }
 
     public static void confirmPremiumPortalOptions(

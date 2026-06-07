@@ -2023,3 +2023,12 @@ Validacao:
 - Ordem aplicada no codigo: base vanilla/mods, packs Magic World (`bonus`, `addon`, `models`, `256x`), packs extras escolhidos e `Screen Overlays` sempre por ultimo/maior prioridade.
 - `PremiumPortalOptionsScreen` deixou de usar checkboxes simples; agora abre pop-ups para selecionar resourcepacks e shaderpacks detectados nas pastas locais.
 - `MagicWorldPortalVisualController` lista dinamicamente `.zip` e pastas de `resourcepacks`/`shaderpacks`.
+
+## Handoff 2026-06-07 - locais premium e portais pelo centro
+- Pedido: `Locais Magic World` nao deve abrir a tela da varinha `H`; precisa de tela propria premium, coordenada manual e foco em MineColonies/JourneyMap.
+- Implementado `MagicWorldPremiumLocationsScreen` em `src/main/java/com/magicworld/client/`, com cards, icones, secoes de destino e campo `X Y Z`.
+- `MagicWorldCentralPauseScreen` agora abre essa tela propria, remove os textos centrais abaixo da logo e inicia botoes mais acima.
+- `MagicWorldLocationManager` aceita `location_teleport_manual_coords:x:y:z`, salva como marcador manual e teleporta com seguranca na dimensao atual.
+- `MagicWorldScreenBackgrounds` inclui telas externas MCA/MineColonies; `ClientEvents` repinta widgets externos com botoes Magic World.
+- `StarterPortalEvents` removeu gatilho por raio dos portais: praca funcional, retornos e portal premium exigem alinhamento no centro do portal.
+- README atualizado com uso da tela, MineColonies, JourneyMap, coordenadas manuais e regra dos portais pelo centro.

@@ -21,7 +21,7 @@ public class MagicWorldCentralPauseScreen extends Screen {
         int panelHeight = Math.min(390, height - 18);
         int top = Math.max(8, height / 2 - panelHeight / 2);
         int buttonWidth = (panelWidth - 36 - 8) / 2;
-        int y = top + 74;
+        int y = top + 56;
 
         addRenderableWidget(new MagicWorldMenuButton(left + 12, y, panelWidth - 24, 20,
                 Component.literal("Menu secreto do Minecraft"),
@@ -35,7 +35,7 @@ public class MagicWorldCentralPauseScreen extends Screen {
 
         addRenderableWidget(new MagicWorldMenuButton(left + 12, y, panelWidth - 24, 20,
                 Component.literal("Locais Magic World"),
-                () -> Minecraft.getInstance().setScreen(new PremiumMenuScreen(PremiumMenuScreen.MenuTab.LOCATIONS))));
+                () -> Minecraft.getInstance().setScreen(new MagicWorldPremiumLocationsScreen(this))));
         y += 28;
 
         addAction(left + 12, y, buttonWidth, "Receber varinha", "magic_wand", true);
@@ -102,8 +102,6 @@ public class MagicWorldCentralPauseScreen extends Screen {
                 MagicWorldStaticBackground.LOGO_WIDTH,
                 MagicWorldStaticBackground.LOGO_HEIGHT
         );
-        graphics.drawCenteredString(font, title, width / 2, top + 48, 0xFFFFFFFF);
-        graphics.drawCenteredString(font, Component.literal("Atalhos rapidos, locais seguros e menu secreto"), width / 2, top + 64, 0xFFFFE0A3);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 

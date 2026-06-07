@@ -1305,3 +1305,12 @@ Validacao e processo:
 - Ordem ativa calculada: `vanilla/mods` -> `bonus` -> `addon` -> `models` -> `256x` -> extras escolhidos -> `Screen Overlays` por ultimo.
 - O menu do portal premium agora usa botoes com pop-up para selecionar resourcepacks e shaderpacks encontrados nas pastas locais.
 - `Screen Overlays` entra automaticamente por cima quando resourcepacks sao aplicados pelo portal.
+
+## Registro 2026-06-07 - tela premium de locais e portais pelo centro
+- Criada a tela `MagicWorldPremiumLocationsScreen`, aberta por `Esc > MagicWorld > Locais Magic World`, sem reutilizar a tela completa da varinha `H`.
+- A tela tem cards premium para casa, santuario, praca de portais, castelo, marcador manual, ultimo externo, waypoints e pontos MineColonies.
+- Adicionado campo de coordenada manual `X Y Z`; o servidor salva como marcador manual e teleporta com busca de posicao segura.
+- MineColonies continua opcional: Town Hall, Supply Camp e construcoes alimentam os locais salvos automaticamente.
+- Tela central MagicWorld removeu textos centrais do cabecalho e subiu botoes para caber melhor no layout.
+- Telas MCA/MineColonies agora entram na regra de fundo Magic World e recebem pintura de botoes em overlay quando usam widgets externos.
+- Portais funcionais e portal premium agora ativam apenas no nucleo/centro, nao por aproximacao lateral da praca.

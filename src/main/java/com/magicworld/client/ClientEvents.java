@@ -393,6 +393,10 @@ public class ClientEvents {
                     }
                 }
             }
+
+            if (MagicWorldScreenBackgrounds.isExternalMagicWorldSkinnedScreen(event.getScreen())) {
+                renderExternalMagicWorldButtons(event);
+            }
         }
 
         @SubscribeEvent
@@ -1181,6 +1185,32 @@ public class ClientEvents {
         private static boolean shouldUseMagicBackground(Object screen) {
             return screen instanceof net.minecraft.client.gui.screens.Screen minecraftScreen
                     && MagicWorldScreenBackgrounds.shouldUseStaticBackground(minecraftScreen);
+        }
+
+        private static void renderExternalMagicWorldButtons(ScreenEvent.Render.Post event) {
+            for (GuiEventListener listener : event.getScreen().children()) {
+                if (!(listener instanceof AbstractWidget widget)
+                        || widget instanceof EditBox
+                        || !widget.visible
+                        || widget.getMessage().getString().isBlank()
+                        || widget.getWidth() < 24
+                        || widget.getHeight() < 12) {
+                    continue;
+                }
+
+                MagicWorldMenuTheme.drawButton(
+                        event.getGuiGraphics(),
+                        Minecraft.getInstance().font,
+                        widget.getX(),
+                        widget.getY(),
+                        widget.getWidth(),
+                        widget.getHeight(),
+                        widget.getMessage(),
+                        event.getMouseX(),
+                        event.getMouseY(),
+                        widget.isMouseOver(event.getMouseX(), event.getMouseY())
+                );
+            }
         }
 
         private static String normalize(String text) {

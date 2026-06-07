@@ -50,6 +50,11 @@ public final class MagicWorldLocationManager {
     }
 
     public static boolean handleAction(ServerPlayer player, String action) {
+        if (action.startsWith("location_teleport_manual_coords:")) {
+            teleportToManualCoordinates(player, action.substring("location_teleport_manual_coords:".length()));
+            return true;
+        }
+
         return switch (action) {
             case "teleport_home", "location_teleport_home" -> teleportToLocation(player, HOME);
             case "location_teleport_sanctuary" -> teleportToLocation(player, SANCTUARY);
@@ -77,6 +82,26 @@ public final class MagicWorldLocationManager {
             }
             default -> false;
         };
+    }
+
+    private static void teleportToManualCoordinates(ServerPlayer player, String payload) {
+        String[] parts = payload.split(":");
+        if (parts.length < 3) {
+            sendWarning(player, "Coordenada manual invalida. Use X Y Z.");
+            return;
+        }
+
+        try {
+            BlockPos target = new BlockPos(
+                    Integer.parseInt(parts[0].trim()),
+                    Integer.parseInt(parts[1].trim()),
+                    Integer.parseInt(parts[2].trim())
+            );
+            saveLocation(player, MANUAL, "Coordenada manual Magic World", target, player.level().dimension(), 255, 255, 120);
+            teleportToLocation(player, MANUAL);
+        } catch (NumberFormatException ignored) {
+            sendWarning(player, "Coordenada manual invalida. Use numeros inteiros: X Y Z.");
+        }
     }
 
     public static void saveLocation(

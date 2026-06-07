@@ -1538,3 +1538,40 @@ Regras do script:
 <p align="center">
   <strong>Entre no portal, equipe sua armadura, acenda sua varinha e descubra um Minecraft transformado pela magia do Magic World.</strong>
 </p>
+
+## Locais Magic World Premium
+
+A partir do menu `Esc > MagicWorld > Locais Magic World`, o jogador abre uma tela propria de locais, separada do menu da varinha `H`.
+
+Fluxo ilustrado em texto:
+
+```text
+Esc
+ -> MagicWorld
+ -> Locais Magic World
+ -> card de destino ou coordenada manual
+```
+
+Funcoes principais:
+
+- `Minha casa`: volta ao spawn seguro ao lado da cama.
+- `Santuario`: volta ao Santuario Violeta abaixo do castelo.
+- `Praca de portais`: volta ao centro dos portais funcionais.
+- `Castelo`: volta ao castelo Magic World.
+- `Registrar aqui`: salva a posicao atual como marcador manual.
+- `Marcador manual`: volta ao ultimo marcador salvo.
+- `Ultimo externo`: volta ao ponto onde MCA/MineColonies moveu o jogador.
+- `Atualizar JourneyMap`: recria waypoints oficiais Magic World.
+- `Coordenada manual`: digite `X Y Z` e use `Ir para coordenada`.
+
+MineColonies:
+
+- clique/interaja com Town Hall, Supply Camp ou construcoes MineColonies para o Magic World salvar a colonia automaticamente;
+- use `Registrar colonia` para marcar manualmente o ponto atual;
+- use `Ultima colonia`, `Town Hall` e `Ultima construcao` para voltar aos pontos salvos;
+- o JourneyMap recebe waypoints oficiais quando instalado.
+
+Portais:
+
+- os portais da praca e o portal visual premium nao ativam mais apenas por proximidade;
+- o gatilho agora exige passar pelo centro do portal.

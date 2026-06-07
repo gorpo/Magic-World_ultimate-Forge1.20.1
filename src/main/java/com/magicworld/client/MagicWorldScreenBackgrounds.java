@@ -35,7 +35,8 @@ public final class MagicWorldScreenBackgrounds {
                 || screen instanceof PackSelectionScreen
                 || screen instanceof ModListScreen
                 || screen instanceof LevelLoadingScreen
-                || isWorldCreationScreen(screen);
+                || isWorldCreationScreen(screen)
+                || isExternalMagicWorldSkinnedScreen(screen);
     }
 
     private static boolean isWorldCreationScreen(Screen screen) {
@@ -43,5 +44,15 @@ public final class MagicWorldScreenBackgrounds {
         return className.contains("worldselection")
                 || className.contains("worldcreation")
                 || className.contains("createworld");
+    }
+
+    public static boolean isExternalMagicWorldSkinnedScreen(Screen screen) {
+        if (screen == null) {
+            return false;
+        }
+        String className = screen.getClass().getName().toLowerCase();
+        return className.contains("fabric.net.mca")
+                || className.contains("minecraftcomesalive")
+                || className.contains("minecolonies");
     }
 }
