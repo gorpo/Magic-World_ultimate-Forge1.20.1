@@ -7,6 +7,7 @@ import com.magicworld.client.menus.DimensionMenu;
 import com.magicworld.client.menus.DungeonSpawnerMenu;
 import com.magicworld.client.menus.GraphicsProfilesMenu;
 import com.magicworld.client.menus.LuckyBlockMenu;
+import com.magicworld.client.menus.MineColoniesMenu;
 import com.magicworld.client.menus.VarinhaMagicaControlCenter;
 import com.magicworld.client.menus.MobSpawnerMenu;
 import com.magicworld.client.menus.NPCMenu;
@@ -24,6 +25,7 @@ import com.magicworld.client.menus.TrollMenu;
 import com.magicworld.client.menus.WaveSurvivalMenu;
 import com.magicworld.client.menus.WeatherControlMenu;
 import com.magicworld.client.menus.WorldEventsMenu;
+import com.magicworld.network.MagicWorldNetwork;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -203,7 +205,8 @@ public class PremiumMenuScreen extends Screen {
         PREMIUM_ARMOR("Armaduras"),
         NPC_MENU("NPCs"),
         WAVE_SURVIVAL("Hordas"),
-        PREMIUM_MOUNTS("Montarias");
+        PREMIUM_MOUNTS("Montarias"),
+        MINECOLONIES("Colonias");
 
         private final String title;
 
@@ -369,6 +372,10 @@ public class PremiumMenuScreen extends Screen {
 
         else if (activeTab == MenuTab.PREMIUM_MOUNTS) {
             PremiumMountsMenu.add(premiumEntries);
+        }
+
+        else if (activeTab == MenuTab.MINECOLONIES) {
+            MineColoniesMenu.add(premiumEntries);
         }
 
         if (isSystemSubMenu(activeTab)) {
@@ -2448,7 +2455,8 @@ public class PremiumMenuScreen extends Screen {
                 || tab == MenuTab.PREMIUM_ARMOR
                 || tab == MenuTab.NPC_MENU
                 || tab == MenuTab.WAVE_SURVIVAL
-                || tab == MenuTab.PREMIUM_MOUNTS;
+                || tab == MenuTab.PREMIUM_MOUNTS
+                || tab == MenuTab.MINECOLONIES;
     }
 
     private boolean isSystemSubMenu(
@@ -2476,7 +2484,8 @@ public class PremiumMenuScreen extends Screen {
                 || tab == MenuTab.PREMIUM_ARMOR
                 || tab == MenuTab.NPC_MENU
                 || tab == MenuTab.WAVE_SURVIVAL
-                || tab == MenuTab.PREMIUM_MOUNTS;
+                || tab == MenuTab.PREMIUM_MOUNTS
+                || tab == MenuTab.MINECOLONIES;
     }
 
     private void runMenuCommand(
@@ -2506,6 +2515,11 @@ public class PremiumMenuScreen extends Screen {
 
         if (command.equals("CHECK_SHADER_LOADER")) {
             checkShaderLoader();
+            return;
+        }
+
+        if (command.startsWith("PANEL_ACTION:")) {
+            MagicWorldNetwork.sendPanelAction(command.substring("PANEL_ACTION:".length()));
             return;
         }
 

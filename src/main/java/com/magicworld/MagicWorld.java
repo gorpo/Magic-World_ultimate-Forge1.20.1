@@ -4,6 +4,7 @@ import com.magicworld.event.CraftEvents;
 import com.magicworld.event.AuraEvents;
 import com.magicworld.event.MobEvents;
 import com.magicworld.event.StarterPortalEvents;
+import com.magicworld.integration.MagicWorldMineColoniesIntegration;
 import com.magicworld.network.MagicWorldNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -82,6 +83,10 @@ public class MagicWorld {
 
         MinecraftForge.EVENT_BUS.register(
                 new StarterPortalEvents()
+        );
+
+        MinecraftForge.EVENT_BUS.register(
+                new MagicWorldMineColoniesIntegration()
         );
 
         MinecraftForge.EVENT_BUS.register(

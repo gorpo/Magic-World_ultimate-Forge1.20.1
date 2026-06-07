@@ -1250,3 +1250,15 @@ Validacao e processo:
 - O JAR principal permanece somente como `Magic_World_Mod_1.20.1-1.0.0.1.jar`, atualizado pelo script oficial.
 - `resourcepacks` e `shaderpacks` nao foram alterados; nao gerar ZIP.
 - README de uso dos mods externos fica pendente para depois da aprovacao final do pacote.
+
+## Registro 2026-06-07 - integracao Magic World + MineColonies
+- Branch: `integracao-com-mods`.
+- Foi criada a integracao opcional `MagicWorldMineColoniesIntegration`; o Magic World continua funcionando se MineColonies nao estiver instalado.
+- Ao clicar ou colocar blocos MineColonies, o mod salva automaticamente a ultima colonia, o ultimo Town Hall e a ultima construcao usada.
+- Blocos rastreados: `blockhuttownhall`, demais `blockhut*`, `supplycamp`, `supplychest`, `decorationcontroller`, `colonysign` e `blockwaypoint`.
+- O menu Magic World ganhou a aba `Colonias`, acessivel pelo centro `Sistema`.
+- Botoes da aba: `Voltar para casa`, `Registrar colonia atual`, `Ir para ultima colonia`, `Ir para Town Hall` e `Ultima construcao`.
+- Teleportes usam posicao segura proxima ao alvo salvo, com fallback ao redor do bloco.
+- Visual seguro aplicado via assets do nosso mod: idioma `Magic Colonies` e cabecalhos Magic World nas telas de Town Hall, mapa e construcao.
+- O JAR all-in-one local foi atualizado em `pacote_distribuivel/.minecraft/mods`; nao gerar ZIP.
+- Validacao: `./gradlew.bat build` passou.

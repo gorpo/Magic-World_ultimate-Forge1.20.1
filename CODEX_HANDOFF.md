@@ -1964,3 +1964,16 @@ Validacao:
 - Mantidos no pacote: Architectury, BetterFoliage, BlockUI, CIT Resewn, Cloth Config, CTM, Distant Horizons, Domum Ornamentum, Embeddium, EMF, ETF, FerriteCore, Framework, Fusion, ImmediatelyFast, JourneyMap, Lithostitched, MineColonies, MCA, ModernFix, Oculus, Structurize e Tectonic.
 - `resourcepacks` e `shaderpacks` nao foram alterados; nao foi gerado ZIP.
 - Pendente apos APROVADO: atualizar `README.md` com explicacao de uso dos mods usaveis, incluindo JourneyMap, MineColonies, Distant Horizons, shader/resource portal, mods de construcao/visual e como ativar cada um.
+
+## Handoff 2026-06-07 - integracao opcional MineColonies
+- Branch de trabalho: `integracao-com-mods`.
+- Pedido: integrar MineColonies ao Magic World antes do installer, com menu de teleporte e visual proprio.
+- Implementado `MagicWorldMineColoniesIntegration` sem dependencia direta de classes MineColonies.
+- Registro automatico: clique direito ou colocacao de blocos `minecolonies:blockhuttownhall`, outros `blockhut*`, `supplycamp`, `supplychest`, `decorationcontroller`, `colonysign` e `blockwaypoint`.
+- Dados salvos por jogador: ultima colonia, ultimo Town Hall e ultima construcao MineColonies.
+- Menu: nova aba `Colonias` no `PremiumMenuScreen`, aberta tambem pelo centro `Sistema`.
+- Acoes: voltar para casa, registrar colonia atual, ir para ultima colonia, ir para Town Hall e ir para ultima construcao.
+- Acoes usam `PANEL_ACTION:*` e `MagicWorldPanelActionPacket`, nao comandos vanilla.
+- Teleporte: server-side, por dimensao salva, procurando coluna segura ao redor do alvo.
+- Visual: overrides em `assets/minecolonies/lang/en_us.json`, `assets/minecolonies/lang/pt_br.json`, `assets/minecolonies/gui/townhall/windowtownhall.xml`, `assets/minecolonies/gui/map/windowcolonymap.xml` e `assets/minecolonies/gui/windowbuildbuilding.xml`.
+- Validado com `./gradlew.bat build`; JAR all-in-one atualizado no pacote local sem ZIP.

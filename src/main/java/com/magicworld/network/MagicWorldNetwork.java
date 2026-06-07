@@ -5,6 +5,7 @@ import com.magicworld.client.MagicWorldPortalVisualController;
 import com.magicworld.client.InitialLoadNoticeScreen;
 import com.magicworld.client.PremiumPortalOptionsScreen;
 import com.magicworld.event.StarterPortalEvents;
+import com.magicworld.integration.MagicWorldMineColoniesIntegration;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -271,6 +272,10 @@ public final class MagicWorldNetwork {
         ServerLevel level = player.serverLevel();
         if (action.startsWith("secret_give:")) {
             giveSecretItem(player, action.substring("secret_give:".length()));
+            return;
+        }
+
+        if (MagicWorldMineColoniesIntegration.handleAction(player, action)) {
             return;
         }
 

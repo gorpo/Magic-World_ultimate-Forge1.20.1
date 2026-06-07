@@ -1,0 +1,18 @@
+{
+  "itemGroup.minecolonies": "Magic Colonies",
+  "key.minecolonies.categories.general": "Magic Colonies",
+  "com.minecolonies.configgui.title": "Magic Colonies Settings",
+  "com.minecolonies.coremod.gui.townhalltab.actions": "Magic Actions",
+  "com.minecolonies.coremod.gui.townhalltab.information": "Colony Info",
+  "com.minecolonies.coremod.gui.townhalltab.permissions": "Permissions",
+  "com.minecolonies.coremod.gui.townhalltab.citizens": "Citizens",
+  "com.minecolonies.coremod.gui.townhalltab.stats": "Prestige",
+  "com.minecolonies.coremod.gui.townhalltab.alliances": "Alliances",
+  "com.minecolonies.coremod.gui.townhalltab.settings": "Settings",
+  "com.minecolonies.coremod.gui.workerhuts.repair": "Repair",
+  "com.minecolonies.coremod.gui.workerhuts.upgrade": "Upgrade",
+  "com.minecolonies.coremod.gui.workerhuts.deconstruct": "Deconstruct",
+  "com.minecolonies.coremod.gui.workerhuts.pickup": "Pick Up",
+  "com.minecolonies.coremod.gui.townhall.prestige": "Magic Prestige",
+  "com.minecolonies.coremod.townhall.map.warning": "Magic World colony map is not available right now."
+}
