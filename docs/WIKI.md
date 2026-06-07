@@ -1221,3 +1221,9 @@ Validacao e processo:
 - Saves antigos tentam localizar o portal funcional ja construido e salvam a posicao encontrada.
 - Destinos no Nether/End usam Y seguro e recriam plataforma/portal de retorno antes do teleporte.
 - Validacao: `./gradlew.bat build` passou e o JAR all-in-one foi atualizado sem gerar ZIP.
+
+## Registro 2026-06-07 - perfis de PC no menu de criacao
+- O botao `PC` do menu Magic World de criacao nao estava aplicando o perfil; ele apenas mudava o indice/texto.
+- Foi adaptado o comportamento do NeoForge: ao clicar, o perfil selecionado aplica distancia de renderizacao, simulacao, particulas, graficos, nuvens, escala de entidades, oclusao ambiente e limite de FPS.
+- Antes de `Criar Mundo`, o perfil selecionado e reaplicado para garantir que o padrao visivel tambem entre em vigor.
+- Validacao: `./gradlew.bat build` passou.

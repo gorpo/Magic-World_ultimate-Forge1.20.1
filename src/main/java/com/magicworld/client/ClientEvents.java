@@ -291,10 +291,11 @@ public class ClientEvents {
                     Button.builder(hardwareButtonLabel(), pressed -> {
                                 MagicWorldGraphicsProfile[] profiles = MagicWorldGraphicsProfile.values();
                                 MagicWorldWorldOptions.nextHardwareProfileIndex(profiles.length);
+                                applySelectedHardwareProfile(true);
                                 pressed.setMessage(hardwareButtonLabel());
                             })
                             .bounds(gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 0), buttonWidth, buttonHeight)
-                            .tooltip(Tooltip.create(Component.literal("Seleciona o perfil de PC do mundo.")))
+                            .tooltip(Tooltip.create(Component.literal("Troca e aplica distancia, graficos, particulas, nuvens e FPS.")))
                             .build(),
                     Button.builder(commandsButtonLabel(), pressed -> {
                                 MagicWorldWorldOptions.toggleCommandsEnabled();
@@ -544,6 +545,7 @@ public class ClientEvents {
         }
 
         private static void createWorldFromMagicTab(CreateWorldScreen screen, List<AbstractWidget> vanillaWidgets) {
+            applySelectedHardwareProfile(false);
             applyMagicWorldUiState(screen);
             syncWorldCreationOptions(vanillaWidgets);
             AbstractWidget createButton = findCreateWorldButton(vanillaWidgets);
@@ -582,6 +584,21 @@ public class ClientEvents {
 
         private static void showOverlayMessage(String message) {
             Minecraft.getInstance().gui.setOverlayMessage(Component.literal(message), false);
+        }
+
+        private static MagicWorldGraphicsProfile selectedHardwareProfile() {
+            MagicWorldGraphicsProfile[] profiles = MagicWorldGraphicsProfile.values();
+            int index = Math.max(0, Math.min(MagicWorldWorldOptions.hardwareProfileIndex(), profiles.length - 1));
+            MagicWorldWorldOptions.setHardwareProfileIndex(index);
+            return profiles[index];
+        }
+
+        private static void applySelectedHardwareProfile(boolean notify) {
+            MagicWorldGraphicsProfile profile = selectedHardwareProfile();
+            profile.apply(Minecraft.getInstance());
+            if (notify) {
+                showOverlayMessage("Perfil de PC aplicado: " + profile.label());
+            }
         }
 
         private static void applyMagicWorldUiState(CreateWorldScreen screen) {
@@ -786,9 +803,7 @@ public class ClientEvents {
         }
 
         private static Component hardwareButtonLabel() {
-            MagicWorldGraphicsProfile[] profiles = MagicWorldGraphicsProfile.values();
-            int index = Math.min(MagicWorldWorldOptions.hardwareProfileIndex(), profiles.length - 1);
-            return Component.literal("PC: " + profiles[index].label());
+            return Component.literal("PC: " + selectedHardwareProfile().label());
         }
 
         private static Component commandsButtonLabel() {
