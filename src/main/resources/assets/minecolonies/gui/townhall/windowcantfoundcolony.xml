@@ -1,0 +1,14 @@
+﻿<window xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" size="190 130" type="VANILLA"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/ldtteam/BlockUI/version/1.20.1/src/main/resources/assets/blockui/gui/block_ui.xsd">
+    <image source="minecolonies:textures/gui/builderhut/builder_paper_short.png" size="190 130"/>
+
+    <button id="cancel" size="14 15" pos="165 9" source="minecolonies:textures/gui/button_x.png" color="black"/>
+
+    <text id="text1" size="160 90" color="white" pos="15 15" textscale="1"/>
+
+    <button id="pickup" size="129 17" pos="30 100" color="black"
+                 source="minecolonies:textures/gui/builderhut/builder_button_medium_large.png"
+                 disabled="minecolonies:textures/gui/builderhut/builder_button_medium_large_disabled.png"
+                 label="$(com.minecolonies.core.founding.pickup)"/>
+    <image id="magicworldThemeIcon" pos="4 2" size="12 12" source="magicworld:textures/gui/embeddium_magicworld_icon.png"/>
+    <text id="magicworldThemeBrand" pos="18 3" size="132 10" label="MAGIC WORLD COLONIES" color="gold" textscale="0.65"/></window>
