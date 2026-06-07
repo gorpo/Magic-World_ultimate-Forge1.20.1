@@ -1329,3 +1329,11 @@ Validacao e processo:
 - O instalador copia mods, resourcepacks, shaderpacks e JourneyMap, sem alterar a regra da pasta distribuivel.
 - Remove conflitos conhecidos: Magic World antigo, TL Cape, Controllable, EMF/ETF, Fusion, CIT, ModernFix e FerriteCore.
 - Validacao: script testado com `-SkipForgeInstall`; EXE compilado com sucesso.
+
+## Registro 2026-06-07 - fechamento visual do menu central
+- Menu `Esc > MagicWorld` fechado em duas colunas fixas.
+- Textos longos encurtados: `Menu secreto`, `Menu varinha` e `Locais Magic`.
+- Altura e espacamento calculados pelo tamanho real do painel para nao deixar `Voltar`/`Continuar` fora da tela em escala de GUI alta.
+- JAR local atualizado em `pacote_distribuivel/.minecraft/mods/Magic_World_Mod_1.20.1-1.0.0.1.jar`.
+- Installer local recompilado em `installer/MagicWorldInstaller.exe`.
+- Validacao: `./gradlew.bat build` passou.

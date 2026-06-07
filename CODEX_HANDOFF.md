@@ -2047,3 +2047,10 @@ Validacao:
 - O EXE embute o script e o Forge installer `1.20.1-47.4.10`, mas nao embute `pacote_distribuivel/.minecraft` porque o pacote tem cerca de 1.8 GB.
 - Para funcionar, manter o EXE no projeto ou ao lado da pasta `pacote_distribuivel`.
 - Validacao executada: `install-magicworld-forge-tlauncher.ps1 -SkipForgeInstall` copiou 18 mods, resources, shaderpacks e JourneyMap para `tmp/installer-test/.minecraft`; build do EXE passou.
+
+## Handoff 2026-06-07 - menu central fechado antes dos releases
+- Usuario pediu parar releases e fechar mod/installer antes.
+- Release parcial `mods-pack-forge-1.20.1-v1.0.0.1` foi removido para nao deixar pacote antigo online.
+- `MagicWorldCentralPauseScreen` agora usa somente duas colunas, 8 linhas e calculo dinamico de altura/espacamento.
+- Labels encurtadas para caber em escala alta: `Menu secreto`, `Menu varinha`, `Locais Magic`.
+- Build passou, JAR distribuivel atualizado e installer local recompilado.
