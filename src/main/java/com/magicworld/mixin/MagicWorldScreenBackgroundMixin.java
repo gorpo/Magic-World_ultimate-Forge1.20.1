@@ -11,7 +11,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Screen.class)
 public abstract class MagicWorldScreenBackgroundMixin {
-    @Inject(method = "renderBackground(Lnet/minecraft/client/gui/GuiGraphics;)V", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = {
+                    "renderBackground(Lnet/minecraft/client/gui/GuiGraphics;)V",
+                    "m_280273_(Lnet/minecraft/client/gui/GuiGraphics;)V"
+            },
+            at = @At("HEAD"),
+            cancellable = true,
+            require = 0,
+            remap = false
+    )
     private void magicworld$renderBackground(GuiGraphics graphics, CallbackInfo callback) {
         Screen screen = (Screen) (Object) this;
         if (!MagicWorldScreenBackgrounds.shouldUseStaticBackground(screen)) {
@@ -22,7 +31,16 @@ public abstract class MagicWorldScreenBackgroundMixin {
         callback.cancel();
     }
 
-    @Inject(method = "renderDirtBackground(Lnet/minecraft/client/gui/GuiGraphics;)V", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = {
+                    "renderDirtBackground(Lnet/minecraft/client/gui/GuiGraphics;)V",
+                    "m_280039_(Lnet/minecraft/client/gui/GuiGraphics;)V"
+            },
+            at = @At("HEAD"),
+            cancellable = true,
+            require = 0,
+            remap = false
+    )
     private void magicworld$renderDirtBackground(GuiGraphics graphics, CallbackInfo callback) {
         Screen screen = (Screen) (Object) this;
         if (!MagicWorldScreenBackgrounds.shouldUseStaticBackground(screen)) {

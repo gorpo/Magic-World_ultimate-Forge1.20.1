@@ -14,7 +14,6 @@
     "EmbeddiumTickBoxColorMagicWorldMixin",
     "EmbeddiumVideoOptionsScreenMagicWorldMixin",
     "MagicWorldCreateWorldScreenBackgroundMixin",
-    "MagicWorldLevelLoadingScreenMixin",
     "MagicWorldEntityCullingMixin",
     "MagicWorldSelectWorldScreenBackgroundMixin",
     "MagicWorldScreenBackgroundMixin",
@@ -22,6 +21,6 @@
     "MagicWorldTabNavigationBarMixin"
   ],
   "injectors": {
-    "defaultRequire": 1
+    "defaultRequire": 0
   }
 }

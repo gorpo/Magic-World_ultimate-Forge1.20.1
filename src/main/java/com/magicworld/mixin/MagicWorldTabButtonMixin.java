@@ -8,7 +8,6 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.TabButton;
 import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -19,13 +18,16 @@ public abstract class MagicWorldTabButtonMixin extends AbstractWidget {
         super(x, y, width, height, message);
     }
 
-    @Shadow
-    public abstract boolean isSelected();
-
-    @Shadow
-    public abstract void renderString(GuiGraphics graphics, Font font, int color);
-
-    @Inject(method = "renderWidget(Lnet/minecraft/client/gui/GuiGraphics;IIF)V", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = {
+                    "renderWidget(Lnet/minecraft/client/gui/GuiGraphics;IIF)V",
+                    "m_87963_(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"
+            },
+            at = @At("HEAD"),
+            cancellable = true,
+            require = 0,
+            remap = false
+    )
     private void magicworld$renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick, CallbackInfo callback) {
         Minecraft minecraft = Minecraft.getInstance();
         int x = getX();
@@ -44,7 +46,7 @@ public abstract class MagicWorldTabButtonMixin extends AbstractWidget {
         );
         graphics.disableScissor();
 
-        boolean selected = isSelected();
+        boolean selected = ((TabButton) (Object) this).isSelected();
         int panelColor = selected ? 0x66000000 : 0x44000000;
         int borderColor = selected ? 0xFFFFFFFF : isHoveredOrFocused() ? 0xFFE0E0E0 : 0x99FFFFFF;
         int textColor = active ? 0xFFFFFFFF : 0xFFA0A0A0;
@@ -56,7 +58,7 @@ public abstract class MagicWorldTabButtonMixin extends AbstractWidget {
         graphics.fill(x + width - 1, y, x + width, y + height, borderColor);
 
         Font font = minecraft.font;
-        renderString(graphics, font, textColor);
+        graphics.drawCenteredString(font, getMessage(), x + width / 2, y + (height - 8) / 2, textColor);
         if (selected) {
             int underlineWidth = Math.min(font.width(getMessage()), width - 4);
             int underlineX = x + (width - underlineWidth) / 2;

@@ -11,7 +11,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(EntityRenderer.class)
 public abstract class MagicWorldEntityCullingMixin {
-    @Inject(method = "shouldRender", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = {
+                    "shouldRender(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/client/renderer/culling/Frustum;DDD)Z",
+                    "m_5523_(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/client/renderer/culling/Frustum;DDD)Z"
+            },
+            at = @At("HEAD"),
+            cancellable = true,
+            require = 0,
+            remap = false
+    )
     private void magicworld$skipOccludedEntity(
             Entity entity,
             Frustum frustum,
