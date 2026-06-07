@@ -1978,11 +1978,10 @@ Validacao:
 - Visual: overrides em `assets/minecolonies/lang/en_us.json`, `assets/minecolonies/lang/pt_br.json`, `assets/minecolonies/gui/townhall/windowtownhall.xml`, `assets/minecolonies/gui/map/windowcolonymap.xml` e `assets/minecolonies/gui/windowbuildbuilding.xml`.
 - Validado com `./gradlew.bat build`; JAR all-in-one atualizado no pacote local sem ZIP.
 
-## Handoff 2026-06-07 - skin completa MineColonies
-- Pedido: personalizar tudo do MineColonies agora, sem depender de criar varios mapas para teste.
-- Regra nova do usuario: nao criar scripts/rotinas que carreguem ou varram saves antigos; isso pesa e so pode acontecer com pedido explicito.
-- Implementacao escolhida: somente assets/resource overrides dentro do nosso mod, sem Java novo e sem leitura de saves.
-- Todos os XMLs de `assets/minecolonies/gui` do JAR MineColonies foram copiados para `src/main/resources/assets/minecolonies/gui`.
-- Janelas principais ganharam marca `MAGIC WORLD COLONIES`; layouts internos mantem IDs/estrutura para preservar funcionamento.
-- Foram geradas texturas override em `src/main/resources/assets/minecolonies/textures/gui` para papeis, paineis, botoes, ribbons e abas comuns.
-- Proximo ajuste esperado: usuario testar e mandar prints/texto; corrigir posicoes/cores pontuais sem criar rotina de save antigo.
+## Handoff 2026-06-07 - rollback skin completa MineColonies
+- A skin completa aplicada em `08ac9ad` bugou o jogo no teste do usuario.
+- Revertido o pacote amplo de 94 XMLs/93 texturas para voltar ao estado estavel anterior.
+- Mantida a integracao funcional MineColonies: aba `Colonias`, registro automatico de colonia/Town Hall/construcao e teleportes seguros.
+- Mantida apenas a personalizacao inicial segura de idioma, Town Hall, mapa e construcao.
+- Regra fixa do usuario: nao criar scripts/rotinas que carreguem ou varram saves antigos; isso so pode acontecer com pedido explicito.
+- Proximo caminho: personalizar por lotes pequenos com base em prints/texto, sem rotina retroativa de saves.

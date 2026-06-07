@@ -1,4 +1,0 @@
-﻿<window size="190 244" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/ldtteam/BlockUI/version/1.20.1/src/main/resources/assets/blockui/gui/block_ui.xsd">
-    <layout source="minecolonies:gui/layouthuts/layouthutpageactions.xml"/>
-    <image id="magicworldThemeIcon" pos="4 2" size="12 12" source="magicworld:textures/gui/embeddium_magicworld_icon.png"/>
-    <text id="magicworldThemeBrand" pos="18 3" size="132 10" label="MAGIC WORLD COLONIES" color="gold" textscale="0.65"/></window>

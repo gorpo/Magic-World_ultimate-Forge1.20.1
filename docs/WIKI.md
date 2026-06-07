@@ -1263,10 +1263,9 @@ Validacao e processo:
 - O JAR all-in-one local foi atualizado em `pacote_distribuivel/.minecraft/mods`; nao gerar ZIP.
 - Validacao: `./gradlew.bat build` passou.
 
-## Registro 2026-06-07 - skin completa MineColonies
-- O MineColonies recebeu override visual amplo por assets do Magic World, sem alterar o JAR original do MineColonies.
-- Todos os XMLs de `assets/minecolonies/gui` foram trazidos para o nosso mod para personalizacao visual.
-- Janelas principais receberam marca `MAGIC WORLD COLONIES`; layouts internos preservam IDs e estrutura funcional para nao quebrar botoes.
-- Texturas comuns de papel, painel, botao, ribbon e aba foram sobrescritas com visual escuro/ciano/dourado Magic World.
+## Registro 2026-06-07 - rollback da skin completa MineColonies
+- A skin completa do MineColonies foi revertida porque bugou o jogo no teste.
+- Mantida a integracao funcional: aba `Colonias`, registro automatico e teleportes seguros.
+- Mantida apenas a personalizacao segura inicial de idioma, Town Hall, mapa e tela de construcao.
 - Regra fixa: nao criar scripts ou rotinas que carreguem/varram saves antigos para personalizacao ou migracao, salvo pedido explicito do usuario.
-- Esta personalizacao nao toca saves antigos, nao reprocessa mundos e nao adiciona rotina de carregamento retroativo.
+- Proximo caminho: personalizar MineColonies por lotes pequenos a partir de prints/texto do usuario, testando cada tela antes de ampliar.
