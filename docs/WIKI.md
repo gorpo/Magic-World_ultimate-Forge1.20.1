@@ -1314,3 +1314,11 @@ Validacao e processo:
 - Tela central MagicWorld removeu textos centrais do cabecalho e subiu botoes para caber melhor no layout.
 - Telas MCA/MineColonies agora entram na regra de fundo Magic World e recebem pintura de botoes em overlay quando usam widgets externos.
 - Portais funcionais e portal premium agora ativam apenas no nucleo/centro, nao por aproximacao lateral da praca.
+
+## Registro 2026-06-07 - ajuste final de locais e waypoints invisiveis
+- Tela central `Esc > MagicWorld` reorganizada com mais botoes em duas colunas para evitar corte inferior.
+- Tela `Locais Magic World` separou rodape, ajuda e campo de coordenadas para impedir texto sobreposto.
+- Botao `Waypoints` agora mostra retorno visual e recria pontos JourneyMap.
+- JourneyMap fica com pontos ativos no mapa/lista, mas beacons, linhas, nomes e distancia 3D desligados.
+- A rotina remove duplicados legados `origin: magicworld` com mesmo nome antes de recriar o waypoint oficial.
+- Validacao: `./gradlew.bat build` passou.

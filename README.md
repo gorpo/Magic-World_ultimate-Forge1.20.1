@@ -1561,7 +1561,7 @@ Funcoes principais:
 - `Registrar aqui`: salva a posicao atual como marcador manual.
 - `Marcador manual`: volta ao ultimo marcador salvo.
 - `Ultimo externo`: volta ao ponto onde MCA/MineColonies moveu o jogador.
-- `Atualizar JourneyMap`: recria waypoints oficiais Magic World.
+- `Atualizar JourneyMap`: recria waypoints oficiais Magic World e desliga beacons/linhas 3D.
 - `Coordenada manual`: digite `X Y Z` e use `Ir para coordenada`.
 
 MineColonies:
@@ -1569,7 +1569,7 @@ MineColonies:
 - clique/interaja com Town Hall, Supply Camp ou construcoes MineColonies para o Magic World salvar a colonia automaticamente;
 - use `Registrar colonia` para marcar manualmente o ponto atual;
 - use `Ultima colonia`, `Town Hall` e `Ultima construcao` para voltar aos pontos salvos;
-- o JourneyMap recebe waypoints oficiais quando instalado.
+- o JourneyMap recebe waypoints oficiais quando instalado, mas sem marcadores 3D visiveis no mundo.
 
 Portais:
 

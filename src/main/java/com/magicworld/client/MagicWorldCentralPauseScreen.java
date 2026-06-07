@@ -18,45 +18,47 @@ public class MagicWorldCentralPauseScreen extends Screen {
     protected void init() {
         int panelWidth = Math.min(430, width - 28);
         int left = width / 2 - panelWidth / 2;
-        int panelHeight = Math.min(390, height - 18);
+        int panelHeight = Math.min(410, height - 18);
         int top = Math.max(8, height / 2 - panelHeight / 2);
         int buttonWidth = (panelWidth - 36 - 8) / 2;
-        int y = top + 56;
+        int y = top + 52;
+        int rowGap = 24;
 
         addRenderableWidget(new MagicWorldMenuButton(left + 12, y, panelWidth - 24, 20,
                 Component.literal("Menu secreto do Minecraft"),
                 () -> Minecraft.getInstance().setScreen(new MagicWorldSecretMinecraftScreen(this))));
-        y += 28;
+        y += rowGap;
 
         addRenderableWidget(new MagicWorldMenuButton(left + 12, y, panelWidth - 24, 20,
                 Component.literal("Abrir menu completo da varinha"),
                 () -> Minecraft.getInstance().setScreen(new PremiumMenuScreen())));
-        y += 28;
+        y += rowGap;
 
-        addRenderableWidget(new MagicWorldMenuButton(left + 12, y, panelWidth - 24, 20,
+        addRenderableWidget(new MagicWorldMenuButton(left + 12, y, buttonWidth, 20,
                 Component.literal("Locais Magic World"),
                 () -> Minecraft.getInstance().setScreen(new MagicWorldPremiumLocationsScreen(this))));
-        y += 28;
+        addAction(left + 20 + buttonWidth, y, buttonWidth, "Receber varinha", "magic_wand", true);
+        y += rowGap;
 
-        addAction(left + 12, y, buttonWidth, "Receber varinha", "magic_wand", true);
-        addAction(left + 20 + buttonWidth, y, buttonWidth, "Minha casa", "location_teleport_home", true);
-        y += 28;
+        addAction(left + 12, y, buttonWidth, "Minha casa", "location_teleport_home", true);
+        addAction(left + 20 + buttonWidth, y, buttonWidth, "Santuario", "location_teleport_sanctuary", true);
+        y += rowGap;
 
-        addAction(left + 12, y, buttonWidth, "Santuario", "location_teleport_sanctuary", true);
-        addAction(left + 20 + buttonWidth, y, buttonWidth, "Praca portais", "location_teleport_portal_plaza", true);
-        y += 28;
+        addAction(left + 12, y, buttonWidth, "Praca portais", "location_teleport_portal_plaza", true);
+        addAction(left + 20 + buttonWidth, y, buttonWidth, "Ultimo externo", "location_teleport_external", true);
+        y += rowGap;
 
-        addAction(left + 12, y, buttonWidth, "Ultimo externo", "location_teleport_external", true);
-        addAction(left + 20 + buttonWidth, y, buttonWidth, "Waypoints", "location_update_waypoints", false);
-        y += 28;
+        addAction(left + 12, y, buttonWidth, "Waypoints", "location_update_waypoints", false);
+        addAction(left + 20 + buttonWidth, y, buttonWidth, "Dia", "time_day", true);
+        y += rowGap;
 
-        addAction(left + 12, y, buttonWidth, "Dia", "time_day", true);
-        addAction(left + 20 + buttonWidth, y, buttonWidth, "Noite", "time_night", true);
-        y += 28;
+        addAction(left + 12, y, buttonWidth, "Noite", "time_night", true);
+        addAction(left + 20 + buttonWidth, y, buttonWidth, "Sol", "weather_clear", true);
+        y += rowGap;
 
-        addAction(left + 12, y, buttonWidth, "Sol", "weather_clear", true);
-        addAction(left + 20 + buttonWidth, y, buttonWidth, "Chuva", "weather_rain", true);
-        y += 34;
+        addAction(left + 12, y, buttonWidth, "Chuva", "weather_rain", true);
+        addAction(left + 20 + buttonWidth, y, buttonWidth, "Castelo", "location_teleport_castle", true);
+        y += rowGap + 4;
 
         addRenderableWidget(new MagicWorldMenuButton(left + 12, y, buttonWidth, 20,
                 Component.literal("Voltar"),
@@ -78,7 +80,7 @@ public class MagicWorldCentralPauseScreen extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         int panelWidth = Math.min(430, width - 28);
-        int panelHeight = Math.min(390, height - 18);
+        int panelHeight = Math.min(410, height - 18);
         int left = width / 2 - panelWidth / 2;
         int top = Math.max(8, height / 2 - panelHeight / 2);
         int logoWidth = Math.min(120, Math.max(92, panelWidth / 3));

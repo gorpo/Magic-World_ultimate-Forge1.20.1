@@ -40,6 +40,7 @@ public class MagicWorldPremiumLocationsScreen extends Screen {
     private int contentTop;
     private int contentBottom;
     private int scroll;
+    private String statusMessage = "JourneyMap: atualize os pontos para manter mapa/lista sem beacons 3D.";
 
     public MagicWorldPremiumLocationsScreen(Screen parent) {
         super(Component.literal("Locais Magic World"));
@@ -49,16 +50,19 @@ public class MagicWorldPremiumLocationsScreen extends Screen {
     @Override
     protected void init() {
         updateLayout();
-        coordinateBox = new EditBox(font, panelX + 18, panelY + panelHeight - 58, panelWidth - 220, 20, Component.literal("X Y Z"));
+        int coordinateY = panelY + panelHeight - 60;
+        int coordinateButtonWidth = Math.min(210, Math.max(160, panelWidth / 3));
+        int coordinateBoxWidth = Math.max(120, panelWidth - 54 - coordinateButtonWidth);
+        coordinateBox = new EditBox(font, panelX + 18, coordinateY, coordinateBoxWidth, 20, Component.literal("X Y Z"));
         coordinateBox.setHint(Component.literal("Coordenada manual: X Y Z"));
         coordinateBox.setMaxLength(64);
         addRenderableWidget(coordinateBox);
 
-        addRenderableWidget(new MagicWorldMenuButton(panelX + panelWidth - 200, panelY + panelHeight - 58, 182, 20,
+        addRenderableWidget(new MagicWorldMenuButton(panelX + panelWidth - 18 - coordinateButtonWidth, coordinateY, coordinateButtonWidth, 20,
                 Component.literal("Ir para coordenada"), this::teleportManualCoordinate));
-        addRenderableWidget(new MagicWorldMenuButton(panelX + 18, panelY + panelHeight - 28, 110, 20,
+        addRenderableWidget(new MagicWorldMenuButton(panelX + 18, panelY + panelHeight - 30, 110, 20,
                 Component.literal("Voltar"), () -> Minecraft.getInstance().setScreen(parent)));
-        addRenderableWidget(new MagicWorldMenuButton(panelX + panelWidth - 128, panelY + panelHeight - 28, 110, 20,
+        addRenderableWidget(new MagicWorldMenuButton(panelX + panelWidth - 128, panelY + panelHeight - 30, 110, 20,
                 Component.literal("Fechar"), () -> Minecraft.getInstance().setScreen(null)));
     }
 
@@ -81,6 +85,8 @@ public class MagicWorldPremiumLocationsScreen extends Screen {
             MagicWorldNetwork.sendPanelAction(clicked.action());
             if (clicked.closeAfterClick()) {
                 Minecraft.getInstance().setScreen(null);
+            } else {
+                statusMessage = statusFor(clicked.action());
             }
             return true;
         }
@@ -107,7 +113,7 @@ public class MagicWorldPremiumLocationsScreen extends Screen {
         panelX = width / 2 - panelWidth / 2;
         panelY = Math.max(10, height / 2 - panelHeight / 2);
         contentTop = panelY + 86;
-        contentBottom = panelY + panelHeight - 70;
+        contentBottom = panelY + panelHeight - 116;
         scroll = clamp(scroll, 0, maxScroll());
     }
 
@@ -165,8 +171,22 @@ public class MagicWorldPremiumLocationsScreen extends Screen {
     }
 
     private void drawFooterHelp(GuiGraphics graphics) {
-        graphics.drawString(font, Component.literal("MineColonies: clique/interaja com Town Hall, Supply Camp ou construcoes para salvar waypoints."),
-                panelX + 18, panelY + panelHeight - 70, 0xFF9EB6E8, false);
+        int y = panelY + panelHeight - 104;
+        graphics.drawString(font, Component.literal(statusMessage), panelX + 18, y, 0xFFFFE0A3, false);
+        graphics.drawString(font, Component.literal("JourneyMap: pontos ficam no mapa/lista; beacons 3D ficam desligados."),
+                panelX + 18, y + 12, 0xFF9EB6E8, false);
+        graphics.drawString(font, Component.literal("MineColonies: Town Hall, Supply Camp e construcoes salvam retorno seguro."),
+                panelX + 18, y + 24, 0xFF9EB6E8, false);
+    }
+
+    private static String statusFor(String action) {
+        return switch (action) {
+            case "location_update_waypoints" -> "Waypoints atualizados: sem linhas/beacons 3D no mundo.";
+            case "location_register_current" -> "Marcador manual salvo. Use Marcador manual para voltar.";
+            case "minecolonies_register_current" -> "Colonia atual registrada para retorno seguro.";
+            case "location_explain_external_teleport" -> "Ajuda enviada no chat: teleporte externo e retorno para casa.";
+            default -> "Acao enviada ao Magic World.";
+        };
     }
 
     private LocationCard clickedCard(double mouseX, double mouseY) {

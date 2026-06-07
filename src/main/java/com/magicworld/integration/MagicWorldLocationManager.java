@@ -72,7 +72,8 @@ public final class MagicWorldLocationManager {
             }
             case "location_update_waypoints" -> {
                 syncJourneyMapWaypoints(player);
-                sendInfo(player, "Waypoints oficiais Magic World enviados ao JourneyMap.");
+                sendInfo(player, "Waypoints oficiais enviados ao JourneyMap sem beacons 3D.");
+                sendActionbar(player, "JourneyMap atualizado: pontos ativos no mapa/lista, invisiveis no mundo.");
                 yield true;
             }
             case "location_explain_external_teleport" -> {
@@ -336,5 +337,9 @@ public final class MagicWorldLocationManager {
 
     private static void sendWarning(ServerPlayer player, String message) {
         player.displayClientMessage(Component.literal("[Magic World] " + message).withStyle(ChatFormatting.YELLOW), false);
+    }
+
+    private static void sendActionbar(ServerPlayer player, String message) {
+        player.displayClientMessage(Component.literal("[Magic World] " + message).withStyle(ChatFormatting.AQUA), true);
     }
 }

@@ -2032,3 +2032,11 @@ Validacao:
 - `MagicWorldScreenBackgrounds` inclui telas externas MCA/MineColonies; `ClientEvents` repinta widgets externos com botoes Magic World.
 - `StarterPortalEvents` removeu gatilho por raio dos portais: praca funcional, retornos e portal premium exigem alinhamento no centro do portal.
 - README atualizado com uso da tela, MineColonies, JourneyMap, coordenadas manuais e regra dos portais pelo centro.
+
+## Handoff 2026-06-07 - ajustes finais antes do installer Forge
+- Ajustado `MagicWorldCentralPauseScreen`: mais botoes em duas colunas, inclui `Castelo` e reduz espacamento para nao cortar botoes.
+- Ajustado `MagicWorldPremiumLocationsScreen`: rodape nao cobre coordenadas e cards; acoes sem fechamento mostram status na tela.
+- `location_update_waypoints` agora mostra retorno em chat/actionbar.
+- `MagicWorldJourneyMapWaypoints` limpa duplicados legados do proprio Magic World e atualiza `journeymap.waypoint.config` para manter waypoints no mapa/lista sem beacon/linha/nome/distancia 3D.
+- Atualizado JAR local em `pacote_distribuivel/.minecraft/mods/Magic_World_Mod_1.20.1-1.0.0.1.jar`; sem ZIP.
+- Validado com `./gradlew.bat build`.
