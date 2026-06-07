@@ -2040,3 +2040,10 @@ Validacao:
 - `MagicWorldJourneyMapWaypoints` limpa duplicados legados do proprio Magic World e atualiza `journeymap.waypoint.config` para manter waypoints no mapa/lista sem beacon/linha/nome/distancia 3D.
 - Atualizado JAR local em `pacote_distribuivel/.minecraft/mods/Magic_World_Mod_1.20.1-1.0.0.1.jar`; sem ZIP.
 - Validado com `./gradlew.bat build`.
+
+## Handoff 2026-06-07 - instalador Forge
+- Adicionados `scripts/install-magicworld-forge-tlauncher.ps1`, `scripts/MagicWorldForgeInstallerLauncher.cs` e `scripts/build-magicworld-forge-installer.ps1`.
+- Instalador local gerado em `installer/MagicWorldInstaller.exe`; `installer/` segue ignorado pelo Git.
+- O EXE embute o script e o Forge installer `1.20.1-47.4.10`, mas nao embute `pacote_distribuivel/.minecraft` porque o pacote tem cerca de 1.8 GB.
+- Para funcionar, manter o EXE no projeto ou ao lado da pasta `pacote_distribuivel`.
+- Validacao executada: `install-magicworld-forge-tlauncher.ps1 -SkipForgeInstall` copiou 18 mods, resources, shaderpacks e JourneyMap para `tmp/installer-test/.minecraft`; build do EXE passou.

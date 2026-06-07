@@ -1322,3 +1322,10 @@ Validacao e processo:
 - JourneyMap fica com pontos ativos no mapa/lista, mas beacons, linhas, nomes e distancia 3D desligados.
 - A rotina remove duplicados legados `origin: magicworld` com mesmo nome antes de recriar o waypoint oficial.
 - Validacao: `./gradlew.bat build` passou.
+
+## Registro 2026-06-07 - instalador Forge local
+- Criado instalador Forge 1.20.1-47.4.10 em `installer/MagicWorldInstaller.exe`.
+- O EXE embute script e Forge installer, mas usa `pacote_distribuivel/.minecraft` como fonte para evitar EXE/ZIP gigante.
+- O instalador copia mods, resourcepacks, shaderpacks e JourneyMap, sem alterar a regra da pasta distribuivel.
+- Remove conflitos conhecidos: Magic World antigo, TL Cape, Controllable, EMF/ETF, Fusion, CIT, ModernFix e FerriteCore.
+- Validacao: script testado com `-SkipForgeInstall`; EXE compilado com sucesso.

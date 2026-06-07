@@ -1575,3 +1575,15 @@ Portais:
 
 - os portais da praca e o portal visual premium nao ativam mais apenas por proximidade;
 - o gatilho agora exige passar pelo centro do portal.
+
+## Instalador Forge Local
+
+Arquivos:
+
+- `installer/MagicWorldInstaller.exe`: instalador Forge com interface.
+- `scripts/install-magicworld-forge-tlauncher.ps1`: instalacao via PowerShell.
+- `scripts/build-magicworld-forge-installer.ps1`: recompila o EXE.
+
+Regra: o instalador usa `pacote_distribuivel/.minecraft` como fonte. Ele nao gera ZIP e nao embute os resourcepacks/shaders no EXE porque o pacote local e grande. Para usar, mantenha o EXE no projeto ou ao lado da pasta `pacote_distribuivel`.
+
+Ele instala/atualiza Forge `1.20.1-47.4.10`, copia `mods`, `resourcepacks`, `shaderpacks` e `journeymap`, remove conflitos conhecidos e mantem os waypoints 3D invisiveis.
