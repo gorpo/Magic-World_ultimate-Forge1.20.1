@@ -1999,3 +1999,9 @@ Validacao:
 - Build executada novamente e JAR `Magic_World_Mod_1.20.1-1.0.0.1.jar` atualizado no pacote local e no `.minecraft` pessoal.
 - Alerta obrigatorio: este commit e experimental e pode nao funcionar se a instalacao usada ainda carregar EMF/ETF/Fusion/CIT/ModernFix/FerriteCore por outro caminho.
 - Proximo diagnostico deve sempre conferir horario do `latest.log`; erro antigo de EMF antes da limpeza nao deve ser tratado como crash novo.
+
+## Handoff 2026-06-07 - GUI MCA com paleta Magic World
+- Pedido: usuario ja alterou a logo dentro do JAR `minecraft-comes-alive-7.6.16+1.20.1-universal.jar` e quer fundo/botoes/telas GUI com cores Magic World.
+- A copia modificada do MCA em `.minecraft/mods` foi copiada para `pacote_distribuivel/.minecraft/mods`, preservando a logo alterada no pacote local.
+- Implementado override pelo nosso mod, sem editar o JAR MCA: `assets/mca/textures/gui.png` e `assets/mca/textures/gui/books/*.png`.
+- Nao sobrescrever `mca.png` nem `banner.png` no nosso mod; manter esses arquivos controlados pela copia editada do MCA.

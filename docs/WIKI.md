@@ -1282,3 +1282,9 @@ Validacao e processo:
 - O jogo abriu apos a limpeza dos mods conflitantes e o JAR all-in-one foi regerado.
 - Alerta: este commit registra um estado experimental; pode nao funcionar se outra instalacao ainda tiver EMF/ETF/Fusion/CIT/ModernFix/FerriteCore em qualquer pasta carregavel.
 - Para validar erro novo, usar apenas `Caused by:` de um `latest.log` atualizado apos abrir o jogo novamente.
+
+## Registro 2026-06-07 - skin GUI Magic World para Minecraft Comes Alive
+- A copia modificada pelo usuario do `minecraft-comes-alive-7.6.16+1.20.1-universal.jar` foi sincronizada no pacote distribuivel para preservar a logo alterada.
+- O Magic World agora sobrescreve assets do namespace `mca` para telas GUI: `textures/gui.png` e fundos em `textures/gui/books/*.png`.
+- Paleta aplicada: fundo roxo/azul escuro, botoes roxos e livros lavanda/roxo para manter texto legivel.
+- Nao sobrescrever `mca.png` nem `banner.png` pelo nosso mod; esses ficam sob controle do JAR MCA que o usuario editou.
