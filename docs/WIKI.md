@@ -1080,3 +1080,16 @@ Validacao e processo:
 - O interior inclui catalogo de todos os itens registrados, ferramentas, forja, fornos, armaduras, quadros, plantas, iluminacao rustica, teias e morcegos.
 - Uma passagem oculta leva ao cofre subterraneo dourado com preciosidades.
 - O reparo `23` foi executado no save real pelo `runClient` sem excecao da construcao.
+
+## Registro 2026-06-06 - placas de identificacao
+- Todas as areas principais da propriedade receberam placas de chao com `ID LOCAL` e nome curto do local.
+- As placas ficam na frente ou na borda de chegada das estruturas, sem ocupar o bloco das portas.
+- O texto foi aplicado nos dois lados da placa para facilitar leitura mesmo quando o jogador chega pelo lado oposto.
+- Cobertura: casas, portais, predios, currais, plantacoes, mina, coven, santuario, praca e castelo quando ativo.
+- O reparo versionado foi elevado para `24` para aplicar as placas automaticamente em saves ja existentes.
+
+## Registro 2026-06-06 - nome do mundo, seeds e desempenho de reparo
+- O painel Magic World da criacao de mundo agora tem campo de texto para o nome do mundo, sincronizado diretamente com o estado vanilla de criacao.
+- A lista de seeds abre como modal escuro em primeiro plano, escondendo o layout de tras; ao clicar em uma seed, o modal fecha.
+- A atualizacao de placas deixou de reconstruir a propriedade inteira quando o save ja esta na versao anterior; nesse caso so as placas sao aplicadas.
+- Morcegos decorativos ganharam spawn seguro em bolsos de ar para evitar morte por sufocamento em paredes e logs repetidos.

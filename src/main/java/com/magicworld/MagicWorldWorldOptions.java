@@ -53,6 +53,7 @@ public final class MagicWorldWorldOptions {
     private static int hardwareProfileIndex = 3;
     private static StartingGameMode startingGameMode = StartingGameMode.CREATIVE;
     private static StartingDifficulty startingDifficulty = StartingDifficulty.EASY;
+    private static String worldName = "";
     private static String customSeed = "";
     private static int presetSeedIndex = 0;
 
@@ -166,6 +167,14 @@ public final class MagicWorldWorldOptions {
 
     public static void setStartingDifficulty(StartingDifficulty difficulty) {
         startingDifficulty = difficulty;
+    }
+
+    public static String worldName() {
+        return worldName;
+    }
+
+    public static void setWorldName(String name) {
+        worldName = name == null ? "" : name;
     }
 
     public static String customSeed() {

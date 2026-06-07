@@ -58,6 +58,7 @@ import net.minecraft.world.level.block.LanternBlock;
 import net.minecraft.world.level.block.NetherPortalBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.StandingSignBlock;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.WallSignBlock;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
@@ -120,7 +121,8 @@ public class StarterPortalEvents {
     private static final int IMPORTED_HOUSE_MAX_Z = HOUSE_ORIGIN_Z + IMPORTED_HOUSE_SIZE_Z;
     private static final int CASTLE_SIZE_X = 265;
     private static final int CASTLE_SIZE_Z = 221;
-    private static final int CURRENT_ESTATE_REPAIR_VERSION = 23;
+    private static final int ESTATE_REPAIR_VERSION_BEFORE_IDENTIFICATION_SIGNS = 23;
+    private static final int CURRENT_ESTATE_REPAIR_VERSION = 24;
     private static final int GLOBAL_VILLAGER_WORK_RADIUS = 384;
     private static final int ESTATE_MAINTENANCE_INTERVAL_TICKS = 20 * 60;
     private static final int PORTAL_CHECK_INTERVAL_TICKS = 10;
@@ -155,11 +157,18 @@ public class StarterPortalEvents {
         if (data.getBoolean(ESTATE_CREATED_KEY)) {
             setPlayerEstateRespawn(player, levelFor(player), estateBaseFromPlayer(player));
         }
+        int currentRepairVersion = data.getInt(ESTATE_REPAIR_VERSION_KEY);
         if (data.getBoolean(ESTATE_CREATED_KEY)
-                && data.getInt(ESTATE_REPAIR_VERSION_KEY) < CURRENT_ESTATE_REPAIR_VERSION) {
-            repairExistingEstate(levelFor(player), estateBaseFromPlayer(player));
+                && currentRepairVersion < CURRENT_ESTATE_REPAIR_VERSION) {
+            ServerLevel level = levelFor(player);
+            BlockPos base = estateBaseFromPlayer(player);
+            if (currentRepairVersion == ESTATE_REPAIR_VERSION_BEFORE_IDENTIFICATION_SIGNS) {
+                placeEstateIdentificationSigns(level, base);
+            } else {
+                repairExistingEstate(level, base);
+            }
             data.putInt(ESTATE_REPAIR_VERSION_KEY, CURRENT_ESTATE_REPAIR_VERSION);
-            player.sendSystemMessage(Component.literal("Magic World: Arquivo Medieval da Praca Verde e estruturas iniciais atualizados."));
+            player.sendSystemMessage(Component.literal("Magic World: placas de identificacao e estruturas iniciais atualizadas."));
         }
 
         if (!MagicWorldWorldOptions.isStarterEstateEnabled()
@@ -293,12 +302,13 @@ public class StarterPortalEvents {
             }
             default -> {
                 restoreStoneTreasureMineHouse(level, task.base);
+                placeEstateIdentificationSigns(level, task.base);
                 player.getPersistentData().putBoolean(ESTATE_CREATED_KEY, true);
                 player.getPersistentData().putInt(ESTATE_REPAIR_VERSION_KEY, CURRENT_ESTATE_REPAIR_VERSION);
                 applyMagicWorldServerSettings(player);
                 teleportPlayerToEstateSpawn(player, level, task.base);
                 MagicWorldNetwork.sendInitialLoadProgress(player, 100, "Magic World carregado.", true);
-                player.sendSystemMessage(Component.literal("Magic World: casa, fazendas, portais e castelo carregados."));
+                player.sendSystemMessage(Component.literal("Magic World: casa, fazendas, portais, castelo e placas carregados."));
                 TASKS.remove(player.getUUID());
             }
         }
@@ -412,6 +422,7 @@ public class StarterPortalEvents {
         if (MagicWorldWorldOptions.isCastlesEnabled()) {
             populateCastleCouncilTable(level, castleCenter(base));
         }
+        placeEstateIdentificationSigns(level, base);
     }
 
     private static void fillMissingStarterPortalBlocks(ServerLevel level, BlockPos center) {
@@ -1245,8 +1256,8 @@ public class StarterPortalEvents {
         spawnFriendlyWitch(level, origin.offset(4, 1, 7), "Bruxa Curandeira");
         spawnFriendlyWitch(level, origin.offset(7, 1, 7), "Bruxa Alquimista");
         spawnFriendlyWitch(level, origin.offset(9, 1, 9), "Bruxa da Mata");
-        spawnNamed(level, EntityType.BAT, origin.offset(3, 4, 5), "Morcego da Chamine");
-        spawnNamed(level, EntityType.BAT, origin.offset(8, 4, 8), "Morcego da Biblioteca");
+        spawnDecorativeBat(level, origin.offset(3, 4, 5), "Morcego da Chamine");
+        spawnDecorativeBat(level, origin.offset(8, 4, 8), "Morcego da Biblioteca");
     }
 
     private static void prepareWitchCovenClearing(
@@ -1681,13 +1692,181 @@ public class StarterPortalEvents {
         }
     }
 
+    private static void placeEstateIdentificationSigns(ServerLevel level, BlockPos base) {
+        placeGroundIdentificationSign(level, base.offset(8, 0, IMPORTED_HOUSE_MAX_Z + 4), Direction.SOUTH,
+                "ID LOCAL", "Casa", "Principal", "Importada");
+        placeGroundIdentificationSign(level, starterPortalCenter(base).offset(0, 0, 9), Direction.SOUTH,
+                "ID LOCAL", "Portal", "Inicial", "Premium");
+
+        BlockPos portalPlaza = findHighestFeatureSurface(level, compactPortalPlazaCenter(base), 80);
+        placeGroundIdentificationSign(level, portalPlaza.offset(0, 0, 9), Direction.SOUTH,
+                "ID LOCAL", "Praca", "Portais", "Funcionais");
+        placeGroundIdentificationSign(level, netherPortalCenter(portalPlaza).offset(0, 0, 4), Direction.SOUTH,
+                "ID LOCAL", "Portal", "Nether", "Funcional");
+        placeGroundIdentificationSign(level, endPortalCenter(portalPlaza).offset(0, 0, 4), Direction.SOUTH,
+                "ID LOCAL", "Portal", "End Portal", "Funcional");
+        placeGroundIdentificationSign(level, gatewayPortalCenter(portalPlaza).offset(0, 0, 4), Direction.SOUTH,
+                "ID LOCAL", "Portal", "End Gateway", "Funcional");
+
+        placeRoadEndHouseIdentificationSign(level, base);
+        placeGroundIdentificationSign(level, roadEndMagicSanctuaryOrigin(base).offset(40, 0, 8), Direction.EAST,
+                "ID LOCAL", "Santuario", "Violeta", "Fim da Rua");
+        placeWitchCovenIdentificationSign(level, base);
+        placeGroundIdentificationSign(level, base.offset(67, 0, 38), Direction.NORTH,
+                "ID LOCAL", "Mina", "do Tesouro", "Pedra");
+
+        placeGroundIdentificationSign(level, base.offset(-108, 0, -56), Direction.SOUTH,
+                "ID LOCAL", "Rancho", "Cofre", "Dourado");
+        placeGroundIdentificationSign(level, base.offset(-119, 0, -43), Direction.SOUTH,
+                "ID LOCAL", "Casa", "Plantacao", "1");
+        placeGroundIdentificationSign(level, base.offset(-95, 0, -43), Direction.SOUTH,
+                "ID LOCAL", "Casa", "Plantacao", "2");
+
+        placeGroundIdentificationSign(level, base.offset(-105, 0, 23), Direction.SOUTH,
+                "ID LOCAL", "Arquivo", "Medieval", "Praca Verde");
+        placeGroundIdentificationSign(level, base.offset(-117, 0, 64), Direction.SOUTH,
+                "ID LOCAL", "Casa", "Verde", "1");
+        placeGroundIdentificationSign(level, base.offset(-94, 0, 64), Direction.SOUTH,
+                "ID LOCAL", "Casa", "Verde", "2");
+        placeGroundIdentificationSign(level, base.offset(-106, 0, 51), Direction.SOUTH,
+                "ID LOCAL", "Praca", "Verde", "Central");
+
+        placeGroundIdentificationSign(level, base.offset(127, 0, -65), Direction.EAST,
+                "ID LOCAL", "Centro", "Grande", "Animais");
+        placeGroundIdentificationSign(level, base.offset(102, 0, -52), Direction.WEST,
+                "ID LOCAL", "Casa", "Animais", "2");
+        placeGroundIdentificationSign(level, base.offset(89, 0, -13), Direction.NORTH,
+                "ID LOCAL", "Jardim", "Racao", "Animais");
+        placeAnimalPenIdentificationSigns(level, base);
+        placeCropFieldIdentificationSigns(level, base);
+
+        if (MagicWorldWorldOptions.isCastlesEnabled()) {
+            placeGroundIdentificationSign(level, castleCenter(base).offset(0, 0, -58), Direction.NORTH,
+                    "ID LOCAL", "Castelo", "Magic", "World");
+        }
+    }
+
+    private static void placeRoadEndHouseIdentificationSign(ServerLevel level, BlockPos base) {
+        BlockPos origin = starterRoadEndHouseOrigin(base);
+        Vec3i size = level.getStructureManager()
+                .get(STARTER_ROAD_END_HOUSE)
+                .map(StructureTemplate::getSize)
+                .orElse(new Vec3i(14, 0, 14));
+        placeGroundIdentificationSign(level, origin.offset(size.getX() / 2, 0, size.getZ() + 3), Direction.SOUTH,
+                "ID LOCAL", "Casa do", "Ultimo", "Farol");
+    }
+
+    private static void placeWitchCovenIdentificationSign(ServerLevel level, BlockPos base) {
+        BlockPos markedCenter = witchCovenAnchor(base);
+        BlockPos origin = new BlockPos(markedCenter.getX(), base.getY() - 1, markedCenter.getZ()).offset(-6, 0, -6);
+        placeGroundIdentificationSign(level, origin.offset(-5, 0, 6), Direction.WEST,
+                "ID LOCAL", "Coven", "Tres", "Guardias");
+    }
+
+    private static void placeAnimalPenIdentificationSigns(ServerLevel level, BlockPos base) {
+        BlockPos[] corners = animalPenCorners(base);
+        for (int i = 0; i < corners.length; i++) {
+            placeGroundIdentificationSign(level, corners[i].offset(7, 0, -3), Direction.NORTH,
+                    "ID LOCAL", "Curral", "Animais", String.valueOf(i + 1));
+        }
+    }
+
+    private static void placeCropFieldIdentificationSigns(ServerLevel level, BlockPos base) {
+        placeGroundIdentificationSign(level, base.offset(-114, 0, -45), Direction.NORTH,
+                "ID LOCAL", "Plantacao", "Trigo", "");
+        placeGroundIdentificationSign(level, base.offset(-94, 0, -45), Direction.NORTH,
+                "ID LOCAL", "Plantacao", "Cenoura", "");
+        placeGroundIdentificationSign(level, base.offset(-114, 0, -25), Direction.NORTH,
+                "ID LOCAL", "Plantacao", "Batata", "");
+        placeGroundIdentificationSign(level, base.offset(-94, 0, -25), Direction.NORTH,
+                "ID LOCAL", "Plantacao", "Beterraba", "");
+    }
+
+    private static void placeGroundIdentificationSign(
+            ServerLevel level,
+            BlockPos approximateGround,
+            Direction readableFrom,
+            String... lines
+    ) {
+        BlockPos ground = findIdentificationSignGround(level, approximateGround);
+        if (ground == null) {
+            return;
+        }
+
+        BlockPos sign = ground.above();
+        BlockState existing = level.getBlockState(sign);
+        if (!canReplaceWithIdentificationSign(existing)) {
+            return;
+        }
+
+        if (!level.getBlockState(ground).isSolid()) {
+            level.setBlock(ground, Blocks.POLISHED_ANDESITE.defaultBlockState(), 2);
+        }
+        level.setBlock(sign, Blocks.DARK_OAK_SIGN.defaultBlockState()
+                .setValue(StandingSignBlock.ROTATION, signRotationForFront(readableFrom)), 2);
+        if (level.getBlockEntity(sign) instanceof SignBlockEntity signEntity) {
+            SignText text = signEntity.getFrontText();
+            for (int i = 0; i < 4; i++) {
+                String line = i < lines.length ? lines[i] : "";
+                text = text.setMessage(i, Component.literal(line));
+            }
+            signEntity.setText(text, true);
+            signEntity.setText(text, false);
+            signEntity.setChanged();
+        }
+    }
+
+    private static BlockPos findIdentificationSignGround(ServerLevel level, BlockPos approximateGround) {
+        BlockPos direct = new BlockPos(approximateGround.getX(), approximateGround.getY(), approximateGround.getZ());
+        if (level.isInWorldBounds(direct)
+                && level.getBlockState(direct).isSolid()
+                && canReplaceWithIdentificationSign(level.getBlockState(direct.above()))) {
+            return direct;
+        }
+
+        int surfaceY = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                approximateGround.getX(), approximateGround.getZ()) - 1;
+        BlockPos surface = new BlockPos(approximateGround.getX(), surfaceY, approximateGround.getZ());
+        if (level.isInWorldBounds(surface)
+                && canReplaceWithIdentificationSign(level.getBlockState(surface.above()))) {
+            return surface;
+        }
+        return null;
+    }
+
+    private static boolean canReplaceWithIdentificationSign(BlockState state) {
+        return state.isAir()
+                || state.is(Blocks.GRASS)
+                || state.is(Blocks.TALL_GRASS)
+                || state.is(Blocks.FERN)
+                || state.is(Blocks.LARGE_FERN)
+                || state.is(Blocks.POPPY)
+                || state.is(Blocks.DANDELION)
+                || state.is(Blocks.BLUE_ORCHID)
+                || state.is(Blocks.ALLIUM)
+                || state.is(Blocks.AZURE_BLUET)
+                || state.is(Blocks.RED_TULIP)
+                || state.is(Blocks.OXEYE_DAISY)
+                || state.is(Blocks.CORNFLOWER)
+                || state.is(Blocks.SEAGRASS);
+    }
+
+    private static int signRotationForFront(Direction facing) {
+        return switch (facing) {
+            case WEST -> 4;
+            case NORTH -> 8;
+            case EAST -> 12;
+            default -> 0;
+        };
+    }
+
     private static void populateWitchCoven(ServerLevel level, BlockPos origin, int width, int depth) {
         spawnFriendlyWitch(level, origin.offset(16, 1, depth / 2), "Bruxa Curandeira");
         spawnFriendlyWitch(level, origin.offset(23, 1, depth - 7), "Bruxa Alquimista");
         spawnFriendlyWitch(level, origin.offset(width + 7, 1, depth / 2 - 8), "Bruxa da Mata");
-        spawnNamed(level, EntityType.BAT, origin.offset(14, 5, 5), "Morcego da Chamine");
-        spawnNamed(level, EntityType.BAT, origin.offset(21, 5, depth - 4), "Morcego da Biblioteca");
-        spawnNamed(level, EntityType.BAT, origin.offset(width + 5, 5, depth / 2 + 5), "Morcego da Mata");
+        spawnDecorativeBat(level, origin.offset(14, 5, 5), "Morcego da Chamine");
+        spawnDecorativeBat(level, origin.offset(21, 5, depth - 4), "Morcego da Biblioteca");
+        spawnDecorativeBat(level, origin.offset(width + 5, 5, depth / 2 + 5), "Morcego da Mata");
     }
 
     private static void spawnFriendlyWitch(ServerLevel level, BlockPos pos, String name) {
@@ -2350,8 +2529,8 @@ public class StarterPortalEvents {
         }) {
             level.setBlock(web, Blocks.COBWEB.defaultBlockState(), 2);
         }
-        spawnNamed(level, EntityType.BAT, center.above(3), "Morcego do Cofre Dourado");
-        spawnNamed(level, EntityType.BAT, center.offset(4, 3, 2), "Morcego do Tesouro Antigo");
+        spawnDecorativeBat(level, center.above(3), "Morcego do Cofre Dourado");
+        spawnDecorativeBat(level, center.offset(4, 3, 2), "Morcego do Tesouro Antigo");
     }
 
     private static void furnishPremiumAnimalWorkCenter(ServerLevel level, BlockPos corner, int width, int depth) {
@@ -2514,9 +2693,9 @@ public class StarterPortalEvents {
         spawnPainting(level, corner.offset(5, 3, depth - 1), Direction.NORTH, "Quadro Sul do Rancho");
         spawnPainting(level, corner.offset(width - 5, 3, depth - 1), Direction.NORTH, "Quadro Sul da Plantacao");
 
-        spawnNamed(level, EntityType.BAT, corner.offset(4, 5, 5), "Morcego das Vigas do Rancho");
-        spawnNamed(level, EntityType.BAT, corner.offset(width - 4, 5, depth - 5), "Morcego da Chamine do Rancho");
-        spawnNamed(level, EntityType.BAT, corner.offset(width / 2, 5, depth / 2), "Morcego do Salao do Rancho");
+        spawnDecorativeBat(level, corner.offset(4, 5, 5), "Morcego das Vigas do Rancho");
+        spawnDecorativeBat(level, corner.offset(width - 4, 5, depth - 5), "Morcego da Chamine do Rancho");
+        spawnDecorativeBat(level, corner.offset(width / 2, 5, depth / 2), "Morcego do Salao do Rancho");
     }
 
     private static void decoratePremiumWorkCenterExterior(ServerLevel level, BlockPos corner, int width, int depth) {
@@ -5924,6 +6103,60 @@ public class StarterPortalEvents {
         if (entity instanceof Villager villager) {
             empowerMagicWorldVillager(villager, VillagerProfession.FARMER, pos, pos, 96);
         }
+    }
+
+    private static void spawnDecorativeBat(ServerLevel level, BlockPos pos, String name) {
+        AABB nearby = new AABB(pos).inflate(256.0D, 64.0D, 256.0D);
+        if (!level.getEntitiesOfClass(Entity.class, nearby, entity -> name.equals(entity.getName().getString())).isEmpty()) {
+            return;
+        }
+
+        BlockPos safePos = findBatAirPocketNear(level, pos, 5, 4);
+        if (safePos == null) {
+            return;
+        }
+
+        Entity entity = EntityType.BAT.spawn(level, safePos, MobSpawnType.STRUCTURE);
+        if (entity == null) {
+            return;
+        }
+
+        entity.moveTo(safePos.getX() + 0.5D, safePos.getY() + 0.35D, safePos.getZ() + 0.5D, level.getRandom().nextFloat() * 360.0F, 0.0F);
+        entity.setCustomName(Component.literal(name));
+        entity.setCustomNameVisible(true);
+        if (entity instanceof Mob mob) {
+            mob.setPersistenceRequired();
+        }
+    }
+
+    private static BlockPos findBatAirPocketNear(ServerLevel level, BlockPos preferred, int horizontalRadius, int verticalRadius) {
+        if (isBatAirPocket(level, preferred)) {
+            return preferred;
+        }
+
+        for (int radius = 1; radius <= horizontalRadius; radius++) {
+            for (int dy = -verticalRadius; dy <= verticalRadius; dy++) {
+                for (int dx = -radius; dx <= radius; dx++) {
+                    for (int dz = -radius; dz <= radius; dz++) {
+                        if (Math.abs(dx) != radius && Math.abs(dz) != radius) {
+                            continue;
+                        }
+                        BlockPos candidate = preferred.offset(dx, dy, dz);
+                        if (isBatAirPocket(level, candidate)) {
+                            return candidate;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private static boolean isBatAirPocket(ServerLevel level, BlockPos pos) {
+        return level.isInWorldBounds(pos)
+                && level.isInWorldBounds(pos.above())
+                && level.getBlockState(pos).isAir()
+                && level.getBlockState(pos.above()).isAir();
     }
 
     private static void spawnPainting(ServerLevel level, BlockPos pos, Direction facing, String name) {

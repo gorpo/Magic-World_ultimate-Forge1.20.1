@@ -52,11 +52,13 @@ public class ClientEvents {
                 CreateWorldScreen screen,
                 List<AbstractWidget> vanillaWidgets,
                 AbstractWidget magicTabButton,
-                List<AbstractWidget> magicWidgets
+                List<AbstractWidget> magicWidgets,
+                EditBox worldNameBox,
+                MagicSeedDropdown seedDropdown
         ) {
         }
 
-        private record MagicPanelLayout(int gridWidth, int buttonWidth, int left, int top, int buttonsTop, int lineCoverY) {
+        private record MagicPanelLayout(int gridWidth, int buttonWidth, int left, int top, int buttonsTop, int nameTop, int panelHeight) {
         }
 
         private static final WeakHashMap<CreateWorldScreen, MagicCreateWorldPanel> MAGIC_CREATE_WORLD_PANELS = new WeakHashMap<>();
@@ -97,7 +99,11 @@ public class ClientEvents {
                     relayoutMagicPanel(panel);
                     updateMagicTabButton(panel);
                     MagicWorldWorldOptions.setCommandsEnabled(true);
-                    applyMagicWorldUiState(screen);
+                    boolean magicPanelVisible = isMagicPanelVisible(panel);
+                    if (!magicPanelVisible) {
+                        syncWorldNameOptionFromScreen(screen);
+                    }
+                    applyMagicWorldUiState(screen, magicPanelVisible);
                     syncAutomaticCommands(panel.vanillaWidgets());
                 }
             }
@@ -119,6 +125,8 @@ public class ClientEvents {
         @SubscribeEvent
         public static void onScreenOpening(ScreenEvent.Opening event) {
             if (event.getNewScreen() instanceof CreateWorldScreen createWorldScreen) {
+                String initialName = createWorldScreen.getUiState().getName();
+                MagicWorldWorldOptions.setWorldName(initialName == null || initialName.isBlank() ? "Novo mundo" : initialName);
                 MagicWorldWorldOptions.setStarterEstateEnabled(true);
                 MagicWorldWorldOptions.setCastlesEnabled(true);
                 MagicWorldWorldOptions.setFarmsEnabled(true);
@@ -177,7 +185,32 @@ public class ClientEvents {
             int left = layout.left();
             int top = layout.top();
             int buttonsTop = layout.buttonsTop();
+            int nameTop = layout.nameTop();
             final boolean[] syncingSeedBox = {false};
+
+            EditBox worldNameBox = new EditBox(
+                    Minecraft.getInstance().font,
+                    left,
+                    nameTop,
+                    gridWidth,
+                    buttonHeight,
+                    Component.literal("Nome do mundo")
+            );
+            worldNameBox.setHint(Component.literal("Nome do mundo"));
+            worldNameBox.setMaxLength(64);
+            String initialWorldName = MagicWorldWorldOptions.worldName();
+            if (initialWorldName.isBlank()) {
+                initialWorldName = screen.getUiState().getName();
+            }
+            if (initialWorldName == null || initialWorldName.isBlank()) {
+                initialWorldName = "Novo mundo";
+            }
+            MagicWorldWorldOptions.setWorldName(initialWorldName);
+            worldNameBox.setValue(initialWorldName);
+            worldNameBox.setResponder(name -> {
+                MagicWorldWorldOptions.setWorldName(name);
+                applyMagicWorldUiState(screen);
+            });
 
             EditBox customSeedBox = new EditBox(
                     Minecraft.getInstance().font,
@@ -200,11 +233,30 @@ public class ClientEvents {
                 applyMagicWorldUiState(screen);
             });
 
+            MagicSeedDropdown seedDropdown = new MagicSeedDropdown(
+                    gridX(left, buttonWidth, gap, 1),
+                    gridY(buttonsTop, buttonHeight, gap, 2),
+                    buttonWidth,
+                    buttonHeight,
+                    Arrays.asList(MAGIC_SEED_PRESETS),
+                    selected -> {
+                        if (selected > 0) {
+                            syncingSeedBox[0] = true;
+                            MagicWorldWorldOptions.setCustomSeed("");
+                            customSeedBox.setValue("");
+                            syncingSeedBox[0] = false;
+                        }
+                        MagicWorldWorldOptions.setPresetSeedIndex(selected, MAGIC_SEED_PRESETS.length);
+                        applyMagicWorldUiState(screen);
+                    }
+            );
+
             List<AbstractWidget> magicWidgets = List.of(
                     new MagicCreateWorldLineCover(0, 0, screen.width, screen.height),
-                    new MagicCreateWorldBackdrop(left - 12, top - 10, gridWidth + 24, MAGIC_PANEL_HEIGHT + 20),
+                    new MagicCreateWorldBackdrop(left - 12, top - 10, gridWidth + 24, layout.panelHeight() + 20),
                     new MagicCreateWorldTitle(left, top + 2, gridWidth, 18, Minecraft.getInstance().font, Component.literal("MAGIC WORLD")),
-                    new MagicCreateWorldInfo(left, top + 25, gridWidth, Math.max(72, buttonsTop - top - 34), Minecraft.getInstance().font),
+                    new MagicCreateWorldInfo(left, top + 25, gridWidth, Math.max(32, nameTop - top - 34), Minecraft.getInstance().font),
+                    worldNameBox,
                     Button.builder(magicWorldButtonLabel(), pressed -> {
                                 MagicWorldWorldOptions.toggleStarterEstateEnabled();
                                 syncAutomaticCommands(vanillaWidgets);
@@ -266,26 +318,10 @@ public class ClientEvents {
                     Button.builder(Component.literal("Voltar"), pressed -> showMagicPanel(screen, false))
                             .bounds(left + (gridWidth - gap) / 2 + gap, gridY(buttonsTop, buttonHeight, gap, 3), (gridWidth - gap) / 2, buttonHeight)
                             .build(),
-                    new MagicSeedDropdown(
-                            gridX(left, buttonWidth, gap, 1),
-                            gridY(buttonsTop, buttonHeight, gap, 2),
-                            buttonWidth,
-                            buttonHeight,
-                            Arrays.asList(MAGIC_SEED_PRESETS),
-                            selected -> {
-                                if (selected > 0) {
-                                    syncingSeedBox[0] = true;
-                                    MagicWorldWorldOptions.setCustomSeed("");
-                                    customSeedBox.setValue("");
-                                    syncingSeedBox[0] = false;
-                                }
-                                MagicWorldWorldOptions.setPresetSeedIndex(selected, MAGIC_SEED_PRESETS.length);
-                                applyMagicWorldUiState(screen);
-                            }
-                    )
+                    seedDropdown
             );
 
-            MAGIC_CREATE_WORLD_PANELS.put(screen, new MagicCreateWorldPanel(screen, vanillaWidgets, magicTabButton, magicWidgets));
+            MAGIC_CREATE_WORLD_PANELS.put(screen, new MagicCreateWorldPanel(screen, vanillaWidgets, magicTabButton, magicWidgets, worldNameBox, seedDropdown));
             syncAutomaticCommands(vanillaWidgets);
 
             event.addListener(magicTabButton);
@@ -371,6 +407,7 @@ public class ClientEvents {
             }
 
             if (show) {
+                syncWorldNameField(panel);
                 relayoutMagicPanel(panel);
             }
 
@@ -392,10 +429,7 @@ public class ClientEvents {
         }
 
         private static MagicSeedDropdown seedDropdown(MagicCreateWorldPanel panel) {
-            if (panel.magicWidgets().size() <= 14 || !(panel.magicWidgets().get(14) instanceof MagicSeedDropdown dropdown)) {
-                return null;
-            }
-            return dropdown;
+            return panel.seedDropdown();
         }
 
         private static void updateMagicTabButton(MagicCreateWorldPanel panel) {
@@ -418,12 +452,12 @@ public class ClientEvents {
             int panelHeight = Math.min(MAGIC_PANEL_HEIGHT, Math.max(198, screen.height - 70));
             int top = Math.max(44, Math.min(screen.height - panelHeight - 14, screen.height / 2 - panelHeight / 2 - 26));
             int buttonsTop = top + panelHeight - (MAGIC_PANEL_BUTTON_HEIGHT * 4 + gap * 3) - 8;
-            int lineCoverY = Math.max(0, top - 80);
-            return new MagicPanelLayout(gridWidth, buttonWidth, left, top, buttonsTop, lineCoverY);
+            int nameTop = buttonsTop - MAGIC_PANEL_BUTTON_HEIGHT - gap;
+            return new MagicPanelLayout(gridWidth, buttonWidth, left, top, buttonsTop, nameTop, panelHeight);
         }
 
         private static void relayoutMagicPanel(MagicCreateWorldPanel panel) {
-            if (panel.magicWidgets().size() < 15) {
+            if (panel.magicWidgets().size() < 16) {
                 return;
             }
 
@@ -436,26 +470,28 @@ public class ClientEvents {
             int left = layout.left();
             int top = layout.top();
             int buttonsTop = layout.buttonsTop();
+            int nameTop = layout.nameTop();
 
             panel.magicTabButton().setX(magicButtonX(screen, panel.vanillaWidgets()));
             panel.magicTabButton().setY(magicButtonY(panel.vanillaWidgets()));
             panel.magicTabButton().setWidth(magicButtonWidth(panel.vanillaWidgets()));
 
             setBounds(panel.magicWidgets().get(0), 0, 0, screen.width, screen.height);
-            setBounds(panel.magicWidgets().get(1), left - 12, top - 10, gridWidth + 24, MAGIC_PANEL_HEIGHT + 20);
+            setBounds(panel.magicWidgets().get(1), left - 12, top - 10, gridWidth + 24, layout.panelHeight() + 20);
             setBounds(panel.magicWidgets().get(2), left, top + 2, gridWidth, 18);
-            setBounds(panel.magicWidgets().get(3), left, top + 25, gridWidth, Math.max(72, buttonsTop - top - 34));
-            setBounds(panel.magicWidgets().get(4), gridX(left, buttonWidth, gap, 0), gridY(buttonsTop, buttonHeight, gap, 0), buttonWidth, buttonHeight);
-            setBounds(panel.magicWidgets().get(5), gridX(left, buttonWidth, gap, 1), gridY(buttonsTop, buttonHeight, gap, 0), buttonWidth, buttonHeight);
-            setBounds(panel.magicWidgets().get(6), gridX(left, buttonWidth, gap, 0), gridY(buttonsTop, buttonHeight, gap, 1), buttonWidth, buttonHeight);
-            setBounds(panel.magicWidgets().get(7), gridX(left, buttonWidth, gap, 1), gridY(buttonsTop, buttonHeight, gap, 1), buttonWidth, buttonHeight);
-            setBounds(panel.magicWidgets().get(8), gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 0), buttonWidth, buttonHeight);
-            setBounds(panel.magicWidgets().get(9), gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 1), buttonWidth, buttonHeight);
-            setBounds(panel.magicWidgets().get(10), gridX(left, buttonWidth, gap, 0), gridY(buttonsTop, buttonHeight, gap, 2), buttonWidth, buttonHeight);
-            setBounds(panel.magicWidgets().get(11), gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 2), buttonWidth, buttonHeight);
-            setBounds(panel.magicWidgets().get(12), left, gridY(buttonsTop, buttonHeight, gap, 3), (gridWidth - gap) / 2, buttonHeight);
-            setBounds(panel.magicWidgets().get(13), left + (gridWidth - gap) / 2 + gap, gridY(buttonsTop, buttonHeight, gap, 3), (gridWidth - gap) / 2, buttonHeight);
-            setBounds(panel.magicWidgets().get(14), gridX(left, buttonWidth, gap, 1), gridY(buttonsTop, buttonHeight, gap, 2), buttonWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(3), left, top + 25, gridWidth, Math.max(32, nameTop - top - 34));
+            setBounds(panel.magicWidgets().get(4), left, nameTop, gridWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(5), gridX(left, buttonWidth, gap, 0), gridY(buttonsTop, buttonHeight, gap, 0), buttonWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(6), gridX(left, buttonWidth, gap, 1), gridY(buttonsTop, buttonHeight, gap, 0), buttonWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(7), gridX(left, buttonWidth, gap, 0), gridY(buttonsTop, buttonHeight, gap, 1), buttonWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(8), gridX(left, buttonWidth, gap, 1), gridY(buttonsTop, buttonHeight, gap, 1), buttonWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(9), gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 0), buttonWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(10), gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 1), buttonWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(11), gridX(left, buttonWidth, gap, 0), gridY(buttonsTop, buttonHeight, gap, 2), buttonWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(12), gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 2), buttonWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(13), left, gridY(buttonsTop, buttonHeight, gap, 3), (gridWidth - gap) / 2, buttonHeight);
+            setBounds(panel.magicWidgets().get(14), left + (gridWidth - gap) / 2 + gap, gridY(buttonsTop, buttonHeight, gap, 3), (gridWidth - gap) / 2, buttonHeight);
+            setBounds(panel.magicWidgets().get(15), gridX(left, buttonWidth, gap, 1), gridY(buttonsTop, buttonHeight, gap, 2), buttonWidth, buttonHeight);
         }
 
         private static void setBounds(AbstractWidget widget, int x, int y, int width, int height) {
@@ -490,7 +526,15 @@ public class ClientEvents {
         }
 
         private static void applyMagicWorldUiState(CreateWorldScreen screen) {
+            applyMagicWorldUiState(screen, true);
+        }
+
+        private static void applyMagicWorldUiState(CreateWorldScreen screen, boolean applyWorldName) {
             WorldCreationUiState uiState = screen.getUiState();
+            String worldName = MagicWorldWorldOptions.worldName().trim();
+            if (applyWorldName && !worldName.isEmpty()) {
+                uiState.setName(worldName);
+            }
             uiState.setAllowCheats(true);
             uiState.setGameMode(MagicWorldWorldOptions.startingGameMode() == MagicWorldWorldOptions.StartingGameMode.CREATIVE
                     ? WorldCreationUiState.SelectedGameMode.CREATIVE
@@ -529,6 +573,28 @@ public class ClientEvents {
             rules.getRule(GameRules.RULE_COMMANDBLOCKOUTPUT).set(true, null);
             rules.getRule(GameRules.RULE_LOGADMINCOMMANDS).set(true, null);
             return rules;
+        }
+
+        private static void syncWorldNameField(MagicCreateWorldPanel panel) {
+            String worldName = panel.screen().getUiState().getName();
+            if (worldName == null || worldName.isBlank()) {
+                worldName = MagicWorldWorldOptions.worldName();
+            }
+            if (worldName == null || worldName.isBlank()) {
+                worldName = "Novo mundo";
+            }
+
+            MagicWorldWorldOptions.setWorldName(worldName);
+            if (!panel.worldNameBox().getValue().equals(worldName)) {
+                panel.worldNameBox().setValue(worldName);
+            }
+        }
+
+        private static void syncWorldNameOptionFromScreen(CreateWorldScreen screen) {
+            String worldName = screen.getUiState().getName();
+            if (worldName != null && !worldName.isBlank()) {
+                MagicWorldWorldOptions.setWorldName(worldName);
+            }
         }
 
         private static void syncAutomaticCommands(List<AbstractWidget> vanillaWidgets) {
@@ -833,35 +899,41 @@ public class ClientEvents {
                 int listTop = popupListTop(rowHeight);
                 int listWidth = popupWidth - 20;
 
-                graphics.fill(0, 0, Minecraft.getInstance().getWindow().getGuiScaledWidth(), Minecraft.getInstance().getWindow().getGuiScaledHeight(), 0xF6000000);
-                graphics.fill(popupLeft, popupTop, popupLeft + popupWidth, popupTop + 48 + visibleRows * rowHeight + 12, 0xFF050916);
-                graphics.renderOutline(popupLeft, popupTop, popupWidth, 48 + visibleRows * rowHeight + 12, 0xFFFFE6A6);
-                graphics.renderOutline(popupLeft + 4, popupTop + 4, popupWidth - 8, 48 + visibleRows * rowHeight + 4, 0xDD39D9FF);
-                graphics.drawCenteredString(font, Component.literal("Escolha uma seed"), popupLeft + popupWidth / 2, popupTop + 12, 0xFFFFE6A6);
-                graphics.drawCenteredString(font, Component.literal("Clique fora para fechar"), popupLeft + popupWidth / 2, popupTop + 24, 0xFF9AB8D8);
+                graphics.pose().pushPose();
+                graphics.pose().translate(0.0F, 0.0F, 900.0F);
+                try {
+                    graphics.fill(0, 0, Minecraft.getInstance().getWindow().getGuiScaledWidth(), Minecraft.getInstance().getWindow().getGuiScaledHeight(), 0xFF000000);
+                    graphics.fill(popupLeft, popupTop, popupLeft + popupWidth, popupTop + 48 + visibleRows * rowHeight + 12, 0xFF050916);
+                    graphics.renderOutline(popupLeft, popupTop, popupWidth, 48 + visibleRows * rowHeight + 12, 0xFFFFE6A6);
+                    graphics.renderOutline(popupLeft + 4, popupTop + 4, popupWidth - 8, 48 + visibleRows * rowHeight + 4, 0xDD39D9FF);
+                    graphics.drawCenteredString(font, Component.literal("Escolha uma seed"), popupLeft + popupWidth / 2, popupTop + 12, 0xFFFFE6A6);
+                    graphics.drawCenteredString(font, Component.literal("Ao selecionar, esta janela fecha"), popupLeft + popupWidth / 2, popupTop + 24, 0xFF9AB8D8);
 
-                for (int row = 0; row < visibleRows; row++) {
-                    int i = scrollOffset + row;
-                    int rowTop = listTop + row * rowHeight;
-                    boolean hovered = mouseX >= listLeft
-                            && mouseX < listLeft + listWidth
-                            && mouseY >= rowTop
-                            && mouseY < rowTop + rowHeight;
-                    int background = hovered ? 0xFF243B4D : 0xFF101820;
-                    graphics.fill(listLeft, rowTop, listLeft + listWidth, rowTop + rowHeight, background);
-                    graphics.renderOutline(listLeft, rowTop, listWidth, rowHeight, 0xAA39D9FF);
-                    int textColor = i == MagicWorldWorldOptions.presetSeedIndex() ? 0xFFFFE6A6 : 0xFFE8F2FF;
-                    graphics.drawString(font, presets.get(i).label(), listLeft + 8, rowTop + 6, textColor, false);
-                }
+                    for (int row = 0; row < visibleRows; row++) {
+                        int i = scrollOffset + row;
+                        int rowTop = listTop + row * rowHeight;
+                        boolean hovered = mouseX >= listLeft
+                                && mouseX < listLeft + listWidth
+                                && mouseY >= rowTop
+                                && mouseY < rowTop + rowHeight;
+                        int background = hovered ? 0xFF243B4D : 0xFF101820;
+                        graphics.fill(listLeft, rowTop, listLeft + listWidth, rowTop + rowHeight, background);
+                        graphics.renderOutline(listLeft, rowTop, listWidth, rowHeight, 0xAA39D9FF);
+                        int textColor = i == MagicWorldWorldOptions.presetSeedIndex() ? 0xFFFFE6A6 : 0xFFE8F2FF;
+                        graphics.drawString(font, presets.get(i).label(), listLeft + 8, rowTop + 6, textColor, false);
+                    }
 
-                if (presets.size() > visibleRows) {
-                    int barLeft = listLeft + listWidth - 5;
-                    int barTop = listTop + 2;
-                    int barHeight = visibleRows * rowHeight - 4;
-                    int thumbHeight = Math.max(12, barHeight * visibleRows / presets.size());
-                    int thumbTop = barTop + (barHeight - thumbHeight) * scrollOffset / Math.max(1, maxScrollOffset());
-                    graphics.fill(barLeft, barTop, barLeft + 2, barTop + barHeight, 0x6639D9FF);
-                    graphics.fill(barLeft - 1, thumbTop, barLeft + 3, thumbTop + thumbHeight, 0xFFD9A441);
+                    if (presets.size() > visibleRows) {
+                        int barLeft = listLeft + listWidth - 5;
+                        int barTop = listTop + 2;
+                        int barHeight = visibleRows * rowHeight - 4;
+                        int thumbHeight = Math.max(12, barHeight * visibleRows / presets.size());
+                        int thumbTop = barTop + (barHeight - thumbHeight) * scrollOffset / Math.max(1, maxScrollOffset());
+                        graphics.fill(barLeft, barTop, barLeft + 2, barTop + barHeight, 0x6639D9FF);
+                        graphics.fill(barLeft - 1, thumbTop, barLeft + 3, thumbTop + thumbHeight, 0xFFD9A441);
+                    }
+                } finally {
+                    graphics.pose().popPose();
                 }
             }
 
@@ -957,7 +1029,7 @@ public class ClientEvents {
 
             private int popupWidth() {
                 int screenWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
-                return Math.min(Math.max(getWidth() + 96, 260), Math.max(180, screenWidth - 36));
+                return Math.min(Math.max(getWidth() + 220, 420), Math.max(180, screenWidth - 32));
             }
 
             private int popupLeft() {

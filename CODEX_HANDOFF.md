@@ -1773,3 +1773,17 @@ Validacao:
 - Uma parede virou arquivo de recipientes preenchido com todos os itens registrados. A escada oculta leva a uma camara subterranea dourada com baus de preciosidades.
 - `CURRENT_ESTATE_REPAIR_VERSION = 23` aplica a reforma no save existente.
 - Validacao: `compileJava` passou; `runClient` entrou no save e exibiu `Magic World: Arquivo Medieval da Praca Verde e estruturas iniciais atualizados.` sem excecao da construcao.
+
+## Handoff 2026-06-06 - placas de identificacao no chao
+- Pedido: colocar placas no chao em frente a casas, portais, predios e areas importantes para o usuario conseguir informar exatamente qual local quer alterar.
+- `CURRENT_ESTATE_REPAIR_VERSION = 24`, aplicando as placas no save existente ao entrar.
+- Foi criada `placeEstateIdentificationSigns`, chamada no reparo e no fim da geracao inicial, depois das estruturas para nao ser sobrescrita.
+- As placas usam `DARK_OAK_SIGN`, texto duplicado na frente e no verso, e sao posicionadas fora do bloco de entrada para nao tampar portas.
+- Locais cobertos: casa principal, portal inicial, praca de portais, Nether, End Portal, End Gateway, Casa do Ultimo Farol, Santuario Violeta, Coven das Tres Guardias, Mina do Tesouro, Rancho do Cofre Dourado, casas da plantacao, Arquivo Medieval da Praca Verde, Casas Verdes, Praca Verde, centro/casa dos animais, jardim de racao, seis currais, quatro plantacoes e castelo quando ativo.
+
+## Handoff 2026-06-06 - nome do mundo, modal de seeds e reparo leve
+- Tela de criacao Magic World recebeu campo `Nome do mundo` acima dos botoes; o valor sincroniza com `WorldCreationUiState.setName` antes de criar o mundo.
+- Se o jogador abriu a aba Magic World depois de mexer no nome vanilla, o campo importa o nome atual da tela em vez de forcar um padrao fixo.
+- Selecao de seed virou modal frontal: fundo preto opaco, painel central maior, render com z elevado e fechamento imediato ao selecionar uma seed.
+- Reparo `24` agora e leve quando o save ja estava no `23`: aplica apenas `placeEstateIdentificationSigns`, sem reconstruir casas, baus e estruturas inteiras no login.
+- Morcegos decorativos usam `spawnDecorativeBat`, que procura bolso de ar proximo e evita spawn dentro de parede; todos os antigos `spawnNamed(... EntityType.BAT ...)` foram substituidos.
