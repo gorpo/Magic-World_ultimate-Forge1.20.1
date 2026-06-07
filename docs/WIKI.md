@@ -1269,3 +1269,10 @@ Validacao e processo:
 - Mantida apenas a personalizacao segura inicial de idioma, Town Hall, mapa e tela de construcao.
 - Regra fixa: nao criar scripts ou rotinas que carreguem/varram saves antigos para personalizacao ou migracao, salvo pedido explicito do usuario.
 - Proximo caminho: personalizar MineColonies por lotes pequenos a partir de prints/texto do usuario, testando cada tela antes de ampliar.
+
+## Registro 2026-06-07 - hotfix crash EMF no TLauncher
+- Crash reportado: `entity_model_features.mixins.json:MixinModelPart` falhou durante APPLY.
+- Causa operacional: `entity_model_features`/EMF estava carregavel em `.minecraft/mods`.
+- Desativados da pasta `mods` carregavel do pacote e do Minecraft local: EMF, ETF, Fusion, CIT Resewn, ModernFix e FerriteCore.
+- Os JARs foram movidos para `mods_desativados_magicworld`; nao apagar, mas tambem nao carregar.
+- Regra: esses mods so voltam por teste isolado, um por vez. `entityculling` externo continua fora porque o Magic World ja tem culling interno.

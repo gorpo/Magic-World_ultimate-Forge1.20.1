@@ -1985,3 +1985,10 @@ Validacao:
 - Mantida apenas a personalizacao inicial segura de idioma, Town Hall, mapa e construcao.
 - Regra fixa do usuario: nao criar scripts/rotinas que carreguem ou varram saves antigos; isso so pode acontecer com pedido explicito.
 - Proximo caminho: personalizar por lotes pequenos com base em prints/texto, sem rotina retroativa de saves.
+
+## Handoff 2026-06-07 - hotfix crash EMF
+- Erro recebido do usuario: `entity_model_features.mixins.json:MixinModelPart` falhou durante APPLY.
+- Diagnostico: crash vem do mod externo EMF, nao do JAR principal Magic World.
+- Movidos para `mods_desativados_magicworld` no pacote e no Minecraft local: `entity_model_features`, `entity_texture_features`, `fusion`, `citresewn`, `modernfix` e `ferritecore`.
+- Esses JARs nao devem retornar para `.minecraft/mods` sem teste isolado um por vez.
+- `entityculling` externo continua proibido no pacote porque o Magic World ja possui culling interno proprio.
