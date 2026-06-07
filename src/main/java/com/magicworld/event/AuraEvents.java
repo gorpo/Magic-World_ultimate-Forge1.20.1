@@ -32,6 +32,7 @@ import java.util.UUID;
 
 public class AuraEvents {
     private static final String PLAYER_AURA_KEY = "MagicWorldAuraEnabled";
+    private static final int AURA_SURVIVAL_REFRESH_TICKS = 20;
     private static final Map<UUID, DeathReturn> DEATH_RETURNS = new HashMap<>();
 
     private record DeathReturn(ResourceKey<Level> dimension, Vec3 position, float yRot, float xRot) {
@@ -62,12 +63,14 @@ public class AuraEvents {
             player.onUpdateAbilities();
         }
 
-        if (player.tickCount % 10 == 0) {
+        if (player.tickCount % AURA_SURVIVAL_REFRESH_TICKS == 0) {
             player.setRemainingFireTicks(0);
             player.extinguishFire();
             player.setAirSupply(player.getMaxAirSupply());
             player.setTicksFrozen(0);
-            player.getFoodData().eat(20, 1.0F);
+            if (player.getFoodData().getFoodLevel() < 20) {
+                player.getFoodData().eat(20, 1.0F);
+            }
 
             addInvisibleEffect(player, MobEffects.FIRE_RESISTANCE, 2);
             addInvisibleEffect(player, MobEffects.WATER_BREATHING, 0);
@@ -205,12 +208,12 @@ public class AuraEvents {
 
     private static void addInvisibleEffect(ServerPlayer player, net.minecraft.world.effect.MobEffect effect, int amplifier) {
         MobEffectInstance current = player.getEffect(effect);
-        if (current != null && !current.isVisible() && !current.showIcon() && current.getAmplifier() >= amplifier && current.getDuration() > 20) {
+        if (current != null && !current.isVisible() && !current.showIcon() && current.getAmplifier() >= amplifier && current.getDuration() > 60) {
             return;
         }
         if (current != null) {
             player.removeEffect(effect);
         }
-        player.addEffect(new MobEffectInstance(effect, 80, amplifier, false, false, false));
+        player.addEffect(new MobEffectInstance(effect, 20 * 8, amplifier, false, false, false));
     }
 }

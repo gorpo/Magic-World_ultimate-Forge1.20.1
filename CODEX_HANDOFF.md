@@ -1803,3 +1803,15 @@ Validacao:
 - `buildSanctuaryWestEntranceStairs` passou de 18 para 28 degraus, mantendo a descida para oeste.
 - Foi adicionada `buildSanctuaryEntrancePlatform`, criando plataforma 8x8 de pedra no fim da escada com sea lanterns e end rods.
 - A entrada recebeu 6 parrots nomeados com nome invisivel, usando o helper `spawnNamed` ja configurado para `setCustomNameVisible(false)`.
+
+## Handoff 2026-06-07 - otimizacao forte para mapa novo
+- Regra operacional reforcada: o alvo padrao e sempre mapa novo. Nao implementar nem religar reparo de save antigo sem pedido explicito.
+- Login de mundo ja criado nao reconstroi propriedade, nao aplica placas, nao varre estruturas e nao envia mensagem de reparo. Ele apenas marca a versao atual para impedir fluxo legado.
+- `repairExistingEstate` e helpers mortos de reparo/manutencao foram removidos do fluxo/codigo ativo.
+- `StarterPortalEvents.onPlayerTick` agora sai cedo quando nao ha tarefa de geracao ou propriedade criada. Depois da geracao, o runtime fica limitado a portais, premium e efeitos raros.
+- Manutencao periodica dos currais foi removida do runtime. Animais nascem em quantidade menor na geracao inicial.
+- Suporte das bruxas nao varre mais monstros nem reconfigura witches por AABB; aplica apenas efeitos discretos quando o jogador esta perto do coven.
+- Portais funcionais usam posicoes conhecidas no runtime e evitam recalcular superficie com busca por raio a cada checagem.
+- Catalogo completo de itens fica limitado ao Arquivo Medieval da Praca Verde, preenchendo cada item registrado uma unica vez e usando cache da lista de itens. Santuario/Rancho usam poucos recipientes tematicos.
+- Entidades decorativas foram reduzidas em Santuario, portal, rancho, praca verde e currais para priorizar FPS.
+- Regra de performance futura: nenhum tick/login deve reconstruir propriedade, procurar entidades em AABB gigante, varrer volumes grandes, preencher baus em massa ou chamar `getChunk` fora da geracao inicial.

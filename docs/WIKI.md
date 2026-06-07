@@ -1108,3 +1108,20 @@ Validacao e processo:
 - No fim da escada foi criada uma plataforma 8x8 de pedra para marcar claramente a entrada.
 - A plataforma recebeu iluminacao forte com sea lanterns e end rods.
 - Aves decorativas foram adicionadas na plataforma, sem nomes flutuantes.
+
+## Registro 2026-06-07 - regra de performance para mapa novo
+- Mapa novo e o alvo padrao de validacao. Reparo/migracao de save antigo nao deve ser implementado por padrao.
+- Login nao pode reconstruir propriedade, reaplicar estruturas, preencher baus em massa ou varrer areas grandes.
+- Tick de gameplay nao pode usar AABB gigante, `BlockPos.betweenClosed` grande, `getChunk` ou busca de superficie por raio para manutencao.
+- Geracao inicial pode ser pesada e dividida em etapas; depois que o jogador aparece no mundo, o runtime deve ficar restrito a portais, aura e interacoes realmente necessarias.
+- Entidades decorativas devem ser limitadas. Preferir blocos decorativos quando o elemento nao precisa de IA.
+- Catalogo completo de itens deve existir em um unico local principal. Duplicar todos os itens em varias casas aumenta NBT e peso do save.
+- Qualquer excecao a essas regras precisa ser pedida explicitamente pelo usuario.
+
+## Registro 2026-06-07 - otimizacao de runtime
+- `StarterPortalEvents` nao executa mais reparo versionado pesado em login de mundo ja criado.
+- A manutencao periodica dos currais saiu do tick; os animais sao criados em menor quantidade na geracao inicial.
+- O suporte do coven deixou de remover monstros e reconfigurar witches por busca de entidade; agora aplica apenas efeitos discretos perto da casa das bruxas.
+- Portais funcionais usam posicoes conhecidas no runtime e evitam busca de superficie por raio a cada checagem.
+- O catalogo completo de itens foi limitado ao Arquivo Medieval da Praca Verde, com cache de itens registrados e sem repetir o catalogo em todos os slots extras.
+- Santuario, portal, rancho, praca verde e currais tiveram entidades decorativas reduzidas para priorizar FPS e estabilidade.

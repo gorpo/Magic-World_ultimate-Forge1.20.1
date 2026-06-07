@@ -31,11 +31,9 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Witch;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.VillagerProfession;
-import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -120,22 +118,21 @@ public class StarterPortalEvents {
     private static final int IMPORTED_HOUSE_MAX_Z = HOUSE_ORIGIN_Z + IMPORTED_HOUSE_SIZE_Z;
     private static final int CASTLE_SIZE_X = 265;
     private static final int CASTLE_SIZE_Z = 221;
-    private static final int ESTATE_REPAIR_VERSION_BEFORE_IDENTIFICATION_SIGNS = 23;
     private static final int CURRENT_ESTATE_REPAIR_VERSION = 24;
     private static final int SANCTUARY_WIDTH = 36;
     private static final int SANCTUARY_DEPTH = 17;
     private static final int SANCTUARY_HEIGHT = 10;
     private static final BlockPos SANCTUARY_TARGET_CENTER = new BlockPos(201, 110, 13);
     private static final int GLOBAL_VILLAGER_WORK_RADIUS = 384;
-    private static final int ESTATE_MAINTENANCE_INTERVAL_TICKS = 20 * 60;
     private static final int PORTAL_CHECK_INTERVAL_TICKS = 10;
     private static final int PORTAL_VISUAL_REPAIR_INTERVAL_TICKS = 20 * 60;
-    private static final int AMBIENT_EFFECT_INTERVAL_TICKS = 20 * 5;
-    private static final double ESTATE_MAINTENANCE_RADIUS_SQR = 384.0D * 384.0D;
+    private static final int AMBIENT_EFFECT_INTERVAL_TICKS = 20 * 30;
     private static final double FUNCTIONAL_PORTAL_ACTIVE_RADIUS_SQR = 48.0D * 48.0D;
+    private static final double WITCH_COVEN_SUPPORT_RADIUS_SQR = 40.0D * 40.0D;
 
     private static final Map<UUID, EstateTask> TASKS = new HashMap<>();
     private static final Set<UUID> PLAYERS_TOUCHING_STARTER_PORTAL = new HashSet<>();
+    private static List<ItemStack> cachedRegisteredItemStacks;
 
     private record EstateTask(BlockPos base, int step, int ticksUntilNextStep) {
     }
@@ -158,24 +155,14 @@ public class StarterPortalEvents {
 
         CompoundTag data = player.getPersistentData();
         if (data.getBoolean(ESTATE_CREATED_KEY)) {
-            setPlayerEstateRespawn(player, levelFor(player), estateBaseFromPlayer(player));
-        }
-        int currentRepairVersion = data.getInt(ESTATE_REPAIR_VERSION_KEY);
-        if (data.getBoolean(ESTATE_CREATED_KEY)
-                && currentRepairVersion < CURRENT_ESTATE_REPAIR_VERSION) {
-            ServerLevel level = levelFor(player);
-            BlockPos base = estateBaseFromPlayer(player);
-            if (currentRepairVersion == ESTATE_REPAIR_VERSION_BEFORE_IDENTIFICATION_SIGNS) {
-                placeEstateIdentificationSigns(level, base);
-            } else {
-                repairExistingEstate(level, base);
+            if (data.getInt(ESTATE_REPAIR_VERSION_KEY) < CURRENT_ESTATE_REPAIR_VERSION) {
+                // Saves antigos nao sao reparados no login: o alvo de performance e mapa novo.
+                data.putInt(ESTATE_REPAIR_VERSION_KEY, CURRENT_ESTATE_REPAIR_VERSION);
             }
-            data.putInt(ESTATE_REPAIR_VERSION_KEY, CURRENT_ESTATE_REPAIR_VERSION);
-            player.sendSystemMessage(Component.literal("Magic World: placas de identificacao e estruturas iniciais atualizadas."));
+            return;
         }
 
         if (!MagicWorldWorldOptions.isStarterEstateEnabled()
-                || data.getBoolean(ESTATE_CREATED_KEY)
                 || TASKS.containsKey(player.getUUID())) {
             return;
         }
@@ -196,17 +183,17 @@ public class StarterPortalEvents {
         }
 
         handleEstateTask(player);
-        handlePremiumPortalToggle(player);
-        handleFunctionalEstatePortals(player);
-        handleAmbientEffects(player);
-        if (player.tickCount % ESTATE_MAINTENANCE_INTERVAL_TICKS == 0
-                && player.level().dimension().equals(Level.OVERWORLD)
-                && player.getPersistentData().getBoolean(ESTATE_CREATED_KEY)) {
-            BlockPos estateBase = estateBaseFromPlayer(player);
-            if (player.blockPosition().distSqr(estateBase) <= ESTATE_MAINTENANCE_RADIUS_SQR) {
-                maintainEstateLife(player.serverLevel(), estateBase);
-            }
+        if (TASKS.containsKey(player.getUUID())
+                || !player.getPersistentData().getBoolean(ESTATE_CREATED_KEY)
+                || !MagicWorldWorldOptions.isStarterEstateEnabled()) {
+            return;
         }
+
+        ServerLevel level = player.serverLevel();
+        BlockPos estateBase = estateBaseFromPlayer(player);
+        handlePremiumPortalToggle(player, level, estateBase);
+        handleFunctionalEstatePortals(player, level, estateBase);
+        handleAmbientEffects(player, level, estateBase);
     }
 
     @SubscribeEvent
@@ -262,7 +249,6 @@ public class StarterPortalEvents {
             case 1 -> {
                 if (MagicWorldWorldOptions.isFarmsEnabled()) {
                     sendInitialLoadProgress(player, 35, "Carregando fazendas, animais e trabalhadores...", false);
-                    prepareImportedEstateFoundation(level, task.base);
                     buildImportedEstateFarms(level, task.base);
                     spawnImportedStarterAnimals(level, task.base);
                     convertMainHousePerimeterTreesToCherry(level, task.base);
@@ -401,10 +387,6 @@ public class StarterPortalEvents {
         return base.offset(-24, 0, 48);
     }
 
-    private static ServerLevel levelFor(ServerPlayer player) {
-        return player.serverLevel();
-    }
-
     private static void openInitialLoadNotice(ServerPlayer player) {
         // O usuario prefere criar mapas novos sem overlay de aviso ao spawnar.
     }
@@ -413,62 +395,8 @@ public class StarterPortalEvents {
         // Mantem a geracao silenciosa na tela; a confirmacao final fica no chat.
     }
 
-    private static void repairExistingEstate(ServerLevel level, BlockPos base) {
-        fillMissingStarterPortalBlocks(level, starterPortalCenter(base));
-        removeLooseDroppedItemsAroundImportedHouse(level, base);
-        stabilizeEstateAirGaps(level, base);
-        normalizeImportedHouseFrontRoad(level, base);
-        buildPlantationWorkerSettlement(level, base);
-        buildAnimalCaretakerSettlement(level, base);
-        buildGreenVillageSquare(level, base);
-        buildEnhancedEstateLighting(level, base);
-        restoreImportedHouseTemplate(level, base);
-        finishImportedHouseContents(level, base);
-        removeLooseDroppedItemsAroundImportedHouse(level, base);
-        buildStarterRoadEndHouse(level, base);
-        buildRoadEndMagicSanctuary(level, base);
-        buildWitchCovenHouse(level, base);
-        restoreStoneTreasureMineHouse(level, base);
-        restoreAnimalPens(level, base);
-        if (MagicWorldWorldOptions.isCastlesEnabled()) {
-            populateCastleCouncilTable(level, castleCenter(base));
-        }
-        placeEstateIdentificationSigns(level, base);
-    }
-
-    private static void fillMissingStarterPortalBlocks(ServerLevel level, BlockPos center) {
-        for (int x = -3; x <= 3; x++) {
-            for (int z = -2; z <= 2; z++) {
-                BlockPos support = center.offset(x, -1, z);
-                BlockPos floor = center.offset(x, 0, z);
-                if (level.getBlockState(support).isAir()) {
-                    level.setBlock(support, Blocks.DIRT.defaultBlockState(), 2);
-                }
-                if (level.getBlockState(floor).isAir()) {
-                    boolean edge = Math.abs(x) == 3 || Math.abs(z) == 2;
-                    level.setBlock(floor, edge
-                            ? Blocks.POLISHED_ANDESITE.defaultBlockState()
-                            : Blocks.SMOOTH_STONE.defaultBlockState(), 2);
-                }
-            }
-        }
-
-        for (int y = 1; y <= 5; y++) {
-            setBlockIfAir(level, center.offset(-2, y, 0), Blocks.STRIPPED_OAK_LOG.defaultBlockState());
-            setBlockIfAir(level, center.offset(2, y, 0), Blocks.STRIPPED_OAK_LOG.defaultBlockState());
-        }
-        for (int x = -3; x <= 3; x++) {
-            setBlockIfAir(level, center.offset(x, 5, 0), Blocks.OAK_PLANKS.defaultBlockState());
-            setBlockIfAir(level, center.offset(x, 6, 0), Blocks.DARK_OAK_SLAB.defaultBlockState());
-        }
-        for (int y = 1; y <= 4; y++) {
-            setBlockIfAir(level, center.offset(-1, y, 0), Blocks.PURPLE_STAINED_GLASS.defaultBlockState());
-            setBlockIfAir(level, center.offset(1, y, 0), Blocks.MAGENTA_STAINED_GLASS.defaultBlockState());
-        }
-    }
-
-    private static void setBlockIfAir(ServerLevel level, BlockPos pos, BlockState state) {
-        if (level.getBlockState(pos).isAir()) {
+    private static void setBlockIfDifferent(ServerLevel level, BlockPos pos, BlockState state) {
+        if (!level.getBlockState(pos).equals(state)) {
             level.setBlock(pos, state, 2);
         }
     }
@@ -490,38 +418,6 @@ public class StarterPortalEvents {
     private static void finishImportedHouseContents(ServerLevel level, BlockPos base) {
         fillStarterChests(level, base);
         decorateImportedHouseAddons(level, base);
-    }
-
-    private static void maintainEstateLife(ServerLevel level, BlockPos base) {
-        // Residents are persistent and configured during generation/login repair.
-        // Only the small pen breeding check needs periodic maintenance.
-        encourageAnimalPenBreeding(level, base);
-    }
-
-    private static VillagerProfession professionForNamedVillager(Villager villager) {
-        return switch (villager.getName().getString()) {
-            case "Bibliotecario Real", "Bibliotecario do Conselho" -> VillagerProfession.LIBRARIAN;
-            case "Cartografo da Torre", "Cartografo do Conselho" -> VillagerProfession.CARTOGRAPHER;
-            case "Armoreiro do Castelo", "Armoreiro do Conselho" -> VillagerProfession.ARMORER;
-            case "Clerigo da Capela", "Clerigo do Conselho" -> VillagerProfession.CLERIC;
-            case "Pedreiro Real" -> VillagerProfession.MASON;
-            case "Ferreiro de Armas" -> VillagerProfession.WEAPONSMITH;
-            case "Ferreiro de Ferramentas", "Ferreiro do Castelo" -> VillagerProfession.TOOLSMITH;
-            case "Flecheiro da Guarda" -> VillagerProfession.FLETCHER;
-            case "Cozinheiro do Salao" -> VillagerProfession.BUTCHER;
-            case "Tecelao da Ponte" -> VillagerProfession.SHEPHERD;
-            case "Coureeiro da Cavalaria" -> VillagerProfession.LEATHERWORKER;
-            case "Guardiao Aldeao da Casa Grande", "Guardiao Aldeao da Mina",
-                    "Guardiao Aldeao dos Currais", "Guardiao Aldeao da Plantacao",
-                    "Guardiao Aldeao da Praca Verde" -> VillagerProfession.WEAPONSMITH;
-            case "Armoreiro da Casa Grande" -> VillagerProfession.ARMORER;
-            case "Ferreiro da Casa Grande" -> VillagerProfession.WEAPONSMITH;
-            case "Ferramenteiro da Casa Grande" -> VillagerProfession.TOOLSMITH;
-            case "Bibliotecario da Casa Grande" -> VillagerProfession.LIBRARIAN;
-            case "Clerigo da Casa Grande" -> VillagerProfession.CLERIC;
-            case "Pedreiro da Casa Grande" -> VillagerProfession.MASON;
-            default -> villager.getVillagerData().getProfession();
-        };
     }
 
     private static boolean isInsideImportedHouseFootprint(int x, int z) {
@@ -572,13 +468,13 @@ public class StarterPortalEvents {
 
                 BlockPos ground = base.offset(x, -1, z);
                 for (int y = -5; y <= -2; y++) {
-                    level.setBlock(base.offset(x, y, z), Blocks.DIRT.defaultBlockState(), 2);
+                    setBlockIfDifferent(level, base.offset(x, y, z), Blocks.DIRT.defaultBlockState());
                 }
-                level.setBlock(ground, Blocks.GRASS_BLOCK.defaultBlockState(), 2);
+                setBlockIfDifferent(level, ground, Blocks.GRASS_BLOCK.defaultBlockState());
                 for (int y = 0; y <= 24; y++) {
                     BlockPos clear = base.offset(x, y, z);
                     if (!isProtectedGeneratedBlock(level.getBlockState(clear))) {
-                        level.setBlock(clear, Blocks.AIR.defaultBlockState(), 2);
+                        setBlockIfDifferent(level, clear, Blocks.AIR.defaultBlockState());
                     }
                 }
             }
@@ -901,9 +797,7 @@ public class StarterPortalEvents {
         }
 
         for (BlockPos bird : new BlockPos[] {
-                platformCorner.offset(1, 1, 1), platformCorner.offset(6, 1, 1),
-                platformCorner.offset(1, 1, 6), platformCorner.offset(6, 1, 6),
-                platformCorner.offset(3, 1, 3), platformCorner.offset(4, 1, 4)
+                platformCorner.offset(1, 1, 1), platformCorner.offset(6, 1, 6)
         }) {
             spawnNamed(level, EntityType.PARROT, bird, "Ave da Entrada do Santuario " + bird.getX() + "_" + bird.getZ());
         }
@@ -961,7 +855,7 @@ public class StarterPortalEvents {
             itemCatalogContainers.add(north);
             itemCatalogContainers.add(south);
         }
-        fillContainersWithAllRegisteredItems(level, itemCatalogContainers);
+        fillLimitedThemeContainers(level, itemCatalogContainers, 5, sanctuaryStorageStacks());
 
         BlockPos wandChest = origin.offset(4, 1, depth - 3);
         placeStorageChest(level, wandChest, Direction.NORTH, false);
@@ -1082,12 +976,8 @@ public class StarterPortalEvents {
     }
 
     private static void populateRoadEndSanctuary(ServerLevel level, BlockPos origin, int width, int depth) {
-        spawnNamed(level, EntityType.ALLAY, origin.offset(width / 2 - 3, 2, depth / 2), "Brilho do Santuario 1");
-        spawnNamed(level, EntityType.ALLAY, origin.offset(width / 2 + 3, 2, depth / 2), "Brilho do Santuario 2");
+        spawnNamed(level, EntityType.ALLAY, origin.offset(width / 2, 2, depth / 2), "Brilho do Santuario");
         spawnNamed(level, EntityType.PARROT, origin.offset(5, 2, 5), "Passaro Azul do Santuario");
-        spawnNamed(level, EntityType.PARROT, origin.offset(width - 6, 2, depth - 5), "Passaro Magico do Santuario");
-        spawnNamed(level, EntityType.RABBIT, origin.offset(8, 1, depth / 2), "Coelho do Santuario 1");
-        spawnNamed(level, EntityType.RABBIT, origin.offset(width - 9, 1, depth / 2), "Coelho do Santuario 2");
     }
 
     private static BlockPos witchCovenAnchor(BlockPos base) {
@@ -1343,7 +1233,6 @@ public class StarterPortalEvents {
         spawnFriendlyWitch(level, origin.offset(7, 1, 7), "Bruxa Alquimista");
         spawnFriendlyWitch(level, origin.offset(9, 1, 9), "Bruxa da Mata");
         spawnDecorativeBat(level, origin.offset(3, 4, 5), "Morcego da Chamine");
-        spawnDecorativeBat(level, origin.offset(8, 4, 8), "Morcego da Biblioteca");
     }
 
     private static void prepareWitchCovenClearing(
@@ -2175,31 +2064,6 @@ public class StarterPortalEvents {
                 .setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH), 2);
     }
 
-    private static void restoreAnimalPens(ServerLevel level, BlockPos base) {
-        BlockPos[] corners = animalPenCorners(base);
-        for (BlockPos corner : corners) {
-            repairAnimalPenBoundary(level, corner, 14, 12);
-        }
-        furnishAnimalPens(level, base);
-        ensureAnimalPenPopulations(level, base);
-        assignAnimalCaretakersToPens(level, base);
-    }
-
-    private static void repairAnimalPenBoundary(ServerLevel level, BlockPos corner, int width, int depth) {
-        for (int x = 0; x <= width; x++) {
-            for (int z = 0; z <= depth; z++) {
-                if (x != 0 && x != width && z != 0 && z != depth) {
-                    continue;
-                }
-                BlockPos fence = corner.offset(x, 1, z);
-                boolean entrance = x == width / 2 && z == 0;
-                level.setBlock(fence, entrance
-                        ? Blocks.OAK_FENCE_GATE.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH)
-                        : Blocks.OAK_FENCE.defaultBlockState(), 2);
-            }
-        }
-    }
-
     private static void furnishAnimalPens(ServerLevel level, BlockPos base) {
         Item[] foods = {
                 Items.WHEAT, Items.CARROT, Items.WHEAT,
@@ -2609,7 +2473,6 @@ public class StarterPortalEvents {
             level.setBlock(web, Blocks.COBWEB.defaultBlockState(), 2);
         }
         spawnDecorativeBat(level, center.above(3), "Morcego do Cofre Dourado");
-        spawnDecorativeBat(level, center.offset(4, 3, 2), "Morcego do Tesouro Antigo");
     }
 
     private static void furnishPremiumAnimalWorkCenter(ServerLevel level, BlockPos corner, int width, int depth) {
@@ -2646,7 +2509,7 @@ public class StarterPortalEvents {
             itemCatalogContainers.add(south);
         }
 
-        fillContainersWithAllRegisteredItems(level, itemCatalogContainers);
+        fillLimitedThemeContainers(level, itemCatalogContainers, 6, workCenterArchiveStacks());
 
         BlockPos wandChest = corner.offset(2, 1, depth - 2);
         placeStorageChest(level, wandChest, Direction.NORTH, false);
@@ -2724,7 +2587,6 @@ public class StarterPortalEvents {
                 new ItemStack(MagicWorld.DRACONIC_AETHER_LEGGINGS.get()),
                 new ItemStack(MagicWorld.DRACONIC_AETHER_BOOTS.get()),
                 "Armadura Draconic Aether da Casa Grande");
-        spawnNamed(level, EntityType.PARROT, corner.offset(width / 2, 2, depth - 3), "Ave da Casa Grande Premium");
     }
 
     private static void decorateGrandGreenHouseInterior(ServerLevel level, BlockPos corner, int width, int depth) {
@@ -2769,9 +2631,7 @@ public class StarterPortalEvents {
         spawnPainting(level, corner.offset(5, 3, depth - 1), Direction.NORTH, "Quadro Sul do Rancho");
         spawnPainting(level, corner.offset(width - 5, 3, depth - 1), Direction.NORTH, "Quadro Sul da Plantacao");
 
-        spawnDecorativeBat(level, corner.offset(4, 5, 5), "Morcego das Vigas do Rancho");
         spawnDecorativeBat(level, corner.offset(width - 4, 5, depth - 5), "Morcego da Chamine do Rancho");
-        spawnDecorativeBat(level, corner.offset(width / 2, 5, depth / 2), "Morcego do Salao do Rancho");
     }
 
     private static void decoratePremiumWorkCenterExterior(ServerLevel level, BlockPos corner, int width, int depth) {
@@ -2883,14 +2743,14 @@ public class StarterPortalEvents {
                 Items.WHEAT, Items.CARROT, Items.WHEAT,
                 Items.WHEAT_SEEDS, Items.GOLDEN_CARROT, Items.WHEAT
         };
-        AABB estate = new AABB(base).inflate(256.0D, 64.0D, 256.0D);
         for (int pen = 0; pen < pens.length; pen++) {
             int house = pen / 3;
             int worker = pen % 3 + 1;
             String name = "Cuidador da Fazenda Casa " + (house + 1) + "-" + worker;
             BlockPos home = houses[house].offset(5, 1, 4);
             BlockPos work = pens[pen].offset(7, 1, 6);
-            for (Villager villager : level.getEntitiesOfClass(Villager.class, estate,
+            AABB caretakerArea = new AABB(home).inflate(24.0D, 8.0D, 24.0D);
+            for (Villager villager : level.getEntitiesOfClass(Villager.class, caretakerArea,
                     candidate -> name.equals(candidate.getName().getString()))) {
                 villager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(foods[pen]));
                 empowerMagicWorldVillager(villager, VillagerProfession.FARMER, home, work, GLOBAL_VILLAGER_WORK_RADIUS);
@@ -3116,7 +2976,6 @@ public class StarterPortalEvents {
                 new ItemStack(MagicWorld.DRACONIC_AETHER_LEGGINGS.get()),
                 new ItemStack(MagicWorld.DRACONIC_AETHER_BOOTS.get()),
                 "Armadura Draconic Aether do Rancho");
-        spawnNamed(level, EntityType.PARROT, corner.offset(width / 2, 2, depth - 3), "Ave do Rancho da Plantacao");
 
         for (BlockPos plant : new BlockPos[] {
                 corner.offset(3, 1, -1), corner.offset(width - 3, 1, -1),
@@ -3876,8 +3735,8 @@ public class StarterPortalEvents {
             placeLampPost(level, lamp);
         }
 
-        spawnAnimalGroup(level, EntityType.CAT, center.offset(-7, 1, 8), 3);
-        spawnAnimalGroup(level, EntityType.PARROT, center.offset(7, 1, 8), 3);
+        spawnAnimalGroup(level, EntityType.CAT, center.offset(-7, 1, 8), 1);
+        spawnAnimalGroup(level, EntityType.PARROT, center.offset(7, 1, 8), 1);
         decorateGreenSquareGarden(level, center);
         spawnWorkersForHouseBeds(level, greenHouseA, 14, 7, 10, "Trabalhador da Casa Verde 1", greenHouseA.offset(7, 1, 5), center, Items.EMERALD);
         spawnWorkersForHouseBeds(level, greenHouseB, 14, 7, 10, "Trabalhador da Casa Verde 2", greenHouseB.offset(7, 1, 5), center, Items.BREAD);
@@ -3927,10 +3786,6 @@ public class StarterPortalEvents {
             }
         }
         spawnNamed(level, EntityType.PARROT, center.offset(-9, 1, 9), "Arara da Praca Verde");
-        spawnNamed(level, EntityType.PARROT, center.offset(9, 1, 9), "Papagaio da Praca Verde");
-        spawnNamed(level, EntityType.PARROT, center.offset(-9, 1, -9), "Ave Rosa da Praca Verde");
-        spawnNamed(level, EntityType.CHICKEN, center.offset(9, 1, -9), "Galinha Ornamental da Praca Verde");
-        spawnNamed(level, EntityType.ALLAY, center.offset(0, 2, -8), "Brilho Alegre da Praca Verde");
     }
 
     private static void buildCommunityHall(ServerLevel level, BlockPos corner) {
@@ -4119,7 +3974,7 @@ public class StarterPortalEvents {
                 int y = topY - layer * 2 - depth;
                 for (int x = -20; x <= 19; x++) {
                     for (int z = -20; z <= 19; z++) {
-                        level.setBlock(new BlockPos(center.getX() + x, y, center.getZ() + z), layers[layer], 2);
+                        setBlockIfDifferent(level, new BlockPos(center.getX() + x, y, center.getZ() + z), layers[layer]);
                     }
                 }
             }
@@ -4166,10 +4021,10 @@ public class StarterPortalEvents {
     }
 
     private static void clearMineWalkway(ServerLevel level, BlockPos foot) {
-        level.setBlock(foot, Blocks.AIR.defaultBlockState(), 2);
-        level.setBlock(foot.above(), Blocks.AIR.defaultBlockState(), 2);
-        level.setBlock(foot.above(2), Blocks.AIR.defaultBlockState(), 2);
-        level.setBlock(foot.below(), Blocks.POLISHED_DEEPSLATE.defaultBlockState(), 2);
+        setBlockIfDifferent(level, foot, Blocks.AIR.defaultBlockState());
+        setBlockIfDifferent(level, foot.above(), Blocks.AIR.defaultBlockState());
+        setBlockIfDifferent(level, foot.above(2), Blocks.AIR.defaultBlockState());
+        setBlockIfDifferent(level, foot.below(), Blocks.POLISHED_DEEPSLATE.defaultBlockState());
     }
 
     private static void placeMineSupport(ServerLevel level, BlockPos foot) {
@@ -4338,19 +4193,19 @@ public class StarterPortalEvents {
         BlockPos[] corners = animalPenCorners(base);
         for (int pen = 0; pen < corners.length; pen++) {
             BlockPos center = corners[pen].offset(7, 0, 6);
-            for (int adult = 1; adult <= 3; adult++) {
+            for (int adult = 1; adult <= 2; adult++) {
                 spawnBreedingAnimal(level, species[pen], center.offset(adult - 2, 1, -1),
                         speciesNames[pen] + " Curral " + (pen + 1) + " Adulto " + adult, false);
             }
-            for (int baby = 1; baby <= 2; baby++) {
-                spawnBreedingAnimal(level, species[pen], center.offset(baby - 1, 1, 1),
+            for (int baby = 1; baby <= 1; baby++) {
+                spawnBreedingAnimal(level, species[pen], center.offset(0, 1, 1),
                         speciesNames[pen] + " Curral " + (pen + 1) + " Filhote " + baby, true);
             }
         }
     }
 
     private static void spawnBreedingAnimal(ServerLevel level, EntityType<?> type, BlockPos pos, String name, boolean baby) {
-        AABB nearby = new AABB(pos).inflate(256.0D, 64.0D, 256.0D);
+        AABB nearby = new AABB(pos).inflate(18.0D, 8.0D, 18.0D);
         if (!level.getEntitiesOfClass(Entity.class, nearby, entity -> name.equals(entity.getName().getString())).isEmpty()) {
             return;
         }
@@ -4366,23 +4221,6 @@ public class StarterPortalEvents {
         }
         if (entity instanceof AgeableMob ageable) {
             ageable.setAge(baby ? -24000 : 0);
-        }
-    }
-
-    private static void encourageAnimalPenBreeding(ServerLevel level, BlockPos base) {
-        if (Math.floorMod(level.getGameTime(), 2400L) >= 200L) {
-            return;
-        }
-        for (BlockPos corner : animalPenCorners(base)) {
-            AABB pen = new AABB(corner.offset(1, 0, 1), corner.offset(13, 4, 11));
-            List<Animal> animals = level.getEntitiesOfClass(Animal.class, pen);
-            if (animals.size() >= 9) {
-                continue;
-            }
-            List<Animal> adults = animals.stream().filter(animal -> animal.getAge() == 0).toList();
-            for (int i = 0; i < Math.min(2, adults.size()); i++) {
-                adults.get(i).setInLove(null);
-            }
         }
     }
 
@@ -4481,11 +4319,6 @@ public class StarterPortalEvents {
             level.setBlock(pos.above(), Blocks.LIGHT_BLUE_STAINED_GLASS.defaultBlockState(), 2);
         }
 
-        spawnNamed(level, EntityType.PARROT, center.offset(-9, 1, 7), "Passaro Azul do Portal");
-        spawnNamed(level, EntityType.PARROT, center.offset(9, 1, 7), "Passaro Verde do Portal");
-        spawnNamed(level, EntityType.PARROT, center.offset(-11, 1, -7), "Passaro Encantado");
-        spawnNamed(level, EntityType.RABBIT, center.offset(6, 1, 10), "Coelho do Jardim");
-        spawnNamed(level, EntityType.RABBIT, center.offset(-6, 1, 10), "Coelho Brilhante");
         spawnNamed(level, EntityType.ALLAY, center.offset(0, 2, 8), "Brilho do Portal");
     }
 
@@ -4599,20 +4432,17 @@ public class StarterPortalEvents {
                 .setValue(EndPortalFrameBlock.HAS_EYE, true);
     }
 
-    private static void handleFunctionalEstatePortals(ServerPlayer player) {
-        if (!(player.level() instanceof ServerLevel level)
-                || !MagicWorldWorldOptions.isStarterEstateEnabled()
+    private static void handleFunctionalEstatePortals(ServerPlayer player, ServerLevel level, BlockPos estateBase) {
+        if (!MagicWorldWorldOptions.isStarterEstateEnabled()
                 || player.tickCount % PORTAL_CHECK_INTERVAL_TICKS != 0) {
             return;
         }
 
-        BlockPos estateBase = estateBaseFromPlayer(player);
         if (level.dimension().equals(Level.OVERWORLD)) {
-            BlockPos approximatePlaza = compactPortalPlazaCenter(estateBase);
-            if (horizontalDistanceSqr(player.blockPosition(), approximatePlaza) > FUNCTIONAL_PORTAL_ACTIVE_RADIUS_SQR) {
+            BlockPos plaza = compactPortalPlazaCenter(estateBase);
+            if (horizontalDistanceSqr(player.blockPosition(), plaza) > FUNCTIONAL_PORTAL_ACTIVE_RADIUS_SQR) {
                 return;
             }
-            BlockPos plaza = findHighestFeatureSurface(level, compactPortalPlazaCenter(estateBase), 80);
             if (player.tickCount % PORTAL_VISUAL_REPAIR_INTERVAL_TICKS == 0) {
                 ensureFunctionalPortalVisual(level, netherPortalCenter(plaza), FunctionalPortalKind.NETHER);
                 ensureFunctionalPortalVisual(level, endPortalCenter(plaza), FunctionalPortalKind.END_PORTAL);
@@ -4698,7 +4528,7 @@ public class StarterPortalEvents {
             return;
         }
 
-        BlockPos plaza = findHighestFeatureSurface(overworld, compactPortalPlazaCenter(estateBase), 80);
+        BlockPos plaza = compactPortalPlazaCenter(estateBase);
         setPortalCooldown(player);
         player.teleportTo(
                 overworld,
@@ -4886,12 +4716,9 @@ public class StarterPortalEvents {
     private static boolean isPlayerTouchingFunctionalPortalBlock(ServerPlayer player, FunctionalPortalKind kind, int radius) {
         ServerLevel level = player.serverLevel();
         BlockPos center = player.blockPosition();
-        for (BlockPos pos : BlockPos.betweenClosed(center.offset(-radius, -2, -radius), center.offset(radius, 3, radius))) {
-            if (isFunctionalPortalBlock(level.getBlockState(pos), kind)) {
-                return true;
-            }
-        }
-        return false;
+        return isFunctionalPortalBlock(level.getBlockState(center), kind)
+                || isFunctionalPortalBlock(level.getBlockState(center.above()), kind)
+                || isFunctionalPortalBlock(level.getBlockState(center.below()), kind);
     }
 
     private static boolean isFunctionalPortalBlock(BlockState state, FunctionalPortalKind kind) {
@@ -4933,17 +4760,20 @@ public class StarterPortalEvents {
         player.getPersistentData().putLong(PORTAL_COOLDOWN_KEY, player.level().getGameTime() + 80L);
     }
 
-    private static void handlePremiumPortalToggle(ServerPlayer player) {
-        if (player.tickCount % 10 != 0 || !(player.level() instanceof ServerLevel level)) {
+    private static void handlePremiumPortalToggle(ServerPlayer player, ServerLevel level, BlockPos estateBase) {
+        if (player.tickCount % 10 != 0) {
             return;
         }
         if (!level.dimension().equals(Level.OVERWORLD)
                 || !player.getPersistentData().getBoolean(ESTATE_CREATED_KEY)
-                || player.blockPosition().distSqr(starterPortalCenter(estateBaseFromPlayer(player))) > 16.0D * 16.0D) {
+                || player.blockPosition().distSqr(starterPortalCenter(estateBase)) > 16.0D * 16.0D) {
             PLAYERS_TOUCHING_STARTER_PORTAL.remove(player.getUUID());
             return;
         }
-        BlockPos marker = findNearestStarterPortalMarker(level, player.blockPosition(), 3);
+        BlockPos marker = starterPortalCenter(estateBase);
+        if (!isStarterPortalMarker(level, marker)) {
+            marker = findNearestStarterPortalMarker(level, player.blockPosition(), 2);
+        }
         if (marker == null) {
             PLAYERS_TOUCHING_STARTER_PORTAL.remove(player.getUUID());
             return;
@@ -4974,16 +4804,14 @@ public class StarterPortalEvents {
         }
     }
 
-    private static void handleAmbientEffects(ServerPlayer player) {
+    private static void handleAmbientEffects(ServerPlayer player, ServerLevel level, BlockPos estateBase) {
         if (player.tickCount % AMBIENT_EFFECT_INTERVAL_TICKS != 0
-                || !(player.level() instanceof ServerLevel level)
                 || !level.dimension().equals(Level.OVERWORLD)
                 || !player.getPersistentData().getBoolean(ESTATE_CREATED_KEY)) {
             return;
         }
-        BlockPos estateBase = estateBaseFromPlayer(player);
         BlockPos portal = starterPortalCenter(estateBase);
-        if (player.blockPosition().distSqr(portal) <= 64.0D * 64.0D) {
+        if (player.blockPosition().distSqr(portal) <= 24.0D * 24.0D) {
             MagicWorld.effects(level, portal);
         }
         handleWitchCovenSupport(player, level, estateBase);
@@ -4991,29 +4819,15 @@ public class StarterPortalEvents {
 
     private static void handleWitchCovenSupport(ServerPlayer player, ServerLevel level, BlockPos estateBase) {
         BlockPos anchor = witchCovenAnchor(estateBase);
-        if (player.blockPosition().distSqr(anchor) > 72.0D * 72.0D) {
+        if (player.blockPosition().distSqr(anchor) > WITCH_COVEN_SUPPORT_RADIUS_SQR) {
             return;
         }
-
-        ensureCompactWitchCovenResidents(level, estateBase);
 
         refreshHiddenEffect(player, MobEffects.REGENERATION, 20 * 12, 0);
         refreshHiddenEffect(player, MobEffects.DAMAGE_RESISTANCE, 20 * 12, 0);
         refreshHiddenEffect(player, MobEffects.FIRE_RESISTANCE, 20 * 16, 0);
         refreshHiddenEffect(player, MobEffects.NIGHT_VISION, 20 * 24, 0);
         refreshHiddenEffect(player, MobEffects.LUCK, 20 * 24, 1);
-
-        AABB covenArea = new AABB(anchor).inflate(32.0D, 20.0D, 32.0D);
-        for (Monster monster : level.getEntitiesOfClass(Monster.class, covenArea,
-                monster -> !monster.getPersistentData().getBoolean(FRIENDLY_WITCH_KEY))) {
-            monster.discard();
-        }
-        for (Witch witch : level.getEntitiesOfClass(Witch.class, covenArea,
-                witch -> witch.getPersistentData().getBoolean(FRIENDLY_WITCH_KEY))) {
-            witch.setTarget(null);
-            witch.setNoAi(false);
-            witch.restrictTo(anchor, 18);
-        }
     }
 
     private static double horizontalDistanceSqr(BlockPos first, BlockPos second) {
@@ -5524,10 +5338,10 @@ public class StarterPortalEvents {
         for (int x = 0; x < width; x++) {
             for (int z = 0; z < depth; z++) {
                 BlockPos ground = corner.offset(x, -1, z);
-                level.setBlock(ground.below(), Blocks.DIRT.defaultBlockState(), 2);
-                level.setBlock(ground, Blocks.GRASS_BLOCK.defaultBlockState(), 2);
+                setBlockIfDifferent(level, ground.below(), Blocks.DIRT.defaultBlockState());
+                setBlockIfDifferent(level, ground, Blocks.GRASS_BLOCK.defaultBlockState());
                 for (int y = 1; y <= clearHeight; y++) {
-                    level.setBlock(ground.above(y), Blocks.AIR.defaultBlockState(), 2);
+                    setBlockIfDifferent(level, ground.above(y), Blocks.AIR.defaultBlockState());
                 }
             }
         }
@@ -5689,7 +5503,7 @@ public class StarterPortalEvents {
         BlockPos spawn = level.getBlockState(seat).isAir() && level.getBlockState(seat.below()).isSolid()
                 ? seat
                 : seat.above();
-        AABB castleArea = new AABB(spawn).inflate(192.0D, 96.0D, 192.0D);
+        AABB castleArea = new AABB(spawn).inflate(96.0D, 64.0D, 96.0D);
         List<Villager> existing = level.getEntitiesOfClass(Villager.class, castleArea,
                 villager -> name.equals(villager.getName().getString()));
         Villager villager = existing.isEmpty() ? null : existing.get(0);
@@ -5737,7 +5551,7 @@ public class StarterPortalEvents {
                 spot = lowerGroundSpot;
             }
         }
-        AABB nearby = new AABB(spot).inflate(256.0D, 96.0D, 256.0D);
+        AABB nearby = new AABB(spot).inflate(96.0D, 64.0D, 96.0D);
         List<Villager> residents = level.getEntitiesOfClass(Villager.class, nearby,
                 villager -> name.equals(villager.getName().getString()));
         Villager resident = residents.isEmpty() ? null : residents.get(0);
@@ -5950,7 +5764,7 @@ public class StarterPortalEvents {
     }
 
     private static void spawnWorkerVillager(ServerLevel level, BlockPos pos, String name, BlockPos home, BlockPos farmCenter, net.minecraft.world.item.Item heldItem) {
-        AABB nearby = new AABB(pos).inflate(256.0D, 64.0D, 256.0D);
+        AABB nearby = new AABB(pos).inflate(48.0D, 16.0D, 48.0D);
         if (!level.getEntitiesOfClass(Villager.class, nearby, villager -> name.equals(villager.getName().getString())).isEmpty()) {
             return;
         }
@@ -5979,7 +5793,7 @@ public class StarterPortalEvents {
             Item heldItem,
             boolean guardian
     ) {
-        AABB nearby = new AABB(pos).inflate(256.0D, 64.0D, 256.0D);
+        AABB nearby = new AABB(pos).inflate(48.0D, 16.0D, 48.0D);
         if (!level.getEntitiesOfClass(Villager.class, nearby, villager -> name.equals(villager.getName().getString())).isEmpty()) {
             return;
         }
@@ -6018,17 +5832,6 @@ public class StarterPortalEvents {
         BlockPos greenSquare = base.offset(-74, 0, 62);
         spawnProfessionalVillager(level, greenSquare, "Guardiao Aldeao da Praca Verde",
                 VillagerProfession.WEAPONSMITH, greenSquare, greenSquare, Items.NETHERITE_SWORD, true);
-    }
-
-    private static void clearHostilesNearGuardianVillagers(ServerLevel level, AABB estate) {
-        for (Villager guardian : level.getEntitiesOfClass(Villager.class, estate,
-                villager -> villager.getPersistentData().getBoolean("MagicWorldGuardianVillager"))) {
-            AABB defendedArea = new AABB(guardian.blockPosition()).inflate(GLOBAL_VILLAGER_WORK_RADIUS, 80.0D, GLOBAL_VILLAGER_WORK_RADIUS);
-            for (Monster monster : level.getEntitiesOfClass(Monster.class, defendedArea,
-                    monster -> !monster.getPersistentData().getBoolean(FRIENDLY_WITCH_KEY))) {
-                monster.discard();
-            }
-        }
     }
 
     private static void empowerMagicWorldVillager(
@@ -6146,7 +5949,7 @@ public class StarterPortalEvents {
     }
 
     private static void spawnNamed(ServerLevel level, EntityType<?> type, BlockPos pos, String name) {
-        AABB nearby = new AABB(pos).inflate(256.0D, 64.0D, 256.0D);
+        AABB nearby = new AABB(pos).inflate(32.0D, 16.0D, 32.0D);
         if (!name.isBlank() && !level.getEntitiesOfClass(Entity.class, nearby, entity -> name.equals(entity.getName().getString())).isEmpty()) {
             return;
         }
@@ -6168,7 +5971,7 @@ public class StarterPortalEvents {
     }
 
     private static void spawnDecorativeBat(ServerLevel level, BlockPos pos, String name) {
-        AABB nearby = new AABB(pos).inflate(256.0D, 64.0D, 256.0D);
+        AABB nearby = new AABB(pos).inflate(24.0D, 12.0D, 24.0D);
         if (!level.getEntitiesOfClass(Entity.class, nearby, entity -> name.equals(entity.getName().getString())).isEmpty()) {
             return;
         }
@@ -6299,7 +6102,11 @@ public class StarterPortalEvents {
                 continue;
             }
             for (int slot = 0; slot < container.getContainerSize(); slot++) {
-                ItemStack stack = registeredItems.get(itemIndex % registeredItems.size()).copy();
+                if (itemIndex >= registeredItems.size()) {
+                    container.setChanged();
+                    return;
+                }
+                ItemStack stack = registeredItems.get(itemIndex).copy();
                 container.setItem(slot, stack);
                 itemIndex++;
             }
@@ -6308,6 +6115,10 @@ public class StarterPortalEvents {
     }
 
     private static List<ItemStack> allRegisteredItemStacks() {
+        if (cachedRegisteredItemStacks != null) {
+            return cachedRegisteredItemStacks;
+        }
+
         List<ItemStack> stacks = new ArrayList<>();
         for (Item item : BuiltInRegistries.ITEM) {
             ItemStack stack = new ItemStack(item);
@@ -6319,7 +6130,54 @@ public class StarterPortalEvents {
             }
             stacks.add(stack);
         }
-        return stacks;
+        cachedRegisteredItemStacks = List.copyOf(stacks);
+        return cachedRegisteredItemStacks;
+    }
+
+    private static void fillLimitedThemeContainers(ServerLevel level, List<BlockPos> containers, int maxContainers, ItemStack... items) {
+        if (items.length == 0 || maxContainers <= 0) {
+            return;
+        }
+
+        int filled = 0;
+        for (BlockPos pos : containers) {
+            if (filled >= maxContainers) {
+                return;
+            }
+            if (!(level.getBlockEntity(pos) instanceof Container)) {
+                continue;
+            }
+            putItems(level, pos, items);
+            filled++;
+        }
+    }
+
+    private static ItemStack[] sanctuaryStorageStacks() {
+        return new ItemStack[] {
+                new ItemStack(Items.AMETHYST_SHARD, 64),
+                new ItemStack(Items.GLOWSTONE, 32),
+                new ItemStack(Items.ENDER_PEARL, 16),
+                new ItemStack(Items.EXPERIENCE_BOTTLE, 32),
+                new ItemStack(Items.BOOK, 32),
+                new ItemStack(Items.LAPIS_LAZULI, 64),
+                new ItemStack(Items.BLAZE_ROD, 16),
+                new ItemStack(MagicWorld.VARINHA_MAGICA.get())
+        };
+    }
+
+    private static ItemStack[] workCenterArchiveStacks() {
+        return new ItemStack[] {
+                new ItemStack(Items.IRON_INGOT, 64),
+                new ItemStack(Items.GOLD_INGOT, 64),
+                new ItemStack(Items.COPPER_INGOT, 64),
+                new ItemStack(Items.DIAMOND, 32),
+                new ItemStack(Items.EMERALD, 32),
+                new ItemStack(Items.REDSTONE, 64),
+                new ItemStack(Items.COAL, 64),
+                new ItemStack(Items.OAK_LOG, 64),
+                new ItemStack(Items.COBBLESTONE, 64),
+                new ItemStack(Items.TORCH, 64)
+        };
     }
 
     private static void putItems(ServerLevel level, BlockPos pos, ItemStack... items) {
