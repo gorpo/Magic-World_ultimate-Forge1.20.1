@@ -89,6 +89,9 @@ public class StarterPortalEvents {
     private static final String ESTATE_BASE_X_KEY = "MagicWorldForgeStarterEstateBaseX";
     private static final String ESTATE_BASE_Y_KEY = "MagicWorldForgeStarterEstateBaseY";
     private static final String ESTATE_BASE_Z_KEY = "MagicWorldForgeStarterEstateBaseZ";
+    private static final String PORTAL_PLAZA_X_KEY = "MagicWorldForgeFunctionalPortalPlazaX";
+    private static final String PORTAL_PLAZA_Y_KEY = "MagicWorldForgeFunctionalPortalPlazaY";
+    private static final String PORTAL_PLAZA_Z_KEY = "MagicWorldForgeFunctionalPortalPlazaZ";
     private static final String ESTATE_REPAIR_VERSION_KEY = "MagicWorldForgeEstateRepairVersion";
     private static final String PREMIUM_UNLOCKED_KEY = "MagicWorldForgePremiumUnlocked";
     private static final String PORTAL_COOLDOWN_KEY = "MagicWorldForgePortalCooldown";
@@ -126,7 +129,6 @@ public class StarterPortalEvents {
     private static final BlockPos SANCTUARY_TARGET_CENTER = new BlockPos(234, 113, 12);
     private static final int GLOBAL_VILLAGER_WORK_RADIUS = 384;
     private static final int PORTAL_CHECK_INTERVAL_TICKS = 10;
-    private static final int PORTAL_VISUAL_REPAIR_INTERVAL_TICKS = 20 * 60;
     private static final int AMBIENT_EFFECT_INTERVAL_TICKS = 20 * 30;
     private static final double FUNCTIONAL_PORTAL_ACTIVE_RADIUS_SQR = 48.0D * 48.0D;
     private static final double WITCH_COVEN_SUPPORT_RADIUS_SQR = 40.0D * 40.0D;
@@ -264,7 +266,7 @@ public class StarterPortalEvents {
             }
             case 3 -> {
                 sendInitialLoadProgress(player, 72, "Carregando praca de portais funcionais...", false);
-                buildFunctionalPortalPlaza(level, task.base);
+                saveFunctionalPortalPlaza(player, buildFunctionalPortalPlaza(level, task.base));
                 TASKS.put(player.getUUID(), new EstateTask(task.base, 4, STEP_DELAY_TICKS));
             }
             case 4 -> {
@@ -295,7 +297,7 @@ public class StarterPortalEvents {
             }
             default -> {
                 restoreStoneTreasureMineHouse(level, task.base);
-                placeEstateIdentificationSigns(level, task.base);
+                placeEstateIdentificationSigns(player, level, task.base);
                 removeInitialGenerationLooseDrops(level, task.base);
                 player.getPersistentData().putBoolean(ESTATE_CREATED_KEY, true);
                 player.getPersistentData().putInt(ESTATE_REPAIR_VERSION_KEY, CURRENT_ESTATE_REPAIR_VERSION);
@@ -390,6 +392,61 @@ public class StarterPortalEvents {
 
     private static BlockPos compactPortalPlazaCenter(BlockPos base) {
         return base.offset(-24, 0, 48);
+    }
+
+    private static BlockPos computedFunctionalPortalPlazaCenter(ServerLevel level, BlockPos base) {
+        return findHighestFeatureSurface(level, compactPortalPlazaCenter(base), 80);
+    }
+
+    private static BlockPos functionalPortalPlazaCenter(ServerPlayer player, ServerLevel level, BlockPos base) {
+        BlockPos saved = savedFunctionalPortalPlaza(player);
+        if (saved != null && level.isInWorldBounds(saved)) {
+            return saved;
+        }
+
+        BlockPos existing = findExistingFunctionalPortalPlazaCenter(level, base);
+        if (existing != null) {
+            saveFunctionalPortalPlaza(player, existing);
+            return existing;
+        }
+
+        BlockPos computed = computedFunctionalPortalPlazaCenter(level, base);
+        saveFunctionalPortalPlaza(player, computed);
+        return computed;
+    }
+
+    private static BlockPos savedFunctionalPortalPlaza(ServerPlayer player) {
+        CompoundTag data = player.getPersistentData();
+        if (!data.contains(PORTAL_PLAZA_X_KEY) || !data.contains(PORTAL_PLAZA_Y_KEY) || !data.contains(PORTAL_PLAZA_Z_KEY)) {
+            return null;
+        }
+        return new BlockPos(data.getInt(PORTAL_PLAZA_X_KEY), data.getInt(PORTAL_PLAZA_Y_KEY), data.getInt(PORTAL_PLAZA_Z_KEY));
+    }
+
+    private static void saveFunctionalPortalPlaza(ServerPlayer player, BlockPos pos) {
+        CompoundTag data = player.getPersistentData();
+        data.putInt(PORTAL_PLAZA_X_KEY, pos.getX());
+        data.putInt(PORTAL_PLAZA_Y_KEY, pos.getY());
+        data.putInt(PORTAL_PLAZA_Z_KEY, pos.getZ());
+    }
+
+    private static BlockPos findExistingFunctionalPortalPlazaCenter(ServerLevel level, BlockPos base) {
+        BlockPos compact = compactPortalPlazaCenter(base);
+        int minY = Math.max(level.getMinBuildHeight() + 1, compact.getY() - 16);
+        int maxY = Math.min(level.getMaxBuildHeight() - 2, compact.getY() + 48);
+        for (int y = minY; y <= maxY; y++) {
+            for (int dx = -24; dx <= 24; dx++) {
+                for (int dz = -24; dz <= 24; dz++) {
+                    BlockPos candidate = new BlockPos(compact.getX() + dx, y, compact.getZ() + dz);
+                    if (isFunctionalPortalVisualComplete(level, endPortalCenter(candidate), FunctionalPortalKind.END_PORTAL)
+                            || isFunctionalPortalVisualComplete(level, netherPortalCenter(candidate), FunctionalPortalKind.NETHER)
+                            || isFunctionalPortalVisualComplete(level, gatewayPortalCenter(candidate), FunctionalPortalKind.END_GATEWAY)) {
+                        return candidate;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private static void openInitialLoadNotice(ServerPlayer player) {
@@ -1723,13 +1780,13 @@ public class StarterPortalEvents {
         }
     }
 
-    private static void placeEstateIdentificationSigns(ServerLevel level, BlockPos base) {
+    private static void placeEstateIdentificationSigns(ServerPlayer player, ServerLevel level, BlockPos base) {
         placeGroundIdentificationSign(level, base.offset(8, 0, IMPORTED_HOUSE_MAX_Z + 4), Direction.SOUTH,
                 "ID LOCAL", "Casa", "Principal", "Importada");
         placeGroundIdentificationSign(level, starterPortalCenter(base).offset(0, 0, 9), Direction.SOUTH,
                 "ID LOCAL", "Portal", "Inicial", "Premium");
 
-        BlockPos portalPlaza = findHighestFeatureSurface(level, compactPortalPlazaCenter(base), 80);
+        BlockPos portalPlaza = functionalPortalPlazaCenter(player, level, base);
         placeGroundIdentificationSign(level, portalPlaza.offset(0, 0, 9), Direction.SOUTH,
                 "ID LOCAL", "Praca", "Portais", "Funcionais");
         placeGroundIdentificationSign(level, netherPortalCenter(portalPlaza).offset(0, 0, 4), Direction.SOUTH,
@@ -4385,8 +4442,8 @@ public class StarterPortalEvents {
         spawnNamed(level, EntityType.ALLAY, center.offset(0, 2, 8), "Brilho do Portal");
     }
 
-    private static void buildFunctionalPortalPlaza(ServerLevel level, BlockPos base) {
-        BlockPos center = findHighestFeatureSurface(level, compactPortalPlazaCenter(base), 80);
+    private static BlockPos buildFunctionalPortalPlaza(ServerLevel level, BlockPos base) {
+        BlockPos center = computedFunctionalPortalPlazaCenter(level, base);
         clearFlatArea(level, center.offset(-14, 0, -8), 29, 17, 8);
 
         for (int x = -14; x <= 14; x++) {
@@ -4422,6 +4479,7 @@ public class StarterPortalEvents {
             level.setBlock(pos, Blocks.CAMPFIRE.defaultBlockState(), 2);
             level.setBlock(pos.above(), Blocks.PURPLE_STAINED_GLASS.defaultBlockState(), 2);
         }
+        return center;
     }
 
     private static void buildNetherPortalInMagicArea(ServerLevel level, BlockPos center) {
@@ -4502,15 +4560,15 @@ public class StarterPortalEvents {
         }
 
         if (level.dimension().equals(Level.OVERWORLD)) {
-            BlockPos plaza = compactPortalPlazaCenter(estateBase);
+            BlockPos compactPlaza = compactPortalPlazaCenter(estateBase);
+            if (horizontalDistanceSqr(player.blockPosition(), compactPlaza) > FUNCTIONAL_PORTAL_ACTIVE_RADIUS_SQR) {
+                return;
+            }
+            BlockPos plaza = functionalPortalPlazaCenter(player, level, estateBase);
             if (horizontalDistanceSqr(player.blockPosition(), plaza) > FUNCTIONAL_PORTAL_ACTIVE_RADIUS_SQR) {
                 return;
             }
-            if (player.tickCount % PORTAL_VISUAL_REPAIR_INTERVAL_TICKS == 0) {
-                ensureFunctionalPortalVisual(level, netherPortalCenter(plaza), FunctionalPortalKind.NETHER);
-                ensureFunctionalPortalVisual(level, endPortalCenter(plaza), FunctionalPortalKind.END_PORTAL);
-                ensureFunctionalPortalVisual(level, gatewayPortalCenter(plaza), FunctionalPortalKind.END_GATEWAY);
-            }
+            ensureAllFunctionalPortalVisuals(level, plaza);
             if (level.getGameTime() >= player.getPersistentData().getLong(PORTAL_COOLDOWN_KEY)) {
                 handleOverworldFunctionalPortal(player, estateBase, plaza);
             }
@@ -4546,9 +4604,7 @@ public class StarterPortalEvents {
         if (player.blockPosition().distSqr(returnPortal) > FUNCTIONAL_PORTAL_ACTIVE_RADIUS_SQR) {
             return;
         }
-        if (player.tickCount % PORTAL_VISUAL_REPAIR_INTERVAL_TICKS == 0) {
-            ensureFunctionalPortalVisual(player.serverLevel(), returnPortal, kind);
-        }
+        ensureFunctionalPortalVisual(player.serverLevel(), returnPortal, kind);
         if (isPlayerNearPortal(player, returnPortal, 4.5D) || isPlayerTouchingFunctionalPortalBlock(player, kind, 4)) {
             teleportBackToEstate(player, estateBase);
         }
@@ -4566,7 +4622,7 @@ public class StarterPortalEvents {
         }
 
         BlockPos returnPortal = savedReturnPortal(player, kind);
-        if (returnPortal == null) {
+        if (!isUsableReturnPortalLocation(targetLevel, returnPortal)) {
             returnPortal = resolveFunctionalSpawn(targetLevel, requested).north(4);
             saveReturnPortal(player, kind, returnPortal);
         }
@@ -4591,7 +4647,8 @@ public class StarterPortalEvents {
             return;
         }
 
-        BlockPos plaza = compactPortalPlazaCenter(estateBase);
+        BlockPos plaza = functionalPortalPlazaCenter(player, overworld, estateBase);
+        ensureAllFunctionalPortalVisuals(overworld, plaza);
         setPortalCooldown(player);
         player.teleportTo(
                 overworld,
@@ -4792,6 +4849,12 @@ public class StarterPortalEvents {
         }
     }
 
+    private static void ensureAllFunctionalPortalVisuals(ServerLevel level, BlockPos plaza) {
+        ensureFunctionalPortalVisual(level, netherPortalCenter(plaza), FunctionalPortalKind.NETHER);
+        ensureFunctionalPortalVisual(level, endPortalCenter(plaza), FunctionalPortalKind.END_PORTAL);
+        ensureFunctionalPortalVisual(level, gatewayPortalCenter(plaza), FunctionalPortalKind.END_GATEWAY);
+    }
+
     private static boolean isFunctionalPortalVisualComplete(ServerLevel level, BlockPos center, FunctionalPortalKind kind) {
         return switch (kind) {
             case NETHER -> level.getBlockState(center.above()).is(Blocks.NETHER_PORTAL)
@@ -4842,8 +4905,24 @@ public class StarterPortalEvents {
     }
 
     private static BlockPos resolveFunctionalSpawn(ServerLevel level, BlockPos requested) {
+        if (level.dimension().equals(Level.NETHER) || level.dimension().equals(Level.END)) {
+            return new BlockPos(requested.getX(), safeFunctionalPortalY(level), requested.getZ());
+        }
         BlockPos surface = findHighestFeatureSurface(level, requested, 192);
-        return surface == null ? new BlockPos(requested.getX(), Math.max(level.getMinBuildHeight() + 8, 80), requested.getZ()) : surface;
+        return surface == null || surface.getY() <= level.getMinBuildHeight() + 4
+                ? new BlockPos(requested.getX(), safeFunctionalPortalY(level), requested.getZ())
+                : surface;
+    }
+
+    private static int safeFunctionalPortalY(ServerLevel level) {
+        return Math.min(level.getMaxBuildHeight() - 16, Math.max(level.getMinBuildHeight() + 16, 80));
+    }
+
+    private static boolean isUsableReturnPortalLocation(ServerLevel level, BlockPos pos) {
+        return pos != null
+                && level.isInWorldBounds(pos)
+                && pos.getY() >= level.getMinBuildHeight() + 8
+                && pos.getY() <= level.getMaxBuildHeight() - 8;
     }
 
     private static BlockPos savedReturnPortal(ServerPlayer player, FunctionalPortalKind kind) {

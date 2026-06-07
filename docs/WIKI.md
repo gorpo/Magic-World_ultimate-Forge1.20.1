@@ -1214,3 +1214,10 @@ Validacao e processo:
 - Removidos fundo, bordas e texto dessa faixa em todas as abas.
 - O painel Magic World foi compactado para 4 colunas, 5 linhas e botoes menores.
 - O titulo/descricao interna do painel foi ocultado; ficam apenas campos e botoes uteis.
+
+## Registro 2026-06-07 - hotfix portais funcionais da praca
+- A praca de portais salva o centro real criado em `MagicWorldForgeFunctionalPortalPlazaX/Y/Z`.
+- Runtime, reparo visual e retorno usam essa posicao persistida, nao a coordenada compacta crua.
+- Saves antigos tentam localizar o portal funcional ja construido e salvam a posicao encontrada.
+- Destinos no Nether/End usam Y seguro e recriam plataforma/portal de retorno antes do teleporte.
+- Validacao: `./gradlew.bat build` passou e o JAR all-in-one foi atualizado sem gerar ZIP.

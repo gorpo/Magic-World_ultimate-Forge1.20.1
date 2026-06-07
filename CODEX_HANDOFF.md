@@ -1921,3 +1921,12 @@ Validacao:
 - Removida a chamada de `renderCreateWorldVanillaBranding`; a faixa `MAGIC WORLD / Use o botao...` nao e mais renderizada.
 - `MagicCreateWorldTitle` e `MagicCreateWorldInfo` ficam invisiveis no painel para remover o texto introdutorio interno.
 - Layout compactado: `MAGIC_PANEL_HEIGHT = 174`, `MAGIC_PANEL_BUTTON_HEIGHT = 18`, `MAGIC_PANEL_GAP = 5`, 4 colunas e 5 linhas.
+
+## Handoff 2026-06-07 - hotfix portais funcionais da praca
+- Pedido: corrigir portal vertical grande e demais portais da praca, evitando textura quebrada, retorno errado e queda no vazio.
+- Causa principal: a praca era criada pela altura real do terreno, mas o runtime usava `compactPortalPlazaCenter(base)` cru para detectar/reparar/retornar.
+- Correcao: o centro real da praca e salvo em `MagicWorldForgeFunctionalPortalPlazaX/Y/Z` quando a praca e criada.
+- Runtime, reparo visual e retorno ao Overworld usam a posicao persistida; saves antigos tentam localizar o portal funcional ja existente e salvar essa posicao.
+- Nether/End agora usam Y seguro e recriam a plataforma/portal de retorno antes do teleporte, evitando spawn no vazio.
+- Validado com `./gradlew.bat build`.
+- `pacote_distribuivel/.minecraft/mods/Magic_World_Mod_1.20.1-1.0.0.1.jar` foi atualizado sem gerar ZIP.
