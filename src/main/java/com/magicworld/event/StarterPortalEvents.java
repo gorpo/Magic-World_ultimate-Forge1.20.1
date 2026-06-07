@@ -5014,7 +5014,14 @@ public class StarterPortalEvents {
         }
     }
 
-    public static void confirmPremiumPortalOptions(ServerPlayer player, boolean resourcePack, boolean shaderPack, boolean completePack) {
+    public static void confirmPremiumPortalOptions(
+            ServerPlayer player,
+            boolean resourcePack,
+            boolean shaderPack,
+            boolean completePack,
+            List<String> resourcePacks,
+            String shaderPackName
+    ) {
         boolean resolvedResourcePack = resourcePack || completePack;
         boolean resolvedShaderPack = shaderPack || completePack;
         boolean hasVisualSelection = resolvedResourcePack || resolvedShaderPack;
@@ -5035,7 +5042,14 @@ public class StarterPortalEvents {
             player.removeEffect(MobEffects.NIGHT_VISION);
             player.removeEffect(MobEffects.LUCK);
         }
-        MagicWorldNetwork.applyPremiumPortalVisual(player, hasVisualSelection, resolvedResourcePack, resolvedShaderPack);
+        MagicWorldNetwork.applyPremiumPortalVisual(
+                player,
+                hasVisualSelection,
+                resolvedResourcePack,
+                resolvedShaderPack,
+                resourcePacks,
+                shaderPackName
+        );
     }
 
     private static void handleAmbientEffects(ServerPlayer player, ServerLevel level, BlockPos estateBase) {

@@ -65,9 +65,20 @@
 | --- | --- | --- |
 | **Mod** | Adiciona a varinha magica, menus, comandos, transformacoes, recompensas e sistemas premium. | O mundo passa a reagir a magia do jogador. |
 | **Resource Pack** | Altera texturas, modelos, itens, blocos, icones e identidade visual. | O Minecraft ganha aparencia de fantasia medieval premium. |
+| **Screen Overlays** | Resource pack separado para telas, menus, botoes, HUD e panoramas. | Deve ficar acima dos outros resourcepacks para manter a GUI Magic World ativa. |
 | **Shader Pack** | Adiciona iluminacao, sombras, reflexos, atmosfera, agua, ceu e brilho magico. | A parte visual fica cinematografica, colorida e encantada. |
 
 Este repositorio existe para reunir esses tres pacotes em uma identidade unica: **Magic World Ultimate**.
+
+## Screen Overlays
+
+`Screen Overlays` e o pacote separado de interface do Magic World. Ele concentra texturas de telas, botoes, menus, HUD, inventarios, avancos, selecao de mundo, resourcepacks e panoramas.
+
+Ordem correta quando ativado pelo portal:
+
+`vanilla/mods` -> `MagicWorldResource bonus` -> `addon` -> `models` -> `256x` -> outros resourcepacks escolhidos -> `Screen Overlays`
+
+O portal visual detecta resourcepacks e shaderpacks extras nas pastas locais e permite selecionar quais usar.
 
 ## Historia Ludica de Abertura
 

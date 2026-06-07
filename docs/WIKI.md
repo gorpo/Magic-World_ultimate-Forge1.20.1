@@ -1298,3 +1298,10 @@ Validacao e processo:
 - JourneyMap recebe waypoints oficiais Magic World por arquivo local quando instalado; nao apagar cache automaticamente.
 - O pacote local foi atualizado somente no JAR all-in-one; nao gerar ZIP.
 - Validacao: `./gradlew.bat build` passou.
+
+## Registro 2026-06-07 - Screen Overlays e selecao dinamica do portal
+- Criado o resource pack separado `Screen Overlays` para GUI, telas, botoes, HUD, inventarios, menus, avancos, resourcepacks e panoramas.
+- Fonte do projeto: `resourcepacks/Screen Overlays`; copias locais em `run/resourcepacks/Screen Overlays` e `pacote_distribuivel/.minecraft/resourcepacks/Screen Overlays`.
+- Ordem ativa calculada: `vanilla/mods` -> `bonus` -> `addon` -> `models` -> `256x` -> extras escolhidos -> `Screen Overlays` por ultimo.
+- O menu do portal premium agora usa botoes com pop-up para selecionar resourcepacks e shaderpacks encontrados nas pastas locais.
+- `Screen Overlays` entra automaticamente por cima quando resourcepacks sao aplicados pelo portal.

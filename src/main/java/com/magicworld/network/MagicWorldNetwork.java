@@ -28,6 +28,8 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -122,12 +124,37 @@ public final class MagicWorldNetwork {
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new OpenPremiumPortalOptionsPacket());
     }
 
-    public static void applyPremiumPortalVisual(ServerPlayer player, boolean active, boolean resourcePack, boolean shaderPack) {
-        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ApplyPremiumPortalVisualPacket(active, resourcePack, shaderPack));
+    public static void applyPremiumPortalVisual(
+            ServerPlayer player,
+            boolean active,
+            boolean resourcePack,
+            boolean shaderPack,
+            List<String> resourcePacks,
+            String shaderPackName
+    ) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ApplyPremiumPortalVisualPacket(
+                active,
+                resourcePack,
+                shaderPack,
+                resourcePacks,
+                shaderPackName
+        ));
     }
 
-    public static void confirmPremiumPortalOptions(boolean resourcePack, boolean shaderPack, boolean completePack) {
-        CHANNEL.sendToServer(new ConfirmPremiumPortalOptionsPacket(resourcePack, shaderPack, completePack));
+    public static void confirmPremiumPortalOptions(
+            boolean resourcePack,
+            boolean shaderPack,
+            boolean completePack,
+            List<String> resourcePacks,
+            String shaderPackName
+    ) {
+        CHANNEL.sendToServer(new ConfirmPremiumPortalOptionsPacket(
+                resourcePack,
+                shaderPack,
+                completePack,
+                resourcePacks,
+                shaderPackName
+        ));
     }
 
     public static void sendPanelAction(String action) {
@@ -225,44 +252,65 @@ public final class MagicWorldNetwork {
         }
     }
 
-    public record ApplyPremiumPortalVisualPacket(boolean active, boolean resourcePack, boolean shaderPack) {
+    public record ApplyPremiumPortalVisualPacket(
+            boolean active,
+            boolean resourcePack,
+            boolean shaderPack,
+            List<String> resourcePacks,
+            String shaderPackName
+    ) {
         public static void encode(ApplyPremiumPortalVisualPacket packet, FriendlyByteBuf buffer) {
             buffer.writeBoolean(packet.active);
             buffer.writeBoolean(packet.resourcePack);
             buffer.writeBoolean(packet.shaderPack);
+            writeStringList(buffer, packet.resourcePacks);
+            buffer.writeUtf(packet.shaderPackName == null ? "" : packet.shaderPackName);
         }
 
         public static ApplyPremiumPortalVisualPacket decode(FriendlyByteBuf buffer) {
             return new ApplyPremiumPortalVisualPacket(
                     buffer.readBoolean(),
                     buffer.readBoolean(),
-                    buffer.readBoolean()
+                    buffer.readBoolean(),
+                    readStringList(buffer),
+                    buffer.readUtf()
             );
         }
 
         public static void handle(ApplyPremiumPortalVisualPacket packet, Supplier<NetworkEvent.Context> contextSupplier) {
             NetworkEvent.Context context = contextSupplier.get();
             context.enqueueWork(() -> MagicWorldPortalVisualController.applyPortalSelection(
-                    packet.active,
-                    packet.resourcePack,
-                    packet.shaderPack
+                    packet.active && packet.resourcePack,
+                    packet.active && packet.shaderPack,
+                    packet.resourcePacks,
+                    packet.shaderPackName
             ));
             context.setPacketHandled(true);
         }
     }
 
-    public record ConfirmPremiumPortalOptionsPacket(boolean resourcePack, boolean shaderPack, boolean completePack) {
+    public record ConfirmPremiumPortalOptionsPacket(
+            boolean resourcePack,
+            boolean shaderPack,
+            boolean completePack,
+            List<String> resourcePacks,
+            String shaderPackName
+    ) {
         public static void encode(ConfirmPremiumPortalOptionsPacket packet, FriendlyByteBuf buffer) {
             buffer.writeBoolean(packet.resourcePack);
             buffer.writeBoolean(packet.shaderPack);
             buffer.writeBoolean(packet.completePack);
+            writeStringList(buffer, packet.resourcePacks);
+            buffer.writeUtf(packet.shaderPackName == null ? "" : packet.shaderPackName);
         }
 
         public static ConfirmPremiumPortalOptionsPacket decode(FriendlyByteBuf buffer) {
             return new ConfirmPremiumPortalOptionsPacket(
                     buffer.readBoolean(),
                     buffer.readBoolean(),
-                    buffer.readBoolean()
+                    buffer.readBoolean(),
+                    readStringList(buffer),
+                    buffer.readUtf()
             );
         }
 
@@ -275,12 +323,31 @@ public final class MagicWorldNetwork {
                             player,
                             packet.resourcePack,
                             packet.shaderPack,
-                            packet.completePack
+                            packet.completePack,
+                            packet.resourcePacks,
+                            packet.shaderPackName
                     );
                 }
             });
             context.setPacketHandled(true);
         }
+    }
+
+    private static void writeStringList(FriendlyByteBuf buffer, List<String> values) {
+        List<String> safeValues = values == null ? List.of() : values;
+        buffer.writeInt(safeValues.size());
+        for (String value : safeValues) {
+            buffer.writeUtf(value == null ? "" : value);
+        }
+    }
+
+    private static List<String> readStringList(FriendlyByteBuf buffer) {
+        int size = Math.max(0, Math.min(64, buffer.readInt()));
+        List<String> values = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            values.add(buffer.readUtf());
+        }
+        return values;
     }
 
     public record MagicWorldPanelActionPacket(String action) {

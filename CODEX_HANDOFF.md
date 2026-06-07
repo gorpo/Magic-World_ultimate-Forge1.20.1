@@ -2015,3 +2015,11 @@ Validacao:
 - JourneyMap: `MagicWorldJourneyMapWaypoints` escreve waypoints oficiais locais quando JourneyMap esta instalado; nao apagar cache/tiles automaticamente.
 - Pacote: atualizado somente `pacote_distribuivel/.minecraft/mods/Magic_World_Mod_1.20.1-1.0.0.1.jar`; sem ZIP.
 - Validado com `./gradlew.bat build`.
+
+## Handoff 2026-06-07 - Screen Overlays e portal visual dinamico
+- Pedido: separar tudo que e GUI/telas/botoes do resource pack em pacote proprio chamado `Screen Overlays`.
+- Criado `resourcepacks/Screen Overlays` com `pack.mcmeta`, `pack.png` vindo de `screenshots/icone_screenoverlays.png` e assets GUI extraidos do pack 256x.
+- Copias criadas para teste local em `run/resourcepacks/Screen Overlays` e `pacote_distribuivel/.minecraft/resourcepacks/Screen Overlays`.
+- Ordem aplicada no codigo: base vanilla/mods, packs Magic World (`bonus`, `addon`, `models`, `256x`), packs extras escolhidos e `Screen Overlays` sempre por ultimo/maior prioridade.
+- `PremiumPortalOptionsScreen` deixou de usar checkboxes simples; agora abre pop-ups para selecionar resourcepacks e shaderpacks detectados nas pastas locais.
+- `MagicWorldPortalVisualController` lista dinamicamente `.zip` e pastas de `resourcepacks`/`shaderpacks`.
