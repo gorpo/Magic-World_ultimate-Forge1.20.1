@@ -1993,3 +1993,9 @@ Validacao:
 - Tambem foram removidos de `run/dev-mods` e da pasta antiga `mods/`; `run/dev-mods` e carregavel pelo Gradle via `build.gradle`.
 - Esses JARs nao devem retornar para nenhuma pasta carregavel sem teste isolado um por vez.
 - `entityculling` externo continua proibido no pacote porque o Magic World ja possui culling interno proprio.
+
+## Handoff 2026-06-07 - pacote abriu com alerta
+- Usuario confirmou que o jogo abriu apos remover EMF/ETF e correlatos das pastas carregaveis.
+- Build executada novamente e JAR `Magic_World_Mod_1.20.1-1.0.0.1.jar` atualizado no pacote local e no `.minecraft` pessoal.
+- Alerta obrigatorio: este commit e experimental e pode nao funcionar se a instalacao usada ainda carregar EMF/ETF/Fusion/CIT/ModernFix/FerriteCore por outro caminho.
+- Proximo diagnostico deve sempre conferir horario do `latest.log`; erro antigo de EMF antes da limpeza nao deve ser tratado como crash novo.

@@ -1463,6 +1463,8 @@ Qualquer JAR versionado colocado em `run/dev-mods/` e detectado e remapeado auto
 Estes mods nao devem ficar em nenhuma pasta carregavel (`.minecraft/mods`, `pacote_distribuivel/.minecraft/mods`, `run/dev-mods`, `run/mods` ou `mods/`) ate validacao isolada: `entity_model_features`/EMF, `entity_texture_features`/ETF, `fusion`, `citresewn`/CIT, `modernfix`, `ferritecore` e `entityculling`.
 
 Motivo: EMF causou crash de mixin (`MixinModelPart`). Os JARs podem ficar em `mods_desativados_magicworld`, mas nao carregaveis.
+
+Alerta do pacote atual: este estado abriu no TLauncher apos remover EMF/ETF e correlatos, mas ainda e um pacote experimental. O commit pode nao funcionar em outra instalacao sem repetir a mesma limpeza das pastas carregaveis.
 ### Executar cliente de desenvolvimento
 
 ```powershell

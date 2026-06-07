@@ -1277,3 +1277,8 @@ Validacao e processo:
 - Tambem foram desativadas as copias em `run/dev-mods` e na pasta antiga `mods/`, porque `run/dev-mods` e carregavel pelo Gradle.
 - Os JARs foram movidos para `mods_desativados_magicworld` ou pastas `*-disabled`; nao apagar, mas tambem nao carregar.
 - Regra: esses mods so voltam por teste isolado, um por vez. `entityculling` externo continua fora porque o Magic World ja tem culling interno.
+
+## Registro 2026-06-07 - pacote abriu, mas commit instavel
+- O jogo abriu apos a limpeza dos mods conflitantes e o JAR all-in-one foi regerado.
+- Alerta: este commit registra um estado experimental; pode nao funcionar se outra instalacao ainda tiver EMF/ETF/Fusion/CIT/ModernFix/FerriteCore em qualquer pasta carregavel.
+- Para validar erro novo, usar apenas `Caused by:` de um `latest.log` atualizado apos abrir o jogo novamente.
