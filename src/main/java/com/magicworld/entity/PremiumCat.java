@@ -5,66 +5,67 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.feline.Cat;
-import net.minecraft.world.entity.animal.feline.Ocelot;
+import net.minecraft.world.entity.animal.Cat;
+import net.minecraft.world.entity.animal.Ocelot;
 import net.minecraft.world.level.Level;
 
 public class PremiumCat {
 
-    public static boolean transform(
+    public static void transform(
             Level level,
             Object target
     ) {
 
-        // GATO → PREMIUM
+        // GATO â†’ PREMIUM
         if (target instanceof Cat cat) {
 
-            Ocelot premiumCat =
-                    new Ocelot(
-                            EntityType.OCELOT,
-                            level
-                    );
+            if (!cat.hasEffect(
+                    MobEffects.MOVEMENT_SPEED
+            )) {
 
-            premiumCat.setPos(
-                    cat.getX(),
-                    cat.getY(),
-                    cat.getZ()
-            );
+                Ocelot premiumCat =
+                        new Ocelot(
+                                EntityType.OCELOT,
+                                level
+                        );
 
-            premiumCat.addEffect(
-                    new MobEffectInstance(
-                            MobEffects.SPEED,
-                            999999,
-                            2
-                    )
-            );
+                premiumCat.moveTo(
+                        cat.getX(),
+                        cat.getY(),
+                        cat.getZ()
+                );
 
-            premiumCat.addEffect(
-                    new MobEffectInstance(
-                            MobEffects.REGENERATION,
-                            999999,
-                            2
-                    )
-            );
+                premiumCat.addEffect(
+                        new MobEffectInstance(
+                                MobEffects.MOVEMENT_SPEED,
+                                999999,
+                                2
+                        )
+                );
 
-            PremiumEntityTags.markAnimal(premiumCat, "cat");
-            level.addFreshEntity(
-                    premiumCat
-            );
+                premiumCat.addEffect(
+                        new MobEffectInstance(
+                                MobEffects.REGENERATION,
+                                999999,
+                                2
+                        )
+                );
 
-            cat.discard();
+                level.addFreshEntity(
+                        premiumCat
+                );
 
-            MagicWorld.effects(
-                    (ServerLevel) level,
-                    cat.blockPosition()
-            );
+                cat.discard();
 
-            return true;
+                MagicWorld.effects(
+                        (ServerLevel) level,
+                        cat.blockPosition()
+                );
+            }
         }
 
-        // OCELOT → GATO
-        else if (target instanceof Ocelot ocelot
-                && PremiumEntityTags.isAnimal(ocelot, "cat")) {
+        // OCELOT â†’ GATO
+        else if (target instanceof Ocelot ocelot) {
 
             Cat cat =
                     new Cat(
@@ -72,7 +73,7 @@ public class PremiumCat {
                             level
                     );
 
-            cat.setPos(
+            cat.moveTo(
                     ocelot.getX(),
                     ocelot.getY(),
                     ocelot.getZ()
@@ -88,10 +89,6 @@ public class PremiumCat {
                     (ServerLevel) level,
                     ocelot.blockPosition()
             );
-
-            return true;
         }
-
-        return false;
     }
 }

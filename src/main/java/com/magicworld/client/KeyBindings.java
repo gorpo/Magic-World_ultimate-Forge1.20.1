@@ -6,6 +6,9 @@ import org.lwjgl.glfw.GLFW;
 
 public class KeyBindings {
 
+    public static final String KEY_CATEGORY =
+            "key.category.magicworld";
+
     public static final String KEY_OPEN_MENU =
             "key.magicworld.open_menu";
 
@@ -18,7 +21,7 @@ public class KeyBindings {
                         KEY_OPEN_MENU,
                         InputConstants.Type.KEYSYM,
                         GLFW.GLFW_KEY_H,
-                        KeyMapping.Category.MISC
+                        KEY_CATEGORY
                 );
     }
 }

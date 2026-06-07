@@ -3,7 +3,7 @@ package com.magicworld.event;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -78,11 +78,11 @@ public class PremiumBlocks {
                 || state.is(Blocks.CRIMSON_FENCE_GATE)
                 || state.is(Blocks.WARPED_FENCE_GATE)) {
 
-            change(level, pos, state, Blocks.IRON_CHAIN);
+            change(level, pos, state, Blocks.CHAIN);
             return true;
         }
 
-        else if (state.is(Blocks.IRON_CHAIN)) {
+        else if (state.is(Blocks.CHAIN)) {
 
             change(level, pos, state, Blocks.OAK_FENCE_GATE);
             return true;
@@ -620,7 +620,7 @@ public class PremiumBlocks {
         }
 
         // SMALL PLANTS
-        else if (state.is(Blocks.SHORT_GRASS)
+        else if (state.is(Blocks.GRASS)
                 || state.is(Blocks.FERN)
                 || state.is(Blocks.TALL_GRASS)
                 || state.is(Blocks.LARGE_FERN)
@@ -657,7 +657,7 @@ public class PremiumBlocks {
 
         else if (state.is(Blocks.HAY_BLOCK)) {
 
-            change(level, pos, state, Blocks.SHORT_GRASS);
+            change(level, pos, state, Blocks.GRASS);
             return true;
         }
 
@@ -933,7 +933,7 @@ public class PremiumBlocks {
             return null;
         }
 
-        Identifier blockId =
+        ResourceLocation blockId =
                 BuiltInRegistries.BLOCK.getKey(block);
 
         String id =

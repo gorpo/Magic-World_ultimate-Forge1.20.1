@@ -15,10 +15,12 @@ public final class VarinhaMagicaControlCenter {
             List<PremiumEntry> entries
     ) {
 
+        MenuEntryFactory.open(entries, PremiumMenuScreen.MenuTab.GRAPHICS_PROFILES, "Graficos", "GraphicsProfilesMenu", Items.SPYGLASS);
         MenuEntryFactory.open(entries, PremiumMenuScreen.MenuTab.MOB_SPAWNER, "Mob Spawner", "MobSpawnerMenu", Items.SPAWNER);
-        MenuEntryFactory.open(entries, PremiumMenuScreen.MenuTab.GRAPHICS_PROFILES, "Perfis graficos", "GraphicsProfilesMenu", Items.DIAMOND);
         MenuEntryFactory.open(entries, PremiumMenuScreen.MenuTab.WEATHER_CONTROL, "Controle de clima", "WeatherControlMenu", Items.WATER_BUCKET);
         MenuEntryFactory.open(entries, PremiumMenuScreen.MenuTab.BIOME_TELEPORT, "Teleportar bioma", "BiomeTeleportMenu", Items.COMPASS);
+        MenuEntryFactory.open(entries, PremiumMenuScreen.MenuTab.LOCATIONS, "Locais", "LocationsMenu", Items.RECOVERY_COMPASS);
+        MenuEntryFactory.open(entries, PremiumMenuScreen.MenuTab.MINECOLONIES, "Colonias", "MineColoniesMenu", Items.BELL);
         MenuEntryFactory.open(entries, PremiumMenuScreen.MenuTab.DIMENSION_MENU, "Dimensoes", "DimensionMenu", Items.ENDER_EYE);
         MenuEntryFactory.open(entries, PremiumMenuScreen.MenuTab.PREMIUM_POWERS, "Poderes premium", "PremiumPowersMenu", Items.NETHER_STAR);
         MenuEntryFactory.open(entries, PremiumMenuScreen.MenuTab.STRUCTURE_RAIN, "Chuva especial", "StructureRainMenu", Items.TNT);

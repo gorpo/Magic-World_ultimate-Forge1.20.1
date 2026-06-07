@@ -8,15 +8,19 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class CraftEvents {
 
+    @SubscribeEvent
     public void onLeftClickBlock(
             PlayerInteractEvent.LeftClickBlock event
     ) {
 
         Level level = event.getLevel();
+
+        if (level.isClientSide()) return;
 
         if (event.getHand() != InteractionHand.MAIN_HAND)
             return;
@@ -29,8 +33,6 @@ public class CraftEvents {
             return;
 
         event.setCanceled(true);
-
-        if (level.isClientSide()) return;
 
         BlockPos pos = event.getPos();
 
@@ -287,11 +289,9 @@ public class CraftEvents {
             );
         }
 
-        if (!level.getBlockState(pos).equals(state)) {
-            MagicWorld.effects(
-                    (ServerLevel) level,
-                    pos
-            );
-        }
+        MagicWorld.effects(
+                (ServerLevel) level,
+                pos
+        );
     }
 }

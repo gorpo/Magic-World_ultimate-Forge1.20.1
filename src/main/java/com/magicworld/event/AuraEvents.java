@@ -2,6 +2,7 @@ package com.magicworld.event;
 
 import com.magicworld.MagicWorldWorldOptions;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,102 +16,112 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
-import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
-import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.LivingFallEvent;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.player.AttackEntityEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public final class AuraEvents {
+public class AuraEvents {
     private static final String PLAYER_AURA_KEY = "MagicWorldAuraEnabled";
+    private static final int AURA_SURVIVAL_REFRESH_TICKS = 20;
     private static final Map<UUID, DeathReturn> DEATH_RETURNS = new HashMap<>();
-
-    private AuraEvents() {
-    }
 
     private record DeathReturn(ResourceKey<Level> dimension, Vec3 position, float yRot, float xRot) {
     }
 
-    public static void registerListeners() {
-        NeoForge.EVENT_BUS.addListener(AuraEvents::onPlayerLoggedIn);
-        NeoForge.EVENT_BUS.addListener(AuraEvents::onPlayerTick);
-        NeoForge.EVENT_BUS.addListener(AuraEvents::onIncomingDamage);
-        NeoForge.EVENT_BUS.addListener(AuraEvents::onFall);
-        NeoForge.EVENT_BUS.addListener(AuraEvents::onAttackEntity);
-        NeoForge.EVENT_BUS.addListener(AuraEvents::onLeftClickBlock);
-        NeoForge.EVENT_BUS.addListener(AuraEvents::onLivingDeath);
-        NeoForge.EVENT_BUS.addListener(AuraEvents::onPlayerClone);
-        NeoForge.EVENT_BUS.addListener(AuraEvents::onPlayerRespawn);
-    }
-
-    private static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+    @SubscribeEvent
+    public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player && MagicWorldWorldOptions.isAuraEnabled()) {
             player.getPersistentData().putBoolean(PLAYER_AURA_KEY, true);
         }
     }
 
-    private static void onPlayerTick(PlayerTickEvent.Post event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || player.level().isClientSide() || !hasAura(player)) {
+    @SubscribeEvent
+    public void onPlayerTick(TickEvent.PlayerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END
+                || !(event.player instanceof ServerPlayer player)
+                || player.level().isClientSide()
+                || !hasAura(player)) {
             return;
         }
 
+        float walkingSpeed = player.isSprinting() ? 0.18F : 0.1F;
+        boolean abilitiesChanged = !player.getAbilities().mayBuild
+                || Math.abs(player.getAbilities().getWalkingSpeed() - walkingSpeed) > 0.001F;
         player.getAbilities().mayBuild = true;
-        player.getAbilities().setWalkingSpeed(player.isSprinting() ? 0.2F : 0.1F);
-        player.onUpdateAbilities();
+        player.getAbilities().setWalkingSpeed(walkingSpeed);
+        if (abilitiesChanged) {
+            player.onUpdateAbilities();
+        }
 
-        player.setRemainingFireTicks(0);
-        player.extinguishFire();
-        player.setAirSupply(player.getMaxAirSupply());
-        player.setTicksFrozen(0);
-        player.getFoodData().eat(20, 1.0F);
+        if (player.tickCount % AURA_SURVIVAL_REFRESH_TICKS == 0) {
+            player.setRemainingFireTicks(0);
+            player.extinguishFire();
+            player.setAirSupply(player.getMaxAirSupply());
+            player.setTicksFrozen(0);
+            if (player.getFoodData().getFoodLevel() < 20) {
+                player.getFoodData().eat(20, 1.0F);
+            }
 
-        addInvisibleEffect(player, MobEffects.FIRE_RESISTANCE, 3);
-        addInvisibleEffect(player, MobEffects.WATER_BREATHING, 0);
-        addInvisibleEffect(player, MobEffects.HASTE, 15);
-        addInvisibleEffect(player, MobEffects.SATURATION, 0);
+            addInvisibleEffect(player, MobEffects.FIRE_RESISTANCE, 2);
+            addInvisibleEffect(player, MobEffects.WATER_BREATHING, 0);
+            addInvisibleEffect(player, MobEffects.DIG_SPEED, 4);
+            addInvisibleEffect(player, MobEffects.SATURATION, 0);
+        }
 
         if (player.horizontalCollision && player.onGround()) {
             player.jumpFromGround();
         }
     }
 
-    private static void onIncomingDamage(LivingIncomingDamageEvent event) {
-        if (event.getEntity() instanceof Player player && hasAura(player)) {
-            DamageSource source = event.getSource();
-            if (isProtectedEnvironmentalDamage(source)) {
-                event.setCanceled(true);
-                event.setAmount(0.0F);
-                event.setInvulnerabilityTicks(20);
-            }
+    @SubscribeEvent
+    public void onLivingAttack(LivingAttackEvent event) {
+        if (event.getEntity() instanceof Player player && hasAura(player) && isProtectedEnvironmentalDamage(event.getSource())) {
+            event.setCanceled(true);
         }
     }
 
-    private static void onFall(LivingFallEvent event) {
+    @SubscribeEvent
+    public void onLivingHurt(LivingHurtEvent event) {
+        if (event.getEntity() instanceof Player player && hasAura(player) && isProtectedEnvironmentalDamage(event.getSource())) {
+            event.setCanceled(true);
+            event.setAmount(0.0F);
+        }
+    }
+
+    @SubscribeEvent
+    public void onFall(LivingFallEvent event) {
         if (event.getEntity() instanceof Player player && hasAura(player)) {
             event.setCanceled(true);
         }
     }
 
-    private static void onAttackEntity(AttackEntityEvent event) {
+    @SubscribeEvent
+    public void onAttackEntity(AttackEntityEvent event) {
         if (event.getEntity().level().isClientSide() || !hasAura(event.getEntity())) {
             return;
         }
 
-        if (event.getTarget() instanceof LivingEntity target && event.getEntity().level() instanceof ServerLevel level) {
+        if (event.getTarget() instanceof LivingEntity target) {
             event.setCanceled(true);
-            target.kill(level);
+            target.hurt(target.damageSources().magic(), Float.MAX_VALUE);
         }
     }
 
-    private static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
-        if (event.getHand() != InteractionHand.MAIN_HAND || event.getLevel().isClientSide() || !hasAura(event.getEntity())) {
+    @SubscribeEvent
+    public void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
+        if (event.getHand() != InteractionHand.MAIN_HAND
+                || event.getLevel().isClientSide()
+                || !hasAura(event.getEntity())) {
             return;
         }
 
@@ -126,7 +137,8 @@ public final class AuraEvents {
         }
     }
 
-    private static void onLivingDeath(LivingDeathEvent event) {
+    @SubscribeEvent
+    public void onLivingDeath(LivingDeathEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player) || !hasAura(player)) {
             return;
         }
@@ -137,19 +149,23 @@ public final class AuraEvents {
         );
     }
 
-    private static void onPlayerClone(PlayerEvent.Clone event) {
+    @SubscribeEvent
+    public void onPlayerClone(PlayerEvent.Clone event) {
         if (!event.isWasDeath() || !hasAura(event.getOriginal())) {
             return;
         }
 
-        event.getEntity().getPersistentData().putBoolean(PLAYER_AURA_KEY, true);
-        event.getEntity().getInventory().replaceWith(event.getOriginal().getInventory());
-        event.getEntity().experienceLevel = event.getOriginal().experienceLevel;
-        event.getEntity().totalExperience = event.getOriginal().totalExperience;
-        event.getEntity().experienceProgress = event.getOriginal().experienceProgress;
+        Player clone = event.getEntity();
+        CompoundTag cloneData = clone.getPersistentData();
+        cloneData.putBoolean(PLAYER_AURA_KEY, true);
+        clone.getInventory().replaceWith(event.getOriginal().getInventory());
+        clone.experienceLevel = event.getOriginal().experienceLevel;
+        clone.totalExperience = event.getOriginal().totalExperience;
+        clone.experienceProgress = event.getOriginal().experienceProgress;
     }
 
-    private static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+    @SubscribeEvent
+    public void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player) || !hasAura(player)) {
             return;
         }
@@ -159,7 +175,7 @@ public final class AuraEvents {
             return;
         }
 
-        ServerLevel level = player.level().getServer().getLevel(deathReturn.dimension());
+        ServerLevel level = player.server.getLevel(deathReturn.dimension());
         if (level == null) {
             return;
         }
@@ -169,15 +185,13 @@ public final class AuraEvents {
                 deathReturn.position().x(),
                 deathReturn.position().y(),
                 deathReturn.position().z(),
-                java.util.Set.of(),
-                deathReturn.yRot(),
-                deathReturn.xRot(),
-                false
+                player.getYRot(),
+                player.getXRot()
         );
     }
 
     private static boolean hasAura(Player player) {
-        return player.getPersistentData().getBoolean(PLAYER_AURA_KEY).orElse(false);
+        return player.getPersistentData().getBoolean(PLAYER_AURA_KEY);
     }
 
     private static boolean isProtectedEnvironmentalDamage(DamageSource source) {
@@ -192,7 +206,14 @@ public final class AuraEvents {
                 || source.is(DamageTypeTags.IS_LIGHTNING);
     }
 
-    private static void addInvisibleEffect(ServerPlayer player, net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect, int amplifier) {
-        player.addEffect(new MobEffectInstance(effect, 60, amplifier, false, false, false));
+    private static void addInvisibleEffect(ServerPlayer player, net.minecraft.world.effect.MobEffect effect, int amplifier) {
+        MobEffectInstance current = player.getEffect(effect);
+        if (current != null && !current.isVisible() && !current.showIcon() && current.getAmplifier() >= amplifier && current.getDuration() > 60) {
+            return;
+        }
+        if (current != null) {
+            player.removeEffect(effect);
+        }
+        player.addEffect(new MobEffectInstance(effect, 20 * 8, amplifier, false, false, false));
     }
 }

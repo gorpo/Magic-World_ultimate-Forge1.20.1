@@ -9,16 +9,17 @@ import net.minecraft.world.level.Level;
 
 public class PremiumCamel {
 
-    public static boolean transform(
+    public static void transform(
             Level level,
             Camel camel
     ) {
 
-        if (PremiumEntityTags.isAnimal(camel, "camel")) {
-            PremiumEntityTags.clearAnimal(camel, "camel");
+        if (camel.hasEffect(
+                MobEffects.MOVEMENT_SPEED
+        )) {
 
             camel.removeEffect(
-                    MobEffects.SPEED
+                    MobEffects.MOVEMENT_SPEED
             );
 
             camel.removeEffect(
@@ -27,11 +28,10 @@ public class PremiumCamel {
         }
 
         else {
-            PremiumEntityTags.markAnimal(camel, "camel");
 
             camel.addEffect(
                     new MobEffectInstance(
-                            MobEffects.SPEED,
+                            MobEffects.MOVEMENT_SPEED,
                             999999,
                             4
                     )
@@ -50,7 +50,5 @@ public class PremiumCamel {
                 (ServerLevel) level,
                 camel.blockPosition()
         );
-
-        return true;
     }
 }

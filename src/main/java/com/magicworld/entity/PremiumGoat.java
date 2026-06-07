@@ -9,29 +9,29 @@ import net.minecraft.world.level.Level;
 
 public class PremiumGoat {
 
-    public static boolean transform(
+    public static void transform(
             Level level,
             Goat goat
     ) {
 
-        if (PremiumEntityTags.isAnimal(goat, "goat")) {
-            PremiumEntityTags.clearAnimal(goat, "goat");
+        if (goat.hasEffect(
+                MobEffects.DAMAGE_BOOST
+        )) {
 
             goat.removeEffect(
-                    MobEffects.STRENGTH
+                    MobEffects.DAMAGE_BOOST
             );
 
             goat.removeEffect(
-                    MobEffects.SPEED
+                    MobEffects.MOVEMENT_SPEED
             );
         }
 
         else {
-            PremiumEntityTags.markAnimal(goat, "goat");
 
             goat.addEffect(
                     new MobEffectInstance(
-                            MobEffects.STRENGTH,
+                            MobEffects.DAMAGE_BOOST,
                             999999,
                             3
                     )
@@ -39,19 +39,16 @@ public class PremiumGoat {
 
             goat.addEffect(
                     new MobEffectInstance(
-                            MobEffects.SPEED,
+                            MobEffects.MOVEMENT_SPEED,
                             999999,
                             2
                     )
             );
 
+            MagicWorld.effects(
+                    (ServerLevel) level,
+                    goat.blockPosition()
+            );
         }
-
-        MagicWorld.effects(
-                (ServerLevel) level,
-                goat.blockPosition()
-        );
-
-        return true;
     }
 }

@@ -4,18 +4,19 @@ import com.magicworld.MagicWorld;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.animal.golem.SnowGolem;
+import net.minecraft.world.entity.animal.SnowGolem;
 import net.minecraft.world.level.Level;
 
 public class PremiumSnowGolem {
 
-    public static boolean transform(
+    public static void transform(
             Level level,
             SnowGolem golem
     ) {
 
-        if (PremiumEntityTags.isAnimal(golem, "snow_golem")) {
-            PremiumEntityTags.clearAnimal(golem, "snow_golem");
+        if (golem.hasEffect(
+                MobEffects.REGENERATION
+        )) {
 
             golem.removeEffect(
                     MobEffects.REGENERATION
@@ -23,7 +24,6 @@ public class PremiumSnowGolem {
         }
 
         else {
-            PremiumEntityTags.markAnimal(golem, "snow_golem");
 
             golem.addEffect(
                     new MobEffectInstance(
@@ -38,7 +38,5 @@ public class PremiumSnowGolem {
                 (ServerLevel) level,
                 golem.blockPosition()
         );
-
-        return true;
     }
 }

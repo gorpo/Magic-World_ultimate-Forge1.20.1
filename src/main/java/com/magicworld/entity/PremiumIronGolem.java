@@ -4,34 +4,34 @@ import com.magicworld.MagicWorld;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.animal.golem.IronGolem;
+import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.level.Level;
 
 public class PremiumIronGolem {
 
-    public static boolean transform(
+    public static void transform(
             Level level,
             IronGolem golem
     ) {
 
-        if (PremiumEntityTags.isAnimal(golem, "iron_golem")) {
-            PremiumEntityTags.clearAnimal(golem, "iron_golem");
+        if (golem.hasEffect(
+                MobEffects.DAMAGE_BOOST
+        )) {
 
             golem.removeEffect(
-                    MobEffects.STRENGTH
+                    MobEffects.DAMAGE_BOOST
             );
 
             golem.removeEffect(
-                    MobEffects.SPEED
+                    MobEffects.MOVEMENT_SPEED
             );
         }
 
         else {
-            PremiumEntityTags.markAnimal(golem, "iron_golem");
 
             golem.addEffect(
                     new MobEffectInstance(
-                            MobEffects.STRENGTH,
+                            MobEffects.DAMAGE_BOOST,
                             999999,
                             5
                     )
@@ -39,7 +39,7 @@ public class PremiumIronGolem {
 
             golem.addEffect(
                     new MobEffectInstance(
-                            MobEffects.SPEED,
+                            MobEffects.MOVEMENT_SPEED,
                             999999,
                             3
                     )
@@ -50,7 +50,5 @@ public class PremiumIronGolem {
                 (ServerLevel) level,
                 golem.blockPosition()
         );
-
-        return true;
     }
 }

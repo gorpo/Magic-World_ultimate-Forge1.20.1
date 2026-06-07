@@ -4,13 +4,13 @@ import com.magicworld.MagicWorld;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.npc.villager.Villager;
-import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.WanderingTrader;
 import net.minecraft.world.level.Level;
 
 public class PremiumVillager {
 
-    public static boolean transform(
+    public static void transform(
             Level level,
             Object target
     ) {
@@ -23,7 +23,7 @@ public class PremiumVillager {
                             level
                     );
 
-            premium.setPos(
+            premium.moveTo(
                     villager.getX(),
                     villager.getY(),
                     villager.getZ()
@@ -31,11 +31,10 @@ public class PremiumVillager {
 
             premium.setCustomName(
                     Component.literal(
-                            "§6💰 ALDEÃO PREMIUM 💰"
+                            "Â§6ðŸ’° ALDEÃƒO PREMIUM ðŸ’°"
                     )
             );
 
-            PremiumEntityTags.markAnimal(premium, "villager");
             level.addFreshEntity(
                     premium
             );
@@ -46,12 +45,9 @@ public class PremiumVillager {
                     (ServerLevel) level,
                     villager.blockPosition()
             );
-
-            return true;
         }
 
-        else if (target instanceof WanderingTrader trader
-                && PremiumEntityTags.isAnimal(trader, "villager")) {
+        else if (target instanceof WanderingTrader trader) {
 
             Villager villager =
                     new Villager(
@@ -59,7 +55,7 @@ public class PremiumVillager {
                             level
                     );
 
-            villager.setPos(
+            villager.moveTo(
                     trader.getX(),
                     trader.getY(),
                     trader.getZ()
@@ -75,10 +71,6 @@ public class PremiumVillager {
                     (ServerLevel) level,
                     trader.blockPosition()
             );
-
-            return true;
         }
-
-        return false;
     }
 }

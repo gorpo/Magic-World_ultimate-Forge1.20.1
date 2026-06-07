@@ -1,14 +1,16 @@
 package com.magicworld.client;
 
-import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public class InitialLoadNoticeScreen extends Screen {
+    private static final long COMPLETE_CLOSE_DELAY_MS = 5000L;
     private static int currentProgress;
     private static String currentMessage = "Preparando o carregamento inicial...";
     private static boolean currentComplete;
+    private static long completedAtMs = -1L;
 
     public InitialLoadNoticeScreen() {
         super(Component.literal("Carregamento Magic World"));
@@ -18,6 +20,7 @@ public class InitialLoadNoticeScreen extends Screen {
         currentProgress = 0;
         currentMessage = "Preparando o carregamento inicial...";
         currentComplete = false;
+        completedAtMs = -1L;
     }
 
     public static void updateProgress(Minecraft minecraft, int progress, String message, boolean complete) {
@@ -25,44 +28,74 @@ public class InitialLoadNoticeScreen extends Screen {
         currentMessage = message == null || message.isBlank() ? currentMessage : message;
         currentComplete = complete || currentProgress >= 100;
 
-        if (minecraft.screen instanceof InitialLoadNoticeScreen screen) {
-            if (currentComplete) {
-                minecraft.setScreen(null);
-            }
+        if (currentComplete && completedAtMs < 0L) {
+            completedAtMs = System.currentTimeMillis();
         }
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        int panelWidth = Math.min(360, width - 32);
-        int panelHeight = 200;
+    public void tick() {
+        if (currentComplete
+                && minecraft != null
+                && minecraft.player != null
+                && minecraft.level != null
+                && completedAtMs > 0L
+                && System.currentTimeMillis() - completedAtMs >= COMPLETE_CLOSE_DELAY_MS) {
+            minecraft.setScreen(null);
+        }
+    }
+
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        int panelWidth = Math.min(420, width - 32);
+        int panelHeight = 164;
         int left = width / 2 - panelWidth / 2;
-        int top = Math.max(22, height / 2 - 92);
+        int top = Math.max(18, height / 2 - panelHeight / 2);
         int progressLeft = left + 28;
-        int progressTop = top + 122;
         int progressWidth = panelWidth - 56;
         int filledWidth = progressWidth * currentProgress / 100;
+        int logoWidth = Math.min(170, Math.max(120, panelWidth - 250));
+        int logoHeight = logoWidth * MagicWorldStaticBackground.LOGO_HEIGHT / MagicWorldStaticBackground.LOGO_WIDTH;
+        int logoX = width / 2 - logoWidth / 2;
+        int logoY = top + 20;
+        int messageY = logoY + logoHeight + 18;
+        int progressTop = messageY + 24;
 
-        graphics.fill(0, 0, width, height, 0xAA030611);
-        graphics.fill(left, top, left + panelWidth, top + panelHeight, 0xEE101018);
-        graphics.outline(left, top, panelWidth, panelHeight, 0xAADDAD55);
-        graphics.centeredText(font, Component.literal("MAGIC WORLD"), width / 2, top + 14, 0xFFFFFFFF);
-        graphics.centeredText(font, Component.literal("Primeira criacao de mapa"), width / 2, top + 32, 0xFFFFE0A0);
-        graphics.centeredText(font, Component.literal("pode demorar alguns minutos."), width / 2, top + 48, 0xFFFFE0A0);
-        graphics.centeredText(font, Component.literal("Casa, fazendas, portal, castelo"), width / 2, top + 72, 0xFFE8F2FF);
-        graphics.centeredText(font, Component.literal("e dragao carregam em etapas."), width / 2, top + 88, 0xFFE8F2FF);
-        graphics.centeredText(font, Component.literal(currentMessage), width / 2, top + 106, 0xFFBFD7FF);
+        MagicWorldStaticBackground.draw(graphics, width, height);
+        graphics.fill(0, 0, width, height, 0x33030611);
+        graphics.fill(left, top, left + panelWidth, top + panelHeight, 0xA8050916);
+        graphics.fill(left + 4, top + 4, left + panelWidth - 4, top + panelHeight - 4, 0x66101B2B);
+        graphics.renderOutline(left, top, panelWidth, panelHeight, 0xAADDAD55);
+        graphics.renderOutline(left + 5, top + 5, panelWidth - 10, panelHeight - 10, 0x55316B9F);
+        graphics.blit(
+                MagicWorldStaticBackground.FULL_LOGO,
+                logoX,
+                logoY,
+                logoWidth,
+                logoHeight,
+                0,
+                0,
+                MagicWorldStaticBackground.LOGO_WIDTH,
+                MagicWorldStaticBackground.LOGO_HEIGHT,
+                MagicWorldStaticBackground.LOGO_WIDTH,
+                MagicWorldStaticBackground.LOGO_HEIGHT
+        );
+        graphics.drawCenteredString(font, Component.literal(currentMessage), width / 2, messageY, 0xFFBFD7FF);
 
         graphics.fill(progressLeft, progressTop, progressLeft + progressWidth, progressTop + 12, 0xFF070B13);
-        graphics.outline(progressLeft, progressTop, progressWidth, 12, 0xAADDAD55);
-        graphics.fill(progressLeft + 2, progressTop + 2, progressLeft + 2 + Math.max(0, filledWidth - 4), progressTop + 10, 0xFF8B5CFF);
-        graphics.centeredText(font, Component.literal(currentProgress + "%"), width / 2, progressTop + 18, 0xFFFFE0A0);
-
-        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+        graphics.renderOutline(progressLeft, progressTop, progressWidth, 12, 0xAADDAD55);
+        graphics.fill(progressLeft + 2, progressTop + 2, progressLeft + 2 + Math.max(0, filledWidth - 4), progressTop + 6, 0xFF2DB7FF);
+        graphics.fill(progressLeft + 2, progressTop + 6, progressLeft + 2 + Math.max(0, filledWidth - 4), progressTop + 10, 0xFFB8862B);
+        graphics.drawCenteredString(font, Component.literal(currentProgress + "%"), width / 2, progressTop + 18, 0xFFFFE0A0);
     }
 
     @Override
     public boolean isPauseScreen() {
+        return false;
+    }
+
+    @Override
+    public boolean shouldCloseOnEsc() {
         return false;
     }
 }

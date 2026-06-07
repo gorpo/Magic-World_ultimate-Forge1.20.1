@@ -1,44 +1,42 @@
-### Gradle ###
-.gradle
-build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/**/build/
+# eclipse
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
 
-### IntelliJ IDEA ###
-.idea/
+# idea
+out
+*.ipr
 *.iws
 *.iml
-*.ipr
-out/
-!**/src/**/out/
+.idea
 
-.run/
+# gradle
+build
+.gradle
 
-### Eclipse ###
-.apt_generated
-.classpath
-.eclipse/
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/**/bin/
+# other
+eclipse
+run
+mods/*.jar
+mods_desativados_magicworld/
 
-### VS Code ###
-.vscode/
+# Files from Forge MDK
+forge*changelog.txt
 
-### Mac OS ###
-.DS_Store
+# local/heavy workspace data
+.tmp
+/tmp
+/tmp/**
+/pacote_distribuivel/
+/installer/
+/screenshots/
+/run/
 
-### Minecraft Modding ###
-run/
-!**/src/**/run/
-**/src/generated/**/.cache/
-repo/
-!**/src/**/repo/
-
-### Local Codex/User Backups ###
-local-backups/
-mods_para_inclusao/
+# local reference assets copied from NeoForge/support mods
+/src/main/resources/assets/distanthorizons/
+/src/main/resources/assets/iris/
+/src/main/resources/assets/sodium/
+/src/main/resources/assets/minecraft/

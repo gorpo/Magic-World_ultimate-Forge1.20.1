@@ -14,6 +14,40 @@ public final class GraphicsProfilesMenu {
     public static void add(
             List<PremiumEntry> entries
     ) {
+        MenuEntryFactory.command(
+                entries,
+                PremiumMenuScreen.MenuTab.GRAPHICS_PROFILES,
+                "Verificar shaders",
+                "CheckShaderLoader",
+                "Shaders / Oculus",
+                "Confere se ha loader de shaders instalado no Forge.",
+                "Usa Oculus no Forge 1.20.1 com Embeddium para abrir shaders.",
+                Items.SPYGLASS,
+                "CHECK_SHADER_LOADER"
+        );
+        MenuEntryFactory.command(
+                entries,
+                PremiumMenuScreen.MenuTab.GRAPHICS_PROFILES,
+                "Pasta shaderpacks",
+                "OpenShaderpacksFolder",
+                "Shaders",
+                "Abre a pasta local de shaderpacks deste run.",
+                "Coloque os ZIPs aqui e selecione pelo menu do Oculus.",
+                Items.LANTERN,
+                "OPEN_SHADERPACKS_FOLDER"
+        );
+        MenuEntryFactory.command(
+                entries,
+                PremiumMenuScreen.MenuTab.GRAPHICS_PROFILES,
+                "Pasta resourcepacks",
+                "OpenResourcepacksFolder",
+                "Resource packs",
+                "Abre a pasta local de resourcepacks deste run.",
+                "Os packs MagicWorld locais foram preparados para pack_format 15 da 1.20.1.",
+                Items.PAINTING,
+                "OPEN_RESOURCEPACKS_FOLDER"
+        );
+
         profile(entries, MagicWorldGraphicsProfile.ULTRA_FRACO, Items.REDSTONE);
         profile(entries, MagicWorldGraphicsProfile.FRACO, Items.COAL);
         profile(entries, MagicWorldGraphicsProfile.INTERMEDIARIO, Items.COPPER_INGOT);
@@ -34,7 +68,7 @@ public final class GraphicsProfilesMenu {
                 profile.name(),
                 "Perfil grafico",
                 profile.description(),
-                "Aplica opcoes vanilla agora. Shader/resource pack e efeitos ficam preparados para evolucao futura.",
+                "Aplica opcoes vanilla agora. Shaders dependem de loader externo compativel.",
                 icon,
                 "GRAPHICS_PROFILE:" + profile.name()
         );

@@ -1,10 +1,9 @@
 package com.magicworld.client;
 
 import net.minecraft.client.CloudStatus;
-import net.minecraft.client.GraphicsPreset;
+import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ParticleStatus;
+import net.minecraft.client.ParticleStatus;
 
 public enum MagicWorldGraphicsProfile {
     ULTRA_FRACO(
@@ -12,7 +11,7 @@ public enum MagicWorldGraphicsProfile {
             4,
             4,
             ParticleStatus.MINIMAL,
-            GraphicsPreset.FAST,
+            GraphicsStatus.FAST,
             CloudStatus.OFF,
             0.5D,
             false,
@@ -23,7 +22,7 @@ public enum MagicWorldGraphicsProfile {
             6,
             5,
             ParticleStatus.MINIMAL,
-            GraphicsPreset.FAST,
+            GraphicsStatus.FAST,
             CloudStatus.OFF,
             0.6D,
             false,
@@ -34,7 +33,7 @@ public enum MagicWorldGraphicsProfile {
             8,
             6,
             ParticleStatus.DECREASED,
-            GraphicsPreset.FAST,
+            GraphicsStatus.FAST,
             CloudStatus.FAST,
             0.75D,
             true,
@@ -45,7 +44,7 @@ public enum MagicWorldGraphicsProfile {
             10,
             8,
             ParticleStatus.DECREASED,
-            GraphicsPreset.FANCY,
+            GraphicsStatus.FANCY,
             CloudStatus.FAST,
             0.85D,
             true,
@@ -56,7 +55,7 @@ public enum MagicWorldGraphicsProfile {
             14,
             10,
             ParticleStatus.ALL,
-            GraphicsPreset.FANCY,
+            GraphicsStatus.FANCY,
             CloudStatus.FANCY,
             1.0D,
             true,
@@ -67,7 +66,7 @@ public enum MagicWorldGraphicsProfile {
             20,
             12,
             ParticleStatus.ALL,
-            GraphicsPreset.FABULOUS,
+            GraphicsStatus.FABULOUS,
             CloudStatus.FANCY,
             1.0D,
             true,
@@ -78,7 +77,7 @@ public enum MagicWorldGraphicsProfile {
     private final int renderDistance;
     private final int simulationDistance;
     private final ParticleStatus particles;
-    private final GraphicsPreset graphicsPreset;
+    private final GraphicsStatus graphicsStatus;
     private final CloudStatus clouds;
     private final double entityDistance;
     private final boolean ambientOcclusion;
@@ -89,7 +88,7 @@ public enum MagicWorldGraphicsProfile {
             int renderDistance,
             int simulationDistance,
             ParticleStatus particles,
-            GraphicsPreset graphicsPreset,
+            GraphicsStatus graphicsStatus,
             CloudStatus clouds,
             double entityDistance,
             boolean ambientOcclusion,
@@ -99,7 +98,7 @@ public enum MagicWorldGraphicsProfile {
         this.renderDistance = renderDistance;
         this.simulationDistance = simulationDistance;
         this.particles = particles;
-        this.graphicsPreset = graphicsPreset;
+        this.graphicsStatus = graphicsStatus;
         this.clouds = clouds;
         this.entityDistance = entityDistance;
         this.ambientOcclusion = ambientOcclusion;
@@ -118,7 +117,7 @@ public enum MagicWorldGraphicsProfile {
                 + ", particulas "
                 + particles.name().toLowerCase()
                 + ", grafico "
-                + graphicsPreset.getSerializedName()
+                + graphicsStatus.name().toLowerCase()
                 + ".";
     }
 
@@ -131,8 +130,8 @@ public enum MagicWorldGraphicsProfile {
                 .set(simulationDistance);
         minecraft.options.particles()
                 .set(particles);
-        minecraft.options.graphicsPreset()
-                .set(graphicsPreset);
+        minecraft.options.graphicsMode()
+                .set(graphicsStatus);
         minecraft.options.cloudStatus()
                 .set(clouds);
         minecraft.options.entityDistanceScaling()
@@ -142,14 +141,5 @@ public enum MagicWorldGraphicsProfile {
         minecraft.options.framerateLimit()
                 .set(framerateLimit);
         minecraft.options.save();
-
-        if (minecraft.player != null) {
-            minecraft.player.sendSystemMessage(
-                    Component.literal(
-                            "Perfil grafico Magic World aplicado: "
-                                    + label
-                    )
-            );
-        }
     }
 }

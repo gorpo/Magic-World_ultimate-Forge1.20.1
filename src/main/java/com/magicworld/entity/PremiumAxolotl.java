@@ -9,61 +9,32 @@ import net.minecraft.world.level.Level;
 
 public class PremiumAxolotl {
 
-    public static boolean transform(
+    public static void transform(
             Level level,
-            Object target
+            Axolotl axolotl
     ) {
 
-        if (target instanceof Axolotl axolotl) {
-            Frog premium =
-                    new Frog(
-                            EntityType.FROG,
-                            level
-                    );
+        Frog premium =
+                new Frog(
+                        EntityType.FROG,
+                        level
+                );
 
-            premium.setPos(
-                    axolotl.getX(),
-                    axolotl.getY(),
-                    axolotl.getZ()
-            );
+        premium.moveTo(
+                axolotl.getX(),
+                axolotl.getY(),
+                axolotl.getZ()
+        );
 
-            PremiumEntityTags.markAnimal(premium, "axolotl");
-            level.addFreshEntity(premium);
-            axolotl.discard();
+        level.addFreshEntity(
+                premium
+        );
 
-            MagicWorld.effects(
-                    (ServerLevel) level,
-                    axolotl.blockPosition()
-            );
+        axolotl.discard();
 
-            return true;
-        }
-
-        if (target instanceof Frog frog
-                && PremiumEntityTags.isAnimal(frog, "axolotl")) {
-            Axolotl axolotl =
-                    new Axolotl(
-                            EntityType.AXOLOTL,
-                            level
-                    );
-
-            axolotl.setPos(
-                    frog.getX(),
-                    frog.getY(),
-                    frog.getZ()
-            );
-
-            level.addFreshEntity(axolotl);
-            frog.discard();
-
-            MagicWorld.effects(
-                    (ServerLevel) level,
-                    frog.blockPosition()
-            );
-
-            return true;
-        }
-
-        return false;
+        MagicWorld.effects(
+                (ServerLevel) level,
+                axolotl.blockPosition()
+        );
     }
 }

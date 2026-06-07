@@ -1,0 +1,84 @@
+{
+  "minecraft": "1.20.1",
+  "forge_resource_pack_format": 15,
+  "shader_loader_note": "Forge vanilla does not load shaderpacks. Install Oculus/Iris-compatible loader plus Embeddium/Rubidium to render shaders.",
+  "resourcepacks": [
+    {
+      "name": "MagicWorldResource_1.20.1-256x.zip",
+      "type": "resourcepack",
+      "size_bytes": 1244123085,
+      "sha256": "93eddbc31f3588cd8f70d48d023f3cb7084be6515f1cf544dc9313d5d89ee1de",
+      "entries": 42912,
+      "roots": [
+        "assets"
+      ],
+      "pack_mcmeta": {
+        "pack": {
+          "pack_format": 15,
+          "description": "MagicWorld 256x - Forge 1.20.1"
+        }
+      }
+    },
+    {
+      "name": "MagicWorldResource_1.20.1-addon.zip",
+      "type": "resourcepack",
+      "size_bytes": 343712905,
+      "sha256": "44b2f5c419776df4e13caf8a7ca470146028637cb3b645df4a7201fcab5b9698",
+      "entries": 9117,
+      "roots": [
+        "assets"
+      ],
+      "pack_mcmeta": {
+        "pack": {
+          "pack_format": 15,
+          "description": "MagicWorld addon - Forge 1.20.1"
+        }
+      }
+    },
+    {
+      "name": "MagicWorldResource_1.20.1-bonus.zip",
+      "type": "resourcepack",
+      "size_bytes": 110507923,
+      "sha256": "691d0046e5c3cf8a117d0aac272d6a8b163a63dab4cbc0c7b5b1571c3a16bbeb",
+      "entries": 2083,
+      "roots": [
+        "assets"
+      ],
+      "pack_mcmeta": {
+        "pack": {
+          "pack_format": 15,
+          "description": "MagicWorld bonus - Forge 1.20.1"
+        }
+      }
+    },
+    {
+      "name": "MagicWorldResource_1.20.1-models.zip",
+      "type": "resourcepack",
+      "size_bytes": 231042,
+      "sha256": "644fb172240f54e012d7d647d73f60acf70435cc5aa836a2911247dfb34131d6",
+      "entries": 203,
+      "roots": [
+        "assets"
+      ],
+      "pack_mcmeta": {
+        "pack": {
+          "pack_format": 15,
+          "description": "MagicWorld models - Forge 1.20.1"
+        }
+      }
+    }
+  ],
+  "shaderpacks": [
+    {
+      "name": "MagicWorld_Shaders_Extreme_v1.0_.zip",
+      "type": "shaderpack",
+      "size_bytes": 154036,
+      "sha256": "6b52953f02ac17cd875c49bef2af8f53c24c6a504e5a237509e4276ea4ed6ad4",
+      "entries": 108,
+      "roots": [
+        "shaders"
+      ],
+      "pack_mcmeta": {}
+    }
+  ]
+}

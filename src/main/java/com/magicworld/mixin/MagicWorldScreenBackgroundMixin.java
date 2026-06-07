@@ -1,59 +1,53 @@
 package com.magicworld.mixin;
 
-import com.magicworld.client.MagicWorldMenuTheme;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import com.magicworld.client.MagicWorldScreenBackgrounds;
+import com.magicworld.client.MagicWorldStaticBackground;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Screen.class)
 public abstract class MagicWorldScreenBackgroundMixin {
-    @Shadow
-    public int width;
-
-    @Shadow
-    public int height;
-
     @Inject(
-            method = "extractMenuBackground(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V",
+            method = {
+                    "renderBackground(Lnet/minecraft/client/gui/GuiGraphics;)V",
+                    "m_280273_(Lnet/minecraft/client/gui/GuiGraphics;)V"
+            },
             at = @At("HEAD"),
-            cancellable = true
+            cancellable = true,
+            require = 0,
+            remap = false
     )
-    private void magicworld$extractMenuBackground(
-            GuiGraphicsExtractor graphics,
-            CallbackInfo callback
-    ) {
-        MagicWorldMenuTheme.drawBackdrop(
-                graphics,
-                width,
-                height
-        );
+    private void magicworld$renderBackground(GuiGraphics graphics, CallbackInfo callback) {
+        Screen screen = (Screen) (Object) this;
+        if (!MagicWorldScreenBackgrounds.shouldUseStaticBackground(screen)) {
+            return;
+        }
 
+        MagicWorldStaticBackground.draw(graphics, screen.width, screen.height);
         callback.cancel();
     }
 
     @Inject(
-            method = "extractMenuBackground(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIII)V",
+            method = {
+                    "renderDirtBackground(Lnet/minecraft/client/gui/GuiGraphics;)V",
+                    "m_280039_(Lnet/minecraft/client/gui/GuiGraphics;)V"
+            },
             at = @At("HEAD"),
-            cancellable = true
+            cancellable = true,
+            require = 0,
+            remap = false
     )
-    private void magicworld$extractMenuBackgroundArea(
-            GuiGraphicsExtractor graphics,
-            int x,
-            int y,
-            int width,
-            int height,
-            CallbackInfo callback
-    ) {
-        MagicWorldMenuTheme.drawBackdrop(
-                graphics,
-                this.width,
-                this.height
-        );
+    private void magicworld$renderDirtBackground(GuiGraphics graphics, CallbackInfo callback) {
+        Screen screen = (Screen) (Object) this;
+        if (!MagicWorldScreenBackgrounds.shouldUseStaticBackground(screen)) {
+            return;
+        }
 
+        MagicWorldStaticBackground.draw(graphics, screen.width, screen.height);
         callback.cancel();
     }
 }

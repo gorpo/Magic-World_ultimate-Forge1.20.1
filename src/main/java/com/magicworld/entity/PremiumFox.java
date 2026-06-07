@@ -4,22 +4,23 @@ import com.magicworld.MagicWorld;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.animal.fox.Fox;
+import net.minecraft.world.entity.animal.Fox;
 import net.minecraft.world.level.Level;
 
 public class PremiumFox {
 
-    public static boolean transform(
+    public static void transform(
             Level level,
             Fox fox
     ) {
 
-        if (!PremiumEntityTags.isAnimal(fox, "fox")) {
-            PremiumEntityTags.markAnimal(fox, "fox");
+        if (!fox.hasEffect(
+                MobEffects.MOVEMENT_SPEED
+        )) {
 
             fox.addEffect(
                     new MobEffectInstance(
-                            MobEffects.SPEED,
+                            MobEffects.MOVEMENT_SPEED,
                             999999,
                             3
                     )
@@ -35,10 +36,9 @@ public class PremiumFox {
         }
 
         else {
-            PremiumEntityTags.clearAnimal(fox, "fox");
 
             fox.removeEffect(
-                    MobEffects.SPEED
+                    MobEffects.MOVEMENT_SPEED
             );
 
             fox.removeEffect(
@@ -50,7 +50,5 @@ public class PremiumFox {
                 (ServerLevel) level,
                 fox.blockPosition()
         );
-
-        return true;
     }
 }

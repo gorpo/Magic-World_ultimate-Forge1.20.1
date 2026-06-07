@@ -5,13 +5,13 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.equine.Horse;
-import net.minecraft.world.entity.animal.equine.ZombieHorse;
+import net.minecraft.world.entity.animal.horse.Horse;
+import net.minecraft.world.entity.animal.horse.ZombieHorse;
 import net.minecraft.world.level.Level;
 
 public class PremiumHorse {
 
-    public static boolean transform(
+    public static void transform(
             Level level,
             Object target
     ) {
@@ -24,7 +24,7 @@ public class PremiumHorse {
                             level
                     );
 
-            premium.setPos(
+            premium.moveTo(
                     horse.getX(),
                     horse.getY(),
                     horse.getZ()
@@ -32,13 +32,12 @@ public class PremiumHorse {
 
             premium.addEffect(
                     new MobEffectInstance(
-                            MobEffects.SPEED,
+                            MobEffects.MOVEMENT_SPEED,
                             999999,
                             3
                     )
             );
 
-            PremiumEntityTags.markAnimal(premium, "horse");
             level.addFreshEntity(
                     premium
             );
@@ -49,12 +48,9 @@ public class PremiumHorse {
                     (ServerLevel) level,
                     horse.blockPosition()
             );
-
-            return true;
         }
 
-        else if (target instanceof ZombieHorse horse
-                && PremiumEntityTags.isAnimal(horse, "horse")) {
+        else if (target instanceof ZombieHorse horse) {
 
             Horse normal =
                     new Horse(
@@ -62,7 +58,7 @@ public class PremiumHorse {
                             level
                     );
 
-            normal.setPos(
+            normal.moveTo(
                     horse.getX(),
                     horse.getY(),
                     horse.getZ()
@@ -78,10 +74,6 @@ public class PremiumHorse {
                     (ServerLevel) level,
                     horse.blockPosition()
             );
-
-            return true;
         }
-
-        return false;
     }
 }

@@ -4,21 +4,22 @@ import com.magicworld.MagicWorld;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.animal.panda.Panda;
+import net.minecraft.world.entity.animal.Panda;
 import net.minecraft.world.level.Level;
 
 public class PremiumPanda {
 
-    public static boolean transform(
+    public static void transform(
             Level level,
             Panda panda
     ) {
 
-        if (PremiumEntityTags.isAnimal(panda, "panda")) {
-            PremiumEntityTags.clearAnimal(panda, "panda");
+        if (panda.hasEffect(
+                MobEffects.DAMAGE_BOOST
+        )) {
 
             panda.removeEffect(
-                    MobEffects.STRENGTH
+                    MobEffects.DAMAGE_BOOST
             );
 
             panda.removeEffect(
@@ -27,11 +28,10 @@ public class PremiumPanda {
         }
 
         else {
-            PremiumEntityTags.markAnimal(panda, "panda");
 
             panda.addEffect(
                     new MobEffectInstance(
-                            MobEffects.STRENGTH,
+                            MobEffects.DAMAGE_BOOST,
                             999999,
                             4
                     )
@@ -50,7 +50,5 @@ public class PremiumPanda {
                 (ServerLevel) level,
                 panda.blockPosition()
         );
-
-        return true;
     }
 }

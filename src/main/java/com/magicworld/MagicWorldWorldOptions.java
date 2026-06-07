@@ -47,11 +47,15 @@ public final class MagicWorldWorldOptions {
 
     private static boolean starterEstateEnabled = true;
     private static boolean castlesEnabled = true;
+    private static boolean farmsEnabled = true;
     private static boolean auraEnabled = true;
     private static boolean commandsEnabled = true;
     private static int hardwareProfileIndex = 3;
-    private static StartingGameMode startingGameMode = StartingGameMode.SURVIVAL;
-    private static StartingDifficulty startingDifficulty = StartingDifficulty.NORMAL;
+    private static StartingGameMode startingGameMode = StartingGameMode.CREATIVE;
+    private static StartingDifficulty startingDifficulty = StartingDifficulty.EASY;
+    private static String worldName = "";
+    private static String customSeed = "";
+    private static int presetSeedIndex = 0;
 
     private MagicWorldWorldOptions() {
     }
@@ -82,6 +86,19 @@ public final class MagicWorldWorldOptions {
         return castlesEnabled;
     }
 
+    public static boolean isFarmsEnabled() {
+        return farmsEnabled;
+    }
+
+    public static void setFarmsEnabled(boolean enabled) {
+        farmsEnabled = enabled;
+    }
+
+    public static boolean toggleFarmsEnabled() {
+        farmsEnabled = !farmsEnabled;
+        return farmsEnabled;
+    }
+
     public static boolean isAuraEnabled() {
         return auraEnabled;
     }
@@ -109,7 +126,7 @@ public final class MagicWorldWorldOptions {
     }
 
     public static boolean hasCommandRequiredOptionEnabled() {
-        return starterEstateEnabled || castlesEnabled || auraEnabled;
+        return starterEstateEnabled || castlesEnabled || farmsEnabled || auraEnabled;
     }
 
     public static int hardwareProfileIndex() {
@@ -125,7 +142,6 @@ public final class MagicWorldWorldOptions {
             hardwareProfileIndex = 0;
             return hardwareProfileIndex;
         }
-
         hardwareProfileIndex = (hardwareProfileIndex + 1) % profileCount;
         return hardwareProfileIndex;
     }
@@ -156,5 +172,42 @@ public final class MagicWorldWorldOptions {
 
     public static void setStartingDifficulty(StartingDifficulty difficulty) {
         startingDifficulty = difficulty;
+    }
+
+    public static String worldName() {
+        return worldName;
+    }
+
+    public static void setWorldName(String name) {
+        worldName = name == null ? "" : name;
+    }
+
+    public static String customSeed() {
+        return customSeed;
+    }
+
+    public static void setCustomSeed(String seed) {
+        customSeed = seed == null ? "" : seed.trim();
+    }
+
+    public static int presetSeedIndex() {
+        return presetSeedIndex;
+    }
+
+    public static void setPresetSeedIndex(int index, int presetCount) {
+        if (presetCount <= 0) {
+            presetSeedIndex = 0;
+            return;
+        }
+        presetSeedIndex = Math.max(0, Math.min(index, presetCount - 1));
+    }
+
+    public static int nextPresetSeedIndex(int presetCount) {
+        if (presetCount <= 0) {
+            presetSeedIndex = 0;
+            return presetSeedIndex;
+        }
+        presetSeedIndex = (presetSeedIndex + 1) % presetCount;
+        return presetSeedIndex;
     }
 }

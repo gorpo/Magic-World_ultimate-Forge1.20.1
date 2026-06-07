@@ -128,10 +128,8 @@ public class PremiumEntry {
 
     public String getDisplayName() {
 
-        if (englishName == null || englishName.isBlank()) {
-            return name;
-        }
-
-        return name + " - " + englishName;
+        return name
+                + " - "
+                + englishName;
     }
 }

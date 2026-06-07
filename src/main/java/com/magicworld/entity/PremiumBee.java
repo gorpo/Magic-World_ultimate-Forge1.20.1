@@ -3,13 +3,13 @@ package com.magicworld.entity;
 import com.magicworld.MagicWorld;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.bee.Bee;
+import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.level.Level;
 
 public class PremiumBee {
 
-    public static boolean transform(
+    public static void transform(
             Level level,
             Object target
     ) {
@@ -22,13 +22,12 @@ public class PremiumBee {
                             level
                     );
 
-            premium.setPos(
+            premium.moveTo(
                     bee.getX(),
                     bee.getY(),
                     bee.getZ()
             );
 
-            PremiumEntityTags.markAnimal(premium, "bee");
             level.addFreshEntity(
                     premium
             );
@@ -39,12 +38,9 @@ public class PremiumBee {
                     (ServerLevel) level,
                     bee.blockPosition()
             );
-
-            return true;
         }
 
-        else if (target instanceof Allay allay
-                && PremiumEntityTags.isAnimal(allay, "bee")) {
+        else if (target instanceof Allay allay) {
 
             Bee bee =
                     new Bee(
@@ -52,7 +48,7 @@ public class PremiumBee {
                             level
                     );
 
-            bee.setPos(
+            bee.moveTo(
                     allay.getX(),
                     allay.getY(),
                     allay.getZ()
@@ -68,10 +64,6 @@ public class PremiumBee {
                     (ServerLevel) level,
                     allay.blockPosition()
             );
-
-            return true;
         }
-
-        return false;
     }
 }

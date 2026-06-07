@@ -1,4 +1,4 @@
-# Magic World Ultimate — NeoForge 26.1.2
+# Magic World Ultimate — Forge 1.20.1
 
 <div align="center">
   <img src="./screenshots/banner_principal.png" alt="Banner principal do Magic World Ultimate" width="100%">
@@ -6,14 +6,14 @@
 
 <div align="center">
 
-**Um pacote completo de fantasia magica para Minecraft NeoForge 26.1.2**
+**Um pacote completo de fantasia magica para Minecraft Forge 1.20.1**
 
 **Mod + Resource Pack + Shader Pack em uma unica experiencia visual, jogavel e encantada.**
 
 </div>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Minecraft-NeoForge%2026.1.2-6f3cff?style=for-the-badge" alt="Minecraft NeoForge 26.1.2">
+  <img src="https://img.shields.io/badge/Minecraft-Forge%201.20.1-6f3cff?style=for-the-badge" alt="Minecraft Forge 1.20.1">
   <img src="https://img.shields.io/badge/Pacote-Mod%20%2B%20Resource%20Pack%20%2B%20Shader-00c8ff?style=for-the-badge" alt="Mod, Resource Pack e Shader Pack">
   <img src="https://img.shields.io/badge/Estilo-Fantasia%20Magica%20Medieval-d4af37?style=for-the-badge" alt="Fantasia magica medieval">
 </p>
@@ -59,15 +59,26 @@
 
 ## Descricao Curta
 
-**Magic World Ultimate** e um projeto para **Minecraft NeoForge 26.1.2** que une tres camadas em uma unica experiencia:
+**Magic World Ultimate** e um projeto para **Minecraft Forge 1.20.1** que une tres camadas em uma unica experiencia:
 
 | Camada | Funcao | Resultado |
 | --- | --- | --- |
 | **Mod** | Adiciona a varinha magica, menus, comandos, transformacoes, recompensas e sistemas premium. | O mundo passa a reagir a magia do jogador. |
 | **Resource Pack** | Altera texturas, modelos, itens, blocos, icones e identidade visual. | O Minecraft ganha aparencia de fantasia medieval premium. |
+| **Screen Overlays** | Resource pack separado para telas, menus, botoes, HUD e panoramas. | Deve ficar acima dos outros resourcepacks para manter a GUI Magic World ativa. |
 | **Shader Pack** | Adiciona iluminacao, sombras, reflexos, atmosfera, agua, ceu e brilho magico. | A parte visual fica cinematografica, colorida e encantada. |
 
 Este repositorio existe para reunir esses tres pacotes em uma identidade unica: **Magic World Ultimate**.
+
+## Screen Overlays
+
+`Screen Overlays` e o pacote separado de interface do Magic World. Ele concentra texturas de telas, botoes, menus, HUD, inventarios, avancos, selecao de mundo, resourcepacks e panoramas.
+
+Ordem correta quando ativado pelo portal:
+
+`vanilla/mods` -> `MagicWorldResource bonus` -> `addon` -> `models` -> `256x` -> outros resourcepacks escolhidos -> `Screen Overlays`
+
+O portal visual detecta resourcepacks e shaderpacks extras nas pastas locais e permite selecionar quais usar.
 
 ## Historia Ludica de Abertura
 
@@ -101,6 +112,129 @@ E assim, quando o jogador instala o **Mod**, ativa o **Resource Pack** e escolhe
   <img src="./screenshots/printdojogo6a.png" alt="Print do jogo 6" width="32%">
 </div>
 
+## Expansao Exclusiva do Port Forge 1.20.1
+
+Esta edicao nao e apenas uma recompilacao. O projeto original foi portado para **Minecraft Forge 1.20.1** e depois ampliado com uma propriedade inicial viva, novas construcoes, narrativa propria, reparos automaticos e rotinas de desempenho adequadas ao mapa expandido.
+
+### Comeco da jornada: A Casa do Ultimo Farol
+
+O personagem nao desperta mais diante de uma estrada sem historia. Ao terminar a criacao do mundo, ele surge **ao lado da cama dentro da casa do fim da rua**, agora chamada de **Casa do Ultimo Farol**.
+
+A casa recebeu esse nome porque foi a ultima residencia mantida acesa quando a antiga ordem de magos abandonou a regiao. Seu morador anterior vigiava o caminho entre a propriedade, o Santuario Violeta e os bosques onde as bruxas se esconderam. A cama preservada marca o ponto de retorno do personagem: a partir dali, aquela casa e seu lar inicial e o ponto de partida oficial da campanha.
+
+O sistema procura a cama real dentro da estrutura e escolhe um bloco livre ao lado dela. Assim, o spawn continua seguro mesmo se a estrutura for ajustada, rotacionada ou reparada. Se a casa nao estiver disponivel, o jogo usa um ponto externo seguro como contingencia.
+
+### O chamado do Santuario Violeta
+
+No final da estrada existe um enorme salao arcano em tons roxos, conhecido como **Santuario Violeta do Horizonte Partido**. Ele foi construido sobre uma cicatriz magica deixada quando os primeiros portais tentaram conectar reinos incompatíveis.
+
+O santuario funciona como centro de conhecimento e preparacao:
+
+- grande salao protegido e iluminado;
+- armazenamentos e estacoes de trabalho;
+- mesa de reuniao para expedicoes;
+- galeria de armaduras;
+- decoracao arcana, cristais e pontos de energia;
+- ligacao narrativa direta com a Casa do Ultimo Farol.
+
+Na historia, o personagem encontra na casa registros incompletos sobre o santuario. Explorar o salao revela que a propriedade nao foi abandonada por acaso: alguma coisa acordou os portais, alterou a floresta e obrigou antigos moradores a dividir seus segredos entre castelo, mina, santuario e refugio.
+
+### O Refugio das Tres Guardias
+
+No miolo das arvores vive um pequeno refugio de bruxas amigaveis. Elas nao sao inimigas comuns: sao as **Tres Guardias do Bosque Velado**, responsaveis por impedir que a energia dos portais contamine a propriedade.
+
+A casa compacta das bruxas possui:
+
+- tres bruxas persistentes, amigaveis e com IA ativa;
+- tres camas e espacos individuais;
+- alquimia, caldeiroes, pocoes e ingredientes raros;
+- baus com equipamentos, magia e suprimentos;
+- lareira, chamine, teias, morcegos e iluminacao sinistra;
+- cercado e entrada voltados para a mata;
+- suporte magico discreto ao jogador nas proximidades.
+
+As bruxas circulam pelo refugio, mas nao adquirem alvos. Elas representam uma alianca desconfortavel: conhecem a origem do Santuario Violeta, mas entregam respostas somente a quem provar que consegue proteger a propriedade.
+
+### O Rancho do Cofre Dourado
+
+Entre as casas dos agricultores e as grandes plantacoes fica o antigo deposito central. Nesta edicao ele foi transformado no **Rancho do Cofre Dourado**, um casarao medieval usado como arquivo, forja, arsenal e tesouraria da comunidade.
+
+O rancho inclui:
+
+- quatro portas funcionais com acessos livres por todos os lados;
+- paredes medievais combinando pedra, madeira e vigas escuras;
+- muitas janelas e iluminacao rustica;
+- telhado alto com dormers e chamine;
+- arquivo de baus e barris dimensionado para conter todos os itens registrados;
+- ferramentas, forjas, fornos e estacoes de profissao;
+- galerias de armaduras comuns, raras e Magic World;
+- quadros, plantas, vasos, decoracoes, teias e morcegos;
+- escada oculta por alcapoes;
+- camara subterranea dourada com tesouros, beacon, ovo do dragao e reliquias.
+
+A lenda diz que o cofre foi criado para guardar tudo o que restou das expedicoes realizadas antes do fechamento dos portais. O arquivo de itens nao e apenas armazenamento: e um catalogo fisico do mundo, mantido pelos moradores do rancho.
+
+### A propriedade viva
+
+A propriedade inicial desta versao Forge e uma regiao conectada, nao um conjunto de construcoes isoladas. Ela inclui:
+
+| Local | Papel na aventura |
+| --- | --- |
+| **Casa do Ultimo Farol** | Residencia inicial do personagem, spawn e ponto de retorno. |
+| **Santuario Violeta do Horizonte Partido** | Centro arcano, preparacao e investigacao dos portais. |
+| **Refugio das Tres Guardias** | Aliadas bruxas, alquimia e protecao da mata. |
+| **Rancho do Cofre Dourado** | Arquivo de itens, arsenal, forja e tesouro subterraneo. |
+| **Casa principal importada** | Centro comunitario amplo, moradores, armazenamento e conexoes. |
+| **Castelo importado** | Conselho, guardioes, galerias e presenca militar. |
+| **Praca de portais** | Acesso funcional ao Nether, End e gateway. |
+| **Mina do Tesouro** | Casa de pedra, entrada reparada e galerias subterraneas. |
+| **Praca Verde** | Jardim, moradores, casas e vida comunitaria. |
+| **Plantacoes e currais** | Producao de comida, animais e trabalho dos aldeoes. |
+
+### Enredo ampliado: O Horizonte Partido
+
+Muito antes da chegada do jogador, a regiao era administrada por uma ordem que estudava caminhos entre dimensoes. O castelo protegia os estudiosos, a propriedade sustentava seus moradores e o Rancho do Cofre Dourado registrava cada objeto trazido das expedicoes.
+
+Quando o primeiro portal permanente foi ativado, uma onda violeta atravessou o solo. O Santuario Violeta foi erguido para conter essa energia, mas o ritual dividiu a ordem. Alguns magos permaneceram no castelo, outros se refugiaram na floresta e se tornaram as Tres Guardias. O ultimo vigia ficou na casa do fim da rua, mantendo uma luz acesa para o proximo viajante.
+
+Esse viajante e o personagem. Ele desperta na Casa do Ultimo Farol sem conhecer completamente o passado, mas encontra uma propriedade que ainda funciona: agricultores trabalham, animais ocupam os currais, guardioes protegem setores e as bruxas observam da mata. Cada construcao guarda uma parte da mesma historia.
+
+O objetivo narrativo nao e obrigatorio nem linear. O jogador pode construir, explorar, usar a varinha, atravessar portais ou simplesmente viver na propriedade. Ainda assim, todos os caminhos apontam para a mesma pergunta: **o Horizonte Partido deve ser fechado, controlado ou aberto por completo?**
+
+### Reparos automaticos e continuidade de saves
+
+A propriedade usa uma versao interna de reparo. Quando uma atualizacao estrutural importante e instalada, o save existente pode receber uma reconstrucao unica das areas controladas pelo mod. Isso permite corrigir entradas, restaurar moradores e aplicar melhorias sem executar varreduras pesadas continuamente.
+
+A versao atual tambem redefine o respawn para a cama da Casa do Ultimo Farol. Para uma avaliacao visual totalmente limpa de todas as construcoes, ainda e recomendado criar um mundo novo.
+
+### Desempenho da propriedade expandida
+
+A expansao foi acompanhada por otimizacoes para evitar que a vida da propriedade derrube o FPS ou sobrecarregue o servidor interno:
+
+- bruxas mantem IA ativa sem realizar buscas hostis;
+- reparos periodicos verificam somente residentes essenciais;
+- morcegos decorativos nao sao procurados repetidamente em areas gigantes;
+- manutencao dos currais ocorre com intervalo maior e apenas perto da propriedade;
+- portais funcionais calculam efeitos somente quando o jogador esta proximo;
+- reparos visuais de portais usam frequencia reduzida;
+- a aura atualiza habilidades apenas quando necessario;
+- efeitos de sobrevivencia usam intervalos controlados;
+- geracao inicial e dividida em etapas com tela de progresso.
+
+### Diferencas principais em relacao ao projeto de origem
+
+| Area | Projeto de origem | Port Forge 1.20.1 expandido |
+| --- | --- | --- |
+| Plataforma | NeoForge moderno | Minecraft Forge 47.4.10 para Minecraft 1.20.1 |
+| Inicio | Propriedade inicial original | Spawn ao lado da cama na Casa do Ultimo Farol |
+| Historia | Fantasia geral Magic World | Campanha do Horizonte Partido e locais nomeados |
+| Bruxas | Sem o refugio atual | Refugio amigavel com tres bruxas moveis |
+| Fim da rua | Casa e area de passagem | Residencia do personagem + Santuario Violeta |
+| Rancho | Deposito amplo | Casarao medieval, arquivo total e cofre dourado |
+| Desempenho | Rotinas da versao de origem | Ticks, portais, aura e residentes otimizados |
+| Compatibilidade | Ecossistema NeoForge | Ecossistema Forge 1.20.1 e mods opcionais adequados |
+
+
 ## O Que e o Magic World
 
 Magic World Ultimate e um pacote de fantasia magica medieval criado para transformar o Minecraft em uma experiencia mais colorida, encantada e cheia de sistemas premium. Ele nao depende de apenas uma parte visual ou apenas uma parte de codigo: o objetivo e que **as mecanicas do mod, as texturas do resource pack e a atmosfera do shader funcionem juntas**.
@@ -117,25 +251,57 @@ O jogador recebe uma experiencia com:
 
 ## Propriedade Inicial Magic World
 
-Ao criar um mundo novo pelo painel **Magic World**, o mod monta uma area inicial completa em etapas, com tela de loading propria para evitar travamentos e mostrar o progresso da geracao.
+Ao criar um mundo novo pelo painel **Magic World**, o mod monta uma regiao inicial completa em etapas e apresenta uma tela propria de carregamento. O processo prepara terreno, estruturas, moradores, portais e decoracoes antes de entregar o controle ao jogador.
 
-Recursos atuais da propriedade:
+O personagem termina a geracao **dentro da Casa do Ultimo Farol, ao lado da cama**, e essa posicao tambem vira seu respawn. A casa no final da rua e oficialmente a residencia inicial do personagem e o primeiro elo narrativo com o Santuario Violeta.
 
-- casa importada com spawn do jogador ao lado da cama, com baus e cama reposicionados somente em pontos internos com teto;
-- portal premium no gramado, com ativacao somente ao passar pelo centro;
-- castelo importado proximo, com baus cheios, armor stands internos e moradores aliados;
-- dragao pacifico patrulhando a propriedade;
-- aves, allays, fumaca, brilhos e focos magicos ao redor da casa, portal e castelo;
-- 3 soldados montados em cavalos patrulhando a frente do castelo;
-- placas indicando caminho para portal, castelo e retorno para casa;
-- metro subterraneo selado, iluminado e protegido contra monstros, com trilhos energizados conectados por curva real entre casa e castelo;
-- estacoes subterraneas na casa e no castelo, cada uma com escada reforcada e baus de pecas para trilhos e minecarts;
-- postes magicos, lanternas, tochas e lampadas reforcando iluminacao externa e interna;
-- camara selada de morcegos no castelo;
-- santuario secreto subterraneo perto do portal;
-- galeria arcana secreta no trajeto subterraneo do metro, com guardiao magico.
+### Estruturas e distritos gerados
 
-Para testar alteracoes de estrutura, sempre crie um mundo novo. Mundos antigos nao regeneram automaticamente casa, portal, castelo, baus, trilhos ou decoracoes ja criadas.
+- Casa do Ultimo Farol, residencia inicial do personagem;
+- Santuario Violeta do Horizonte Partido, grande salao arcano no fim da rua;
+- casa principal importada e seus ambientes internos;
+- castelo importado, conselho, guardioes e moradores;
+- portal premium e praca compacta de portais funcionais;
+- plantacoes maduras, casas de agricultores e Rancho do Cofre Dourado;
+- Arquivo Medieval da Praca Verde, com catalogo completo de itens e cofre subterraneo;
+- currais, cuidadores, jardim de alimento animal e guardioes;
+- Praca Verde, casas, jardim comunitario e moradores;
+- Mina do Tesouro com casa de pedra, entrada, galerias e recompensas;
+- Refugio das Tres Guardias escondido na mata;
+- estradas, iluminacao, cerejeiras, placas, jardins e conexoes entre setores.
+
+### Vida, trabalho e defesa
+
+A propriedade possui aldeoes nomeados, agricultores, cuidadores, moradores, profissionais, guardioes e animais. Trabalhadores recebem casa, cama, centro de trabalho e area de atuacao. Guardioes protegem setores importantes sem exigir varreduras pesadas a cada tick.
+
+As tres bruxas amigaveis do refugio usam IA ativa e circulam em sua area, mas nao atacam. Morcegos, aves, gatos, papagaios, allays e outros elementos ambientais completam a sensacao de uma regiao viva.
+
+### Armazenamento e progressao
+
+A casa principal, o santuario, o castelo, a mina, o rancho e o Arquivo Medieval da Praca Verde oferecem armazenamentos e recompensas diferentes. O Arquivo Medieval inclui uma parede de recipientes com capacidade calculada para todos os itens registrados e uma sala subterranea dourada de tesouro.
+
+### Portais e magia
+
+O portal inicial controla a experiencia premium. A praca funcional oferece estruturas de Nether, End Portal e End Gateway. O Santuario Violeta funciona como centro narrativo da energia dimensional, enquanto o refugio oferece suporte magico discreto nas proximidades.
+
+### Atualizacao de mundos existentes
+
+O sistema de reparo versionado restaura ou melhora partes controladas da propriedade uma unica vez quando necessario. A versao atual tambem move o respawn para a cama da Casa do Ultimo Farol. Para conferir toda a geracao sem interferencia de blocos antigos, crie um mundo novo.
+
+### Geracao em etapas
+
+A construcao inicial e distribuida em etapas para reduzir picos e informar o progresso:
+
+1. casa principal e terreno;
+2. fazendas, animais e trabalhadores;
+3. portal inicial;
+4. praca de portais funcionais;
+5. castelo;
+6. Casa do Ultimo Farol;
+7. Santuario Violeta;
+8. Refugio das Tres Guardias;
+9. mina, reparos finais e teleport para a cama.
+
 
 ## Pacotes Incluidos
 
@@ -157,6 +323,7 @@ O **Magic World Mod** e a camada jogavel do pacote. Ele adiciona sistemas de int
 - **Menu principal:** `MagicWorld - Magic Wand`.
 - **Abas de transformacao:** Wand, Blocos, Inimigos, Animais, Criados, Itens, Vilas, Construcoes, Cmds e Sistema.
 - **Submenus premium:** mobs, clima, biomas, dimensoes, poderes, chuva especial, eventos globais, efeitos troll, enciclopedia, companheiros, bosses, lucky block, tempo, particulas, portais, dungeons, ferramentas, armaduras, NPCs, hordas e montarias.
+- **Medidor de desempenho:** O ambiente de desenvolvimento pode usar ferramentas de diagnostico opcionais para investigar travamentos quando o mundo ficar pesado.
 
 #### Como a varinha muda a experiencia
 
@@ -241,7 +408,7 @@ Allay, Axolotl, Morcego, Abelha, Camelo, Gato, Galinha, Vaca, Creeper, Raposa, S
 
 Tambem existe um sistema de inimigos pacificados, onde inimigos como Blaze, Creeper, Enderman, Warden, Wither, Zombie e outros podem virar criaturas pacificas associadas a recompensas.
 
-Tambem foi adicionada a entidade propria `magicworld:peaceful_dragon`, o **Guardiao Draconico do Eter**. Ele usa visual de dragao, mas comportamento controlado pelo Magic World: nao ataca, nao toma dano, nao quebra blocos e voa em rota limitada ao perimetro da propriedade inicial, passando pela casa sem ultrapassar a distancia dos castelos.
+Tambem foi adicionada a entidade propria `magicworld:peaceful_dragon`, o **Guardiao Draconico do Eter**. Ele usa visual de dragao, mas comportamento controlado pelo Magic World: nao ataca, nao toma dano, nao quebra blocos e voa em rota limitada ao perimetro da propriedade inicial. Por desempenho, o spawn automatico esta desligado temporariamente; o codigo foi preservado em arquivo proprio para retornar antes de fechar o projeto.
 
 #### Blocos funcionais
 
@@ -277,11 +444,11 @@ O **Magic World Resource Pack** e a camada visual de texturas, modelos e icones.
 
 #### Pacotes e icones
 
-- `MagicWorldResource_1.20.1-256x.zip`: resource pack principal; agora tambem inclui os arquivos que antes ficavam no `MagicWorldResource_26.1.2_fix.zip`.
+- `MagicWorldResource_1.20.1-256x.zip`: resource pack principal; agora tambem inclui os arquivos que antes ficavam no `MagicWorldResource_1.20.1_fix.zip`.
 - `MagicWorldResource_1.20.1-models.zip`: complemento de modelos.
 - `MagicWorldResource_1.20.1-addon.zip`: complemento de add-ons visuais.
 - `MagicWorldResource_1.20.1-bonus.zip`: complemento bonus.
-- O antigo `MagicWorldResource_26.1.2_fix.zip` foi mesclado no `256x` e removido das pastas finais.
+- O antigo `MagicWorldResource_1.20.1_fix.zip` foi mesclado no `256x` e removido das pastas finais.
 - Todos os `pack.png` dos resource packs foram atualizados com icones PNG em 256x256 e fundo transparente real.
 
 #### Estetica visual
@@ -326,7 +493,7 @@ O shader pega a identidade visual do Resource Pack e espalha luz sobre ela. Cris
 
 <div align="center">
   <img src="./screenshots/banner_shadder2.png" alt="Banner shader" width="100%">
-  
+
 </div>
 
 ## Menus do Mod
@@ -342,7 +509,7 @@ Os menus foram alinhados ao template visual `screenshots/referencia_menus.png`:
 - fundo Magic World aplicado nas telas vanilla que usam o fundo padrao de menu, sem reaproveitar a imagem de referencia como panorama;
 - menu principal do mod e telas de detalhes com moldura dourada, brilho azul/ciano e painel escuro;
 - submenus do Sistema reaproveitam o mesmo tema, mantendo navegacao por cards/lista;
-- menu grafico integrado continua no padrao Magic World para Sodium, Iris e Distant Horizons.
+- menu grafico integrado continua no padrao Magic World para Embeddium, Oculus e Distant Horizons.
 
 ### Visao geral da interface
 
@@ -416,7 +583,7 @@ As escolhas ficam salvas no jogador em dados persistentes. Se o jogador atravess
 Na tela de criacao do mundo existe o bloco `Magic World Menu`, com quatro botoes pequenos organizados em grade 2x2 para
 caber melhor no espaco da tela:
 
-- `Ativar Magic World`: quando esta `ON`, o mundo nasce com a propriedade inicial, portal, fazendas, aliados e dragao; quando
+- `Ativar Magic World`: quando esta `ON`, o mundo nasce com a propriedade inicial, portal, fazendas e aliados; o dragao fica desligado temporariamente; quando
   esta `OFF`, o mapa abre normal, sem gerar essas construcoes iniciais;
 - `Castelos e Estradas`: quando esta `ON`, tambem gera as estradas longas e os quatro castelos; quando esta `OFF`, pula essa
   parte pesada para acelerar a entrada no mundo. Esta opcao e recomendada para PCs fracos ou para testes rapidos;
@@ -456,7 +623,7 @@ O portal inicial fica mais a frente da casa, no gramado entre as estruturas, e f
 - dois baus com a Armadura Draconica do Eter e varinhas do mod;
 - coelhos, passaros, allays e outros elementos para dar sensacao de area encantada;
 - efeitos visuais de brilho e fumaca colorida;
-- ponto unico de pouso baixo do dragao pacifico.
+- ponto planejado para o pouso baixo do dragao pacifico quando ele for reativado.
 
 Para evitar travamentos, o mod nao cria tudo de uma vez. A geracao e dividida em etapas curtas depois que a casa e o
 terreno aparecem:
@@ -466,32 +633,29 @@ terreno aparecem:
 3. jardim, fazendas, fontes, currais e areas de apoio;
 4. portal real, carregado com atraso maior; antes dele fica uma placa avisando `se eu nao estiver aqui espere!`;
 5. castelo importado, se `Castelos e Estradas` estiver `ON`;
-6. dragao pacifico;
+6. limpeza/desligamento temporario do dragao pacifico;
 7. vida extra, personagens e detalhes finais;
 8. mensagem final `Finalizando estruturas do Magic World` por alguns segundos antes do botao `CONFIRMAR`.
 
-O dragao continua sendo criado quando `Ativar Magic World` esta `ON`, mesmo se `Castelos e Estradas` estiver `OFF`.
+O dragao nao e criado nesta etapa atual. O codigo de spawn foi movido para `StarterDragonManager` e a chamada antiga ficou comentada em `StarterPortalEvents` para reativacao futura antes de fechar o projeto.
 
 Essa espera entre etapas e intencional. A casa, os baus, as camas, a armadura e poucos aliados aparecem primeiro para o
-jogador conseguir explorar sem travar. O jardim, o portal, os castelos, o dragao e os personagens maiores entram depois
-em partes separadas. Spawnar tudo no mesmo tick pesaria muito, poderia congelar o mundo por alguns segundos ou impedir
+jogador conseguir explorar sem travar. O jardim, o portal, os castelos e os personagens maiores entram depois
+em partes separadas. O dragao fica desligado por enquanto porque pesava o mapa. Spawnar tudo no mesmo tick poderia congelar o mundo por alguns segundos ou impedir
 partes da construcao de aparecerem corretamente.
 
 O castelo atual e importado do mapa de referencia do projeto e recebe complementos Magic World depois de colocado:
 
 - suporte de terreno e limpeza ao redor para evitar blocos atravessando a estrutura;
 - baus com equipamentos e itens especiais;
-- areas de apoio, armaria e personagens/vida extra depois do dragao;
+- areas de apoio, armaria e personagens/vida extra depois da etapa em que o dragao e limpo/desligado;
 - distancia preservada em relacao a casa mesmo quando o portal e reposicionado.
 
-Os personagens aliados podem interagir com o jogador:
+Desempenho da criacao inicial: a geracao da propriedade suspende efeitos ambientes enquanto ainda esta carregando e evita
+varreduras caras de limpeza final por padrao. A limpeza vertical antes de colar casa/castelo importados continua indo
+ate o topo do mundo para remover sobras e estruturas acima do spawn Magic World.
 
-- clique direito em um aliado alterna o modo de seguir o jogador;
-- shift + clique direito pede ajuda e o aliado entrega suporte basico, como efeitos temporarios e itens uteis;
-- aliados aparecem em comodos, ruas, fazendas, jardins, castelos e arredores.
-
-O dragao pacifico e criado apenas no fim da sequencia para reduzir peso inicial. Ele voa baixo pelo perimetro da casa,
-portal e castelo, alternando pontos de rota e pouso nessas areas.
+O dragao pacifico esta desligado temporariamente para reduzir peso inicial e FPS baixo em mundos novos/antigos. O codigo dele permanece em `PeacefulDragon.java`, e a criacao/limpeza fica isolada em `StarterDragonManager.java`. Antes de fechar o projeto, ele deve ser reativado com cuidado, voltando a voar baixo pelo perimetro da casa, portal e castelo.
 
 A aura invisivel do botao `Adicionar Aura` aplica melhorias fortes sem efeito visual:
 
@@ -711,8 +875,7 @@ O menu **Sistema** e o centro de controle premium. Ele abre os submenus abaixo:
 
 As opcoes abaixo foram documentadas a partir dos arquivos reais:
 
-- `run/shaderpacks/MagicWorld_Shaders_Extreme_v1.0_Iris/shaders/shaders.properties`
-- `run/shaderpacks/MagicWorld_Shaders_Extreme_v1.0_Iris/shaders/shaders.settings`
+- `run/shaderpacks/MagicWorld_Shaders_Extreme_v1.0_.zip`
 
 ### Estrutura dos menus do shader
 
@@ -1024,7 +1187,7 @@ O resource pack de modelos inclui artefatos 3D saindo de minerios e blocos de re
 ### Instalacao Facil com Magic World Installer
 
 <div align="center">
-  <img src="./screenshots/banner_tlauncher_magicworld.png" alt="TLauncher + Magic World" width="100%">
+  <img src="./screenshots/banner_installer.png" alt="Magic World Installer" width="100%">
 </div>
 
 Este projeto tambem possui um instalador local proprio para preparar o Magic World em uma pasta `.minecraft` usada pelo **TLauncher**. O instalador nao altera o executavel do TLauncher, nao mexe em login e nao redistribui o Minecraft pronto; ele apenas prepara os arquivos do Magic World na pasta correta.
@@ -1039,11 +1202,28 @@ Este projeto tambem possui um instalador local proprio para preparar o Magic Wor
 4. Confirme a pasta `.minecraft` detectada.
 5. Clique em **Instalar / Atualizar**.
 6. O instalador coloca:
-   - o mod all-in-one em `mods`;
-   - o Resource Pack em `resourcepacks`;
+   - o mod Magic World em `mods`;
+   - Embeddium, Oculus e Distant Horizons opcionais em `mods`;
+   - os Resource Packs em `resourcepacks`;
    - o Shader Pack em `shaderpacks`;
-   - abre o instalador NeoForge incluso no `.exe`.
-7. Abra o TLauncher e selecione/crie o perfil **NeoForge 26.1.2**.
+   - instala o Forge em modo cliente automaticamente usando o instalador incluso no `.exe`.
+7. Abra o TLauncher e selecione/crie o perfil **Forge 1.20.1**.
+
+O `MagicWorldInstaller.exe` tambem tenta ajustar automaticamente os argumentos JVM do perfil Forge 1.20.1 no TLauncher para evitar warnings nativos do Java novo. Ele procura a `.minecraft`, edita `launcher_profiles.json` quando encontra o perfil Forge e tambem tenta aplicar os argumentos nos JSONs de versao em `.minecraft/versions`.
+
+Argumentos JVM que o instalador tenta aplicar:
+
+```text
+--enable-native-access=sodium
+--enable-native-access=distanthorizons
+```
+
+Use esses mesmos argumentos manualmente se o TLauncher recriar o perfil ou se o launcher iniciar o jogo mostrando avisos como:
+
+- Embeddium (modulo interno `sodium`): `MemorySegment::reinterpret`, `restricted method` ou `native access`.
+- Distant Horizons: `java.lang.System::load`, `restricted method` ou `native access`.
+
+Esses avisos vêm do Java novo bloqueando/avisando acesso nativo usado por esses mods. Os argumentos liberam esse acesso para os modulos `sodium` e `distanthorizons`.
 
 <div align="center">
   <img src="./screenshots/banner_installer.png" alt="Magic World Installer" width="100%">
@@ -1055,36 +1235,16 @@ Instalador `.exe` unico gerado localmente:
 installer/MagicWorldInstaller.exe
 ```
 
-O `.exe` ja contem o script do instalador, o banner e o instalador NeoForge. O script abaixo fica apenas como fonte/desenvolvimento:
-
-```powershell
-.\scripts\install-magicworld-tlauncher.ps1
-```
-
-Modo sem interface via script de desenvolvimento:
-
-```powershell
-.\scripts\install-magicworld-tlauncher.ps1 -NoGui
-```
-
-Por padrao o instalador baixa o mod, os Resource Packs e o Shader Pack dos Releases do GitHub. Para forcar links diferentes, o script aceita parametros:
-
-```powershell
-.\scripts\install-magicworld-tlauncher.ps1 `
-  -ModUrl "URL_DO_ALL_IN_ONE.jar" `
-  -ResourcePackUrl "URL_DO_RESOURCE_PACK.zip" `
-  -ShaderPackUrl "URL_DO_SHADER_PACK.zip" `
-  -NeoForgeInstallerUrl "URL_DO_NEOFORGE_INSTALLER.jar"
-```
+O `.exe` disponivel neste port e um binario legado. Antes de distribui-lo, valide se os arquivos que ele instala correspondem ao JAR Forge atual e aos mods opcionais separados.
 
 ### Requisitos
 
-- Minecraft compativel com **NeoForge 26.1.2**.
-- NeoForge 26.1.2 instalado manualmente ou instalado pelo **MagicWorldInstaller.exe**.
+- Minecraft compativel com **Forge 1.20.1**.
+- Forge 1.20.1 instalado manualmente ou instalado pelo **MagicWorldInstaller.exe**.
 - Pasta `mods`.
 - Pasta `resourcepacks`.
 - Pasta `shaderpacks`.
-- Mod Magic World All-in-One v1.2, se o jogador quiser shader, desempenho grafico e horizontes distantes em uma instalacao unica.
+- Mod Magic World Forge 1.20.1; Embeddium, Oculus e Distant Horizons sao instalados separadamente quando desejados.
 
 ### Instalacao do Mod
 
@@ -1096,7 +1256,7 @@ Por padrao o instalador baixa o mod, os Resource Packs e o Shader Pack dos Relea
 .minecraft/mods
 ```
 
-4. Inicie o Minecraft usando o perfil **NeoForge 26.1.2**.
+4. Inicie o Minecraft usando o perfil **Forge 1.20.1**.
 5. Entre em um mundo.
 6. Pressione `H` para abrir o menu do Magic World.
 
@@ -1140,146 +1300,42 @@ Por padrao o instalador baixa o mod, os Resource Packs e o Shader Pack dos Relea
 
 ## Releases
 
-Os arquivos finais ficam organizados na aba **Releases** deste repositorio.
-
-O **Mod** e o **Shader Pack** podem ser anexados diretamente por serem arquivos pequenos. O **Resource Pack** e maior e deve ser enviado manualmente pelo dono do repositorio.
-
-Arquivos esperados em Releases:
-
-| Pacote | Arquivo esperado | Envio |
-| --- | --- | --- |
-| Instalador Windows | `MagicWorldInstaller.exe` | Instalador unico em `installer/`; embute o script, o banner e o instalador NeoForge 26.1.2. Baixa mod, Resource Packs e Shader Pack dos Releases. |
-| Mod All-in-One v1.2 | `MagicWorld-Ultimate-NeoForge-26.1.2-1.2.0-all-in-one.jar` | Varinha + shaders + desempenho + horizontes distantes em um unico `.jar`. Este e o unico mod necessario na pasta `mods`. |
-| Resource Pack | `MagicWorldResource_*.zip` | Upload manual pelo dono do repositorio. |
-| Shader Pack | `MagicWorld-Ultimate-NeoForge-26.1.2-ShaderPack.zip` | Publicado em Releases. |
-
-### Versao 1.2 All-in-One
-
-A versao **1.2** do mod pode ser gerada como um unico arquivo para a pasta `mods`:
+Os binarios publicados devem corresponder a este port **Minecraft Forge 1.20.1 / Forge 47.4.10**. O artefato gerado atualmente pelo projeto e:
 
 ```text
-MagicWorld-Ultimate-NeoForge-26.1.2-1.2.0-all-in-one.jar
+build/libs/Magic_World_Mod_1.20.1-1.0.0.1.jar
 ```
 
-Esse arquivo contem o **Magic World Mod** e tambem componentes de terceiros ja embutidos via **Jar-in-Jar do NeoForge**. Na pratica, eles ficam **Built in** dentro do nosso `.jar` all-in-one.
+O mod principal nao embute automaticamente os mods opcionais de renderizacao. Para a experiencia visual completa, instale separadamente versoes Forge 1.20.1 compativeis de **Embeddium**, **Oculus** e **Distant Horizons**, alem do Resource Pack e Shader Pack Magic World.
 
-Com isso, nao e necessario instalar mods adicionais de performance, shader loader, mapa, construcao, controle, modelos ou texturas de entidades para usar a experiencia base do Magic World Ultimate. O jogador coloca o `.jar` all-in-one na pasta `mods`, ativa o Resource Pack e escolhe o Shader Pack quando quiser a experiencia visual completa.
+| Pacote | Estado esperado |
+| --- | --- |
+| Mod Magic World Forge | JAR produzido por `.\gradlew.bat build` em `build/libs/`. |
+| Embeddium, Oculus e Distant Horizons | Mods opcionais instalados separadamente pelo jogador. |
+| Resource Pack | ZIP instalado em `.minecraft/resourcepacks`. |
+| Shader Pack | ZIP instalado em `.minecraft/shaderpacks` e ativado pelo Oculus. |
+| Instalador Windows | Opcional; deve instalar Forge 1.20.1 e os arquivos publicados corretos. |
 
-| Built in | Funcao dentro do Magic World Ultimate | O que melhora |
-| --- | --- | --- |
-| **Magic World Mod** | Varinha magica, menu premium, portal inicial, casa do personagem, castelos, dragao, comandos, poderes e sistemas proprios. | Transforma o Minecraft em uma experiencia jogavel de fantasia magica. |
-| **Iris Shaders** | Carregamento de shader packs no cliente. | Permite usar o Shader Pack Magic World com luz, sombras, agua, bloom e atmosfera. |
-| **Sodium** | Otimizacao da renderizacao do cliente. | Melhora FPS, estabilidade visual e base grafica para shaders. |
-| **Distant Horizons** | Renderizacao de LODs e horizontes distantes. | Aumenta a sensacao de mundo grande sem depender apenas da distancia vanilla. |
-| **FerriteCore** | Reducao de uso de memoria em estruturas internas do jogo. | Ajuda o pacote a ficar mais leve em PCs com menos RAM. |
-| **ModernFix** | Correcoes e otimizacoes gerais de carregamento, memoria e desempenho. | Reduz travamentos, melhora tempos de carga e estabilidade do modpack. |
-| **ImmediatelyFast** | Otimizacoes de renderizacao imediata e elementos de interface. | Ajuda em FPS e fluidez de HUD, menus e renderizacao do cliente. |
-| **Lithostitched** | Biblioteca e compatibilidade para worldgen. | Melhora suporte tecnico para geracao de mundo e integracao com mods que usam essa base. |
-| **Entity Texture Features** | Recursos avancados de textura para entidades. | Permite entidades com texturas especiais, variantes, emissivos e recursos parecidos com OptiFine. |
-| **Entity Model Features** | Recursos avancados de modelos para entidades. | Permite modelos de entidades mais ricos e compativeis com packs visuais. |
-| **JourneyMap** | Mapa, minimapa e navegacao no mundo. | Facilita exploracao, marcadores, retorno a locais importantes e leitura do territorio. |
-| **Effortless Building** | Ferramentas de construcao rapida. | Ajuda a construir formas, preencher areas e acelerar construcoes grandes. |
-| **Framework** | Biblioteca usada por mods de controle/cliente. | Mantem compatibilidade tecnica para recursos embutidos que dependem dela. |
-| **Controllable** | Suporte a controle/gamepad. | Permite jogar Minecraft Java com controle, aproximando a experiencia de console. |
+### Como Baixar e Instalar
 
-Categorias ja cobertas pelo all-in-one:
-
-- **Performance:** Sodium, FerriteCore, ModernFix e ImmediatelyFast.
-- **Shaders e visual:** Iris, Entity Texture Features e Entity Model Features.
-- **Horizontes distantes:** Distant Horizons.
-- **Mapa e exploracao:** JourneyMap.
-- **Construcao:** Effortless Building.
-- **Biblioteca de suporte:** Framework.
-- **Controle/gamepad:** Controllable.
-- **Worldgen e compatibilidade:** Lithostitched.
-
-### Como Usar Os Mods Built In
-
-Os mods abaixo estao embutidos no `.jar` all-in-one. Eles continuam sendo mods reais, com menus e atalhos proprios, mas o jogador nao precisa instalar cada `.jar` separado.
-
-| Mod embutido | Como abrir/usar | Para que serve |
-| --- | --- | --- |
-| **JourneyMap** | Aperte `J` para abrir o mapa em tela cheia. Use o minimapa para orientacao e crie marcadores/waypoints pelo proprio menu do mapa. Se o atalho mudar, revise em `Opcoes > Controles`. | Mapa, minimapa, marcadores, coordenadas e navegacao pela propriedade Magic World. |
-| **Effortless Building** | Use `ALT` para abrir/usar o menu de construcao rapida do mod. Os modos ajudam a construir linhas, paredes, espelhos, repeticoes e preenchimentos. Se houver conflito de tecla, ajuste em `Opcoes > Controles`. | Construir e expandir casa, castelo, trilhos e decoracoes sem colocar bloco por bloco. |
-| **Controllable** | Conecte um controle/gamepad antes ou durante o jogo. Abra as opcoes de controles do Minecraft para mapear botoes e sensibilidade. | Jogar Minecraft Java com controle, parecido com console. |
-| **Iris Shaders** | Abra `Opcoes > Video > Shader Packs` ou use o fluxo premium do portal Magic World para aplicar shader/resource pack. | Ativar o Shader Pack Magic World com luz, sombras, agua, bloom e atmosfera. |
-| **Sodium** | Abra `Opcoes > Video` para ajustes de desempenho/renderizacao. O Magic World tambem oferece perfis de PC no menu de criacao. | FPS, estabilidade e renderizacao mais leve. |
-| **Distant Horizons** | Abra o botao `Horizontes Distantes` no menu grafico do Magic World/Video Settings para configurar LODs. | Ver montanhas, florestas e castelos a grandes distancias com menos custo que render distance normal. |
-| **Entity Texture Features / Entity Model Features** | Nao exigem tecla principal; funcionam com resource packs/modelos compativeis. | Texturas e modelos avancados de entidades, incluindo recursos parecidos com OptiFine. |
-
-Imagens de referencia dos mods embutidos:
-
-<table>
-  <tr>
-    <td width="50%"><img src="./screenshots/external_journeymap_minimap.png" alt="JourneyMap minimapa" width="100%"><br><sub>JourneyMap: minimapa e navegacao.</sub></td>
-    <td width="50%"><img src="./screenshots/external_journeymap_fullscreen.png" alt="JourneyMap mapa em tela cheia" width="100%"><br><sub>JourneyMap: mapa em tela cheia no `J`.</sub></td>
-  </tr>
-  <tr>
-    <td width="50%"><img src="./screenshots/external_effortless_mirror_settings.png" alt="Effortless Building mirror settings" width="100%"><br><sub>Effortless Building: ferramentas de construcao.</sub></td>
-    <td width="50%"><img src="./screenshots/external_controllable_controller.webp" alt="Controllable controle gamepad" width="100%"><br><sub>Controllable: suporte a controle/gamepad.</sub></td>
-  </tr>
-</table>
-
-Fontes oficiais das imagens/referencias: JourneyMap Docs (`teamjm.github.io`), Effortless Building no CurseForge e Controllable/MrCrayfish.
-
-Menu de graficos integrado:
-
-- O menu grafico do Magic World continua no padrao visual do projeto.
-- Os perfis `Ultra fraco`, `Fraco`, `Intermediario`, `Medio`, `Forte` e `Ultra forte` ajudam a ajustar o jogo pelo nivel do PC.
-- No menu de graficos, o bloco `Horizontes Distantes` fica no rodape esquerdo com logo Magic World; os botoes `Concluido`, `Aplicar` e `Desfazer` tambem ficam abaixo dele para liberar o painel direito.
-
-Essa versao e necessaria para usar o **Shader Pack** e o **Resource Pack** juntos com menos configuracao manual. O Resource Pack troca texturas, modelos e icones; o Shader Pack adiciona luz, agua, sombras, brilho e atmosfera; e o Mod All-in-One garante que o cliente tenha carregamento grafico, desempenho, mapa, construcao, controle, modelos de entidades, texturas de entidades e horizontes distantes preparados para essa combinacao.
-
-Para compatibilidade com shaders, o Magic World prepara automaticamente a configuracao interna de renderizacao em modo OpenGL.
-
-### Estrutura sugerida de Release
-
-```text
-Titulo: Magic World Ultimate - NeoForge 26.1.2
-Tag: v26.1.2
-
-Arquivos:
-- MagicWorldInstaller.exe
-- Magic World Mod All-in-One .jar
-- Magic World Resource Pack .zip
-- Magic World Shader Pack .zip
-
-Notas:
-- Pacote completo Mod + Resource Pack + Shader Pack.
-- Instalador Windows unico com NeoForge installer embutido.
-- Compatibilidade principal: Minecraft NeoForge 26.1.2.
-- Ativar Resource Pack e Shader Pack para experiencia completa.
-```
-
-## Como Baixar
-
-1. Entre na pagina do repositorio no GitHub.
-2. Clique em **Releases**.
-3. Baixe:
-
-- **Magic World Installer `.exe`**: `https://github.com/gorpo/Magic-World-Ultimate-Neoforge-26.1.2/releases/download/v1.3/MagicWorldInstaller.exe`
-- **Magic World Mod All-in-One `.jar`**: `https://github.com/gorpo/Magic-World-Ultimate-Neoforge-26.1.2/releases/download/v1.3/MagicWorld-Ultimate-NeoForge-26.1.2-1.2.0-all-in-one.jar`
-- **Magic World Resource Pack principal `.zip`**: `https://github.com/gorpo/Magic-World-Ultimate-Neoforge-26.1.2/releases/download/v1.3/MagicWorldResource_1.20.1-256x.zip`
-- **Magic World Resource Pack models `.zip`**: `https://github.com/gorpo/Magic-World-Ultimate-Neoforge-26.1.2/releases/download/v1.3/MagicWorldResource_1.20.1-models.zip`
-- **Magic World Resource Pack addon `.zip`**: `https://github.com/gorpo/Magic-World-Ultimate-Neoforge-26.1.2/releases/download/v1.3/MagicWorldResource_1.20.1-addon.zip`
-- **Magic World Resource Pack bonus `.zip`**: `https://github.com/gorpo/Magic-World-Ultimate-Neoforge-26.1.2/releases/download/v1.3/MagicWorldResource_1.20.1-bonus.zip`
-- **Magic World Shader Pack `.zip`**: `https://github.com/gorpo/Magic-World-Ultimate-Neoforge-26.1.2/releases/download/v1.3/MagicWorld-Ultimate-NeoForge-26.1.2-ShaderPack.zip`
-
-4. Instale cada arquivo na pasta correta.
-5. Abra o Minecraft com NeoForge 26.1.2.
-
+1. Instale Minecraft Forge `1.20.1-47.4.10`.
+2. Coloque o JAR do Magic World em `.minecraft/mods`.
+3. Instale separadamente Embeddium, Oculus e Distant Horizons para usar os recursos graficos opcionais.
+4. Coloque o Resource Pack em `.minecraft/resourcepacks`.
+5. Coloque o Shader Pack em `.minecraft/shaderpacks`.
+6. Inicie o jogo, ative o Resource Pack e selecione o shader pelo Oculus.
 ## Compatibilidade
 
 | Item | Estado |
 | --- | --- |
-| Minecraft | NeoForge 26.1.2 |
-| Mod loader | NeoForge |
-| Mod | Projeto compilavel com Gradle/MDK NeoForge 26.1.2 |
-| Resource Pack | Adaptado para pack format compativel com 26.1.2 |
+| Minecraft | Forge 1.20.1 |
+| Mod loader | Forge |
+| Mod | Projeto compilavel com Gradle/MDK Forge 1.20.1 |
+| Resource Pack | Adaptado para pack format compativel com 1.20.1 |
 | Shader Pack | Adaptado para uso com o sistema grafico integrado do Magic World |
 | Sistema de menu | Client-side, aberto pela tecla `H` |
 | Menus por comando | Podem exigir cheats/permissao |
-| Binarios em releases | Mod e Shader Pack publicados; Resource Pack manual |
+| Binarios em releases | Instalador, mod, mods opcionais, Resource Packs e Shader Pack devem ser anexados manualmente antes de divulgar links finais |
 
 ### Mods de construcao
 
@@ -1291,7 +1347,7 @@ docs/building_mod_candidates.md
 
 Resumo atual:
 
-- **Effortless Building**: candidato opcional para jogadores/construtores, com suporte observado a NeoForge e 26.1.2.
+- **Effortless Building**: candidato opcional para jogadores/construtores, com suporte observado a Forge e 1.20.1.
 - **WorldEdit**: candidato opcional para criadores/dev, util para edicao pesada e schematics.
 - **Starter Structure**: candidato opcional para evoluir spawn/portal inicial por estrutura.
 - **Axiom**: nao recomendado no pacote principal por enquanto, pois a compatibilidade observada e Fabric.
@@ -1302,8 +1358,8 @@ Nenhuma dependencia externa de construcao foi adicionada automaticamente.
 
 Ordem recomendada:
 
-1. Usar `installer/MagicWorldInstaller.exe` no Windows/TLauncher ou instalar manualmente o NeoForge 26.1.2.
-2. Manter somente o **Mod All-in-One** em `mods`.
+1. Usar `installer/MagicWorldInstaller.exe` no Windows/TLauncher ou instalar manualmente o Forge 1.20.1.
+2. Manter o **Mod Magic World Forge** e os mods graficos opcionais em `mods`.
 3. Iniciar o jogo uma vez para validar carregamento.
 4. Colocar o **Resource Pack** em `resourcepacks`.
 5. Ativar o Resource Pack no jogo.
@@ -1316,6 +1372,13 @@ Para a experiencia completa, use sempre os tres:
 
 ```text
 Mod + Resource Pack + Shader Pack = Magic World Ultimate completo
+```
+
+Caso o launcher externo mostre aviso do Embeddium ou Distant Horizons sobre `restricted method`, `MemorySegment::reinterpret`, `java.lang.System::load` ou `native access`, coloque estes argumentos JVM no perfil:
+
+```text
+--enable-native-access=sodium
+--enable-native-access=distanthorizons
 ```
 
 ## Performance
@@ -1364,68 +1427,7 @@ resource pack, efeitos visuais e configuracoes mais profundas de performance.
 
 ## Creditos
 
-### Projeto
-
-- Identidade principal: **Magic World Ultimate**.
-- Criacao, organizacao e identidade do projeto: **GuiPaluch / Magic World**.
-- Mod base: projeto NeoForge 26.1.2 com sistemas Magic World.
-- Resource Pack: identidade visual Magic World.
-- Shader Pack: adaptacao visual Magic World para atmosfera magica.
-- Assistencia tecnica, organizacao de build e apoio na documentacao: **Codex**.
-
-### Componentes de terceiros Built in da build all-in-one v1.2
-
-Os componentes abaixo estao documentados porque fazem parte da proposta **Built in** do `.jar` all-in-one. Eles rodam dentro do pacote Magic World Ultimate via Jar-in-Jar do NeoForge, mas seus direitos autorais, marcas, codigo, assets e licencas pertencem aos respectivos autores.
-
-- **Iris Shaders** - carregamento de shader packs no cliente Minecraft.
-  Link oficial: https://modrinth.com/mod/iris
-- **Sodium** - otimizacao de renderizacao client-side e base grafica para melhor desempenho.
-  Link oficial: https://modrinth.com/mod/sodium
-- **Distant Horizons** - renderizacao de LODs e horizontes distantes alem da distancia visual normal.
-  Link oficial: https://modrinth.com/mod/distanthorizons
-- **FerriteCore** - otimizacao de memoria para reduzir uso de RAM.
-  Link oficial: https://modrinth.com/mod/ferrite-core
-- **ModernFix** - correcoes e otimizacoes gerais de desempenho, memoria e carregamento.
-  Link oficial: https://modrinth.com/mod/modernfix
-- **ImmediatelyFast** - otimizacoes de renderizacao imediata, HUD, menus e partes visuais do cliente.
-  Link oficial: https://modrinth.com/mod/immediatelyfast
-- **Lithostitched** - biblioteca de compatibilidade e configurabilidade para geracao de mundo.
-  Link oficial: https://modrinth.com/mod/lithostitched
-- **Entity Texture Features** - recursos avancados de textura para entidades, incluindo variantes e emissivos.
-  Link oficial: https://modrinth.com/mod/entitytexturefeatures
-- **Entity Model Features** - suporte a modelos avancados de entidades para packs visuais.
-  Link oficial: https://modrinth.com/mod/entity-model-features
-- **JourneyMap** - mapa, minimapa, marcadores e ferramentas de navegacao.
-  Link oficial: https://modrinth.com/project/lfHFW1mp
-- **Effortless Building** - ferramentas para construcao rapida e assistida.
-  Link oficial: https://modrinth.com/mod/effortless-building
-- **Controllable** - suporte a controle/gamepad no Minecraft Java.
-  Link oficial: https://www.curseforge.com/minecraft/mc-mods/controllable
-
-Os creditos oficiais tambem ficam dentro do mod no arquivo:
-
-```text
-credits.txt
-```
-
-Fora do README e do `credits.txt`, as telas internas mantem somente a identidade visual **Magic World**.
-
-### Comunidade e tecnologia
-
-- Comunidade Minecraft.
-- Comunidade NeoForge.
-- Ecossistema de modding Java.
-- Ferramentas de shaders compatíveis com NeoForge.
-- Inspiracao visual em fantasia magica medieval, cristais, portais, reinos encantados e aventura heroica.
-
-### Artes, texturas e modelos
-
-As artes, texturas e modelos usados no README foram coletados de:
-
-- Pasta `screenshots`.
-- Assets do mod em `src/main/resources/assets/magicworld`.
-- Resource Pack MagicWorld presente no ambiente local do projeto.
-- Imagens de menus e previews do proprio mod.
+Esta secao foi reservada para preenchimento manual pelo responsavel do projeto.
 
 ## Avisos Importantes
 
@@ -1456,6 +1458,24 @@ Este projeto usa:
 .\gradlew.bat build --no-daemon --stacktrace
 ```
 
+### Testar mods adicionais
+
+O `runClient` usa `run/` como diretorio do jogo:
+
+- `run/mods/`: teste rapido de mods Forge 1.20.1 simples;
+- `run/dev-mods/`: mods complexos que precisam de remapeamento pelo ForgeGradle;
+- `run/mods-disabled/` e `run/dev-mods-disabled/`: arquivos desativados, nao carregados;
+- `mods/` na raiz: pasta antiga, nao carregada pelo `runClient`.
+
+Qualquer JAR versionado colocado em `run/dev-mods/` e detectado e remapeado automaticamente. Consulte [`docs/MODS_TESTING.md`](./docs/MODS_TESTING.md) para o procedimento completo.
+
+### Mods externos desativados do pacote local
+
+Estes mods nao devem ficar em nenhuma pasta carregavel (`.minecraft/mods`, `pacote_distribuivel/.minecraft/mods`, `run/dev-mods`, `run/mods` ou `mods/`) ate validacao isolada: `entity_model_features`/EMF, `entity_texture_features`/ETF, `fusion`, `citresewn`/CIT, `modernfix`, `ferritecore` e `entityculling`.
+
+Motivo: EMF causou crash de mixin (`MixinModelPart`). Os JARs podem ficar em `mods_desativados_magicworld`, mas nao carregaveis.
+
+Alerta do pacote atual: este estado abriu no TLauncher apos remover EMF/ETF e correlatos, mas ainda e um pacote experimental. O commit pode nao funcionar em outra instalacao sem repetir a mesma limpeza das pastas carregaveis.
 ### Executar cliente de desenvolvimento
 
 ```powershell
@@ -1518,3 +1538,52 @@ Regras do script:
 <p align="center">
   <strong>Entre no portal, equipe sua armadura, acenda sua varinha e descubra um Minecraft transformado pela magia do Magic World.</strong>
 </p>
+
+## Locais Magic World Premium
+
+A partir do menu `Esc > MagicWorld > Locais Magic World`, o jogador abre uma tela propria de locais, separada do menu da varinha `H`.
+
+Fluxo ilustrado em texto:
+
+```text
+Esc
+ -> MagicWorld
+ -> Locais Magic World
+ -> card de destino ou coordenada manual
+```
+
+Funcoes principais:
+
+- `Minha casa`: volta ao spawn seguro ao lado da cama.
+- `Santuario`: volta ao Santuario Violeta abaixo do castelo.
+- `Praca de portais`: volta ao centro dos portais funcionais.
+- `Castelo`: volta ao castelo Magic World.
+- `Registrar aqui`: salva a posicao atual como marcador manual.
+- `Marcador manual`: volta ao ultimo marcador salvo.
+- `Ultimo externo`: volta ao ponto onde MCA/MineColonies moveu o jogador.
+- `Atualizar JourneyMap`: recria waypoints oficiais Magic World e desliga beacons/linhas 3D.
+- `Coordenada manual`: digite `X Y Z` e use `Ir para coordenada`.
+
+MineColonies:
+
+- clique/interaja com Town Hall, Supply Camp ou construcoes MineColonies para o Magic World salvar a colonia automaticamente;
+- use `Registrar colonia` para marcar manualmente o ponto atual;
+- use `Ultima colonia`, `Town Hall` e `Ultima construcao` para voltar aos pontos salvos;
+- o JourneyMap recebe waypoints oficiais quando instalado, mas sem marcadores 3D visiveis no mundo.
+
+Portais:
+
+- os portais da praca e o portal visual premium nao ativam mais apenas por proximidade;
+- o gatilho agora exige passar pelo centro do portal.
+
+## Instalador Forge Local
+
+Arquivos:
+
+- `installer/MagicWorldInstaller.exe`: instalador Forge com interface.
+- `scripts/install-magicworld-forge-tlauncher.ps1`: instalacao via PowerShell.
+- `scripts/build-magicworld-forge-installer.ps1`: recompila o EXE.
+
+Regra: o instalador usa `pacote_distribuivel/.minecraft` como fonte. Ele nao gera ZIP e nao embute os resourcepacks/shaders no EXE porque o pacote local e grande. Para usar, mantenha o EXE no projeto ou ao lado da pasta `pacote_distribuivel`.
+
+Ele instala/atualiza Forge `1.20.1-47.4.10`, copia `mods`, `resourcepacks`, `shaderpacks` e `journeymap`, remove conflitos conhecidos e mantem os waypoints 3D invisiveis.

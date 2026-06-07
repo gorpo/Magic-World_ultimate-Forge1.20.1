@@ -1,16 +1,13 @@
 package com.magicworld.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -78,18 +75,12 @@ public class PremiumDetailsScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(
-            GuiGraphicsExtractor guiGraphics,
+    public void render(
+            GuiGraphics guiGraphics,
             int mouseX,
             int mouseY,
             float partialTick
     ) {
-
-        MagicWorldMenuTheme.drawBackdrop(
-                guiGraphics,
-                width,
-                height
-        );
 
         int panelWidth =
                 Math.min(350, width - 24);
@@ -111,7 +102,7 @@ public class PremiumDetailsScreen extends Screen {
                 panelHeight
         );
 
-        guiGraphics.centeredText(
+        guiGraphics.drawCenteredString(
                 font,
                 entry.getDisplayName(),
                 width / 2,
@@ -151,7 +142,7 @@ public class PremiumDetailsScreen extends Screen {
         int textY =
                 y + 38;
 
-        guiGraphics.text(
+        guiGraphics.drawString(
                 font,
                 "Categoria:",
                 textX + 1,
@@ -159,7 +150,7 @@ public class PremiumDetailsScreen extends Screen {
                 TEXT_SHADOW
         );
 
-        guiGraphics.text(
+        guiGraphics.drawString(
                 font,
                 "Categoria:",
                 textX,
@@ -167,7 +158,7 @@ public class PremiumDetailsScreen extends Screen {
                 NEON
         );
 
-        guiGraphics.text(
+        guiGraphics.drawString(
                 font,
                 entry.getCategory(),
                 textX,
@@ -175,7 +166,7 @@ public class PremiumDetailsScreen extends Screen {
                 WHITE
         );
 
-        guiGraphics.text(
+        guiGraphics.drawString(
                 font,
                 "Transformacao:",
                 textX + 1,
@@ -183,7 +174,7 @@ public class PremiumDetailsScreen extends Screen {
                 TEXT_SHADOW
         );
 
-        guiGraphics.text(
+        guiGraphics.drawString(
                 font,
                 "Transformacao:",
                 textX,
@@ -200,7 +191,7 @@ public class PremiumDetailsScreen extends Screen {
                 WHITE
         );
 
-        guiGraphics.text(
+        guiGraphics.drawString(
                 font,
                 "Atributos:",
                 x + 19,
@@ -208,7 +199,7 @@ public class PremiumDetailsScreen extends Screen {
                 TEXT_SHADOW
         );
 
-        guiGraphics.text(
+        guiGraphics.drawString(
                 font,
                 "Atributos:",
                 x + 18,
@@ -282,11 +273,10 @@ public class PremiumDetailsScreen extends Screen {
 
     @Override
     public boolean mouseClicked(
-            MouseButtonEvent event,
-            boolean doubleClick
+            double mouseX,
+            double mouseY,
+            int button
     ) {
-        double mouseX = event.x();
-        double mouseY = event.y();
 
         int panelWidth =
                 Math.min(350, width - 24);
@@ -345,11 +335,11 @@ public class PremiumDetailsScreen extends Screen {
             return true;
         }
 
-        return super.mouseClicked(event, doubleClick);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     private void drawButton(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             int x,
             int y,
             int width,
@@ -359,17 +349,40 @@ public class PremiumDetailsScreen extends Screen {
             int mouseY
     ) {
 
-        MagicWorldMenuTheme.drawButton(
-                guiGraphics,
+        boolean hovered =
+                isInside(mouseX, mouseY, x, y, width, height);
+
+        guiGraphics.fill(x + 2, y + 2, x + width + 2, y + height + 2, SHADOW);
+        guiGraphics.fill(x, y, x + width, y + height, hovered ? BUTTON_HOVER : VANILLA_BUTTON);
+        guiGraphics.fill(x, y, x + width, y + 1, VANILLA_BUTTON_LIGHT);
+        guiGraphics.fill(x, y, x + 1, y + height, VANILLA_BUTTON_LIGHT);
+        guiGraphics.fill(x, y + height - 1, x + width, y + height, VANILLA_BUTTON_DARK);
+        guiGraphics.fill(x + width - 1, y, x + width, y + height, VANILLA_BUTTON_DARK);
+
+        if (hovered) {
+            drawThinGreenBox(
+                    guiGraphics,
+                    x + 2,
+                    y + 2,
+                    width - 4,
+                    height - 4
+            );
+        }
+
+        guiGraphics.drawCenteredString(
                 font,
-                x,
-                y,
-                width,
-                height,
-                Component.literal(text),
-                mouseX,
-                mouseY,
-                false
+                text,
+                x + width / 2 + 1,
+                y + 6,
+                TEXT_SHADOW
+        );
+
+        guiGraphics.drawCenteredString(
+                font,
+                text,
+                x + width / 2,
+                y + 5,
+                NEON
         );
     }
 
@@ -406,7 +419,7 @@ public class PremiumDetailsScreen extends Screen {
     }
 
     private void drawIcon(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             int x,
             int y,
             int size,
@@ -419,8 +432,7 @@ public class PremiumDetailsScreen extends Screen {
                         entry.getNormalCommand()
                 );
 
-        if (entry.getTab() != PremiumMenuScreen.MenuTab.ENEMIES
-                && !entityId.isEmpty()) {
+        if (!entityId.isEmpty()) {
             LivingEntity livingEntity =
                     getPreviewEntity(entityId);
 
@@ -432,16 +444,13 @@ public class PremiumDetailsScreen extends Screen {
                         y + size - 3
                 );
 
-                InventoryScreen.extractEntityInInventoryFollowsMouse(
+                InventoryScreen.renderEntityInInventoryFollowsMouse(
                         guiGraphics,
-                        x + 3,
-                        y + 3,
-                        x + size - 3,
-                        y + size - 3,
+                        x + size / 2 + entityXOffset(entityId),
+                        y + entityBottom(entityId, size),
                         entityScale(entityId, 46),
-                        0.0625F,
-                        (float) mouseX,
-                        (float) mouseY,
+                        (float) (x + size / 2 - mouseX),
+                        (float) (y + size / 2 - mouseY),
                         livingEntity
                 );
 
@@ -453,9 +462,8 @@ public class PremiumDetailsScreen extends Screen {
         if (entry.usesMobTexture()) {
             drawMobFace(
                     guiGraphics,
-                    x + 8,
-                    y + 8,
-                    size - 16
+                    x + 32,
+                    y + 32
             );
             return;
         }
@@ -514,7 +522,7 @@ public class PremiumDetailsScreen extends Screen {
         }
 
         Entity entity =
-                entityType.create(minecraft.level, EntitySpawnReason.COMMAND);
+                entityType.create(minecraft.level);
 
         if (entity instanceof LivingEntity livingEntity) {
             return livingEntity;
@@ -596,7 +604,7 @@ public class PremiumDetailsScreen extends Screen {
     }
 
     private void renderItemPreview(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             ItemStack itemStack,
             int x,
             int y,
@@ -605,15 +613,15 @@ public class PremiumDetailsScreen extends Screen {
             int mouseY
     ) {
 
-        guiGraphics.pose().pushMatrix();
-        guiGraphics.pose().translate(x, y);
-        guiGraphics.pose().scale(scale, scale);
-        guiGraphics.item(itemStack, -8, -8);
-        guiGraphics.pose().popMatrix();
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().translate(x, y, 120);
+        guiGraphics.pose().scale(scale, scale, 1.0F);
+        guiGraphics.renderItem(itemStack, -8, -8);
+        guiGraphics.pose().popPose();
     }
 
     private void drawWrapped(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             String text,
             int x,
             int y,
@@ -631,7 +639,7 @@ public class PremiumDetailsScreen extends Screen {
                 y;
 
         for (FormattedCharSequence line : lines) {
-            guiGraphics.text(
+            guiGraphics.drawString(
                     font,
                     line,
                     x,
@@ -644,64 +652,40 @@ public class PremiumDetailsScreen extends Screen {
     }
 
     private void drawMobFace(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             int x,
-            int y,
-            int size
+            int y
     ) {
 
         String fileName =
-                PremiumMenuScreen.mobTextureFileName(entry.getEnglishName());
+                entry.getEnglishName()
+                        .toLowerCase()
+                        .replace(" ", "_");
 
-        Identifier texture =
-                Identifier.fromNamespaceAndPath(
-                        "magicworld",
-                        "textures/gui/mobs/" + fileName + ".png"
+        ResourceLocation texture =
+                ResourceLocation.tryParse(
+                        "magicworld:textures/gui/mobs/"
+                                + fileName
+                                + ".png"
                 );
 
-        int textureWidth =
-                PremiumMenuScreen.mobTextureWidth(fileName);
-
-        int textureHeight =
-                PremiumMenuScreen.mobTextureHeight(fileName);
-
-        int drawWidth =
-                size;
-
-        int drawHeight =
-                size;
-
-        if (textureWidth > textureHeight) {
-            drawHeight = Math.max(1, size * textureHeight / textureWidth);
-        }
-        else if (textureHeight > textureWidth) {
-            drawWidth = Math.max(1, size * textureWidth / textureHeight);
-        }
-
-        int drawX =
-                x + (size - drawWidth) / 2;
-
-        int drawY =
-                y + (size - drawHeight) / 2;
+        RenderSystem.enableBlend();
 
         guiGraphics.blit(
-                RenderPipelines.GUI_TEXTURED,
                 texture,
-                drawX,
-                drawY,
-                0.0F,
-                0.0F,
-                drawWidth,
-                drawHeight,
-                textureWidth,
-                textureHeight,
-                textureWidth,
-                textureHeight
+                x,
+                y,
+                0,
+                0,
+                28,
+                28,
+                28,
+                28
         );
     }
 
     private void drawGreenBox(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             int x,
             int y,
             int width,
@@ -715,7 +699,7 @@ public class PremiumDetailsScreen extends Screen {
     }
 
     private void drawThinGreenBox(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             int x,
             int y,
             int width,
@@ -729,24 +713,26 @@ public class PremiumDetailsScreen extends Screen {
     }
 
     private void drawMinecraftPanel(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             int x,
             int y,
             int width,
             int height
     ) {
 
-        MagicWorldMenuTheme.drawFrame(
-                guiGraphics,
-                x,
-                y,
-                width,
-                height
-        );
+        guiGraphics.fill(x + 6, y + 7, x + width + 6, y + height + 7, SHADOW);
+        guiGraphics.fill(x + 2, y + 2, x + width - 2, y + height - 2, PANEL);
+
+        guiGraphics.fill(x, y, x + width, y + 2, STONE_LIGHT);
+        guiGraphics.fill(x, y, x + 2, y + height, STONE_LIGHT);
+        guiGraphics.fill(x, y + height - 2, x + width, y + height, STONE_DARK);
+        guiGraphics.fill(x + width - 2, y, x + width, y + height, STONE_DARK);
+
+        drawBorder(guiGraphics, x + 4, y + 4, width - 8, height - 8);
     }
 
     private void drawRaisedBox(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             int x,
             int y,
             int width,
@@ -763,7 +749,7 @@ public class PremiumDetailsScreen extends Screen {
     }
 
     private void drawInsetBox(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             int x,
             int y,
             int width,
@@ -779,7 +765,7 @@ public class PremiumDetailsScreen extends Screen {
     }
 
     private void drawBorder(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             int x,
             int y,
             int width,
@@ -792,22 +778,22 @@ public class PremiumDetailsScreen extends Screen {
         guiGraphics.fill(x, y + height - 1, x + width, y + height, BORDER);
     }
 
-    private void drawCornerTopLeft(GuiGraphicsExtractor g, int x, int y) {
+    private void drawCornerTopLeft(GuiGraphics g, int x, int y) {
         g.fill(x, y, x + 6, y + 1, WHITE);
         g.fill(x, y, x + 1, y + 6, WHITE);
     }
 
-    private void drawCornerTopRight(GuiGraphicsExtractor g, int x, int y) {
+    private void drawCornerTopRight(GuiGraphics g, int x, int y) {
         g.fill(x - 5, y, x + 1, y + 1, WHITE);
         g.fill(x, y, x + 1, y + 6, WHITE);
     }
 
-    private void drawCornerBottomLeft(GuiGraphicsExtractor g, int x, int y) {
+    private void drawCornerBottomLeft(GuiGraphics g, int x, int y) {
         g.fill(x, y, x + 6, y + 1, WHITE);
         g.fill(x, y - 5, x + 1, y + 1, WHITE);
     }
 
-    private void drawCornerBottomRight(GuiGraphicsExtractor g, int x, int y) {
+    private void drawCornerBottomRight(GuiGraphics g, int x, int y) {
         g.fill(x - 5, y, x + 1, y + 1, WHITE);
         g.fill(x, y - 5, x + 1, y + 1, WHITE);
     }

@@ -4,18 +4,19 @@ import com.magicworld.MagicWorld;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.animal.squid.Squid;
+import net.minecraft.world.entity.animal.Squid;
 import net.minecraft.world.level.Level;
 
 public class PremiumSquid {
 
-    public static boolean transform(
+    public static void transform(
             Level level,
             Squid squid
     ) {
 
-        if (PremiumEntityTags.isAnimal(squid, "squid")) {
-            PremiumEntityTags.clearAnimal(squid, "squid");
+        if (squid.hasEffect(
+                MobEffects.DOLPHINS_GRACE
+        )) {
 
             squid.removeEffect(
                     MobEffects.DOLPHINS_GRACE
@@ -23,7 +24,6 @@ public class PremiumSquid {
         }
 
         else {
-            PremiumEntityTags.markAnimal(squid, "squid");
 
             squid.addEffect(
                     new MobEffectInstance(
@@ -38,7 +38,5 @@ public class PremiumSquid {
                 (ServerLevel) level,
                 squid.blockPosition()
         );
-
-        return true;
     }
 }

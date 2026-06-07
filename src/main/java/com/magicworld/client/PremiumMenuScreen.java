@@ -7,6 +7,8 @@ import com.magicworld.client.menus.DimensionMenu;
 import com.magicworld.client.menus.DungeonSpawnerMenu;
 import com.magicworld.client.menus.GraphicsProfilesMenu;
 import com.magicworld.client.menus.LuckyBlockMenu;
+import com.magicworld.client.menus.LocationsMenu;
+import com.magicworld.client.menus.MineColoniesMenu;
 import com.magicworld.client.menus.VarinhaMagicaControlCenter;
 import com.magicworld.client.menus.MobSpawnerMenu;
 import com.magicworld.client.menus.NPCMenu;
@@ -24,22 +26,18 @@ import com.magicworld.client.menus.TrollMenu;
 import com.magicworld.client.menus.WaveSurvivalMenu;
 import com.magicworld.client.menus.WeatherControlMenu;
 import com.magicworld.client.menus.WorldEventsMenu;
+import com.magicworld.network.MagicWorldNetwork;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.client.input.CharacterEvent;
-import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -48,7 +46,6 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.BlockItem;
@@ -59,8 +56,10 @@ import net.minecraft.world.item.Items;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
-import java.util.UUID;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import net.minecraft.Util;
+import net.minecraftforge.fml.ModList;
 
 public class PremiumMenuScreen extends Screen {
 
@@ -133,6 +132,12 @@ public class PremiumMenuScreen extends Screen {
 
     private static final int PREVIEW_TEXTURE_SIZE =
             256;
+    private static final int TAB_HEIGHT =
+            16;
+    private static final int TAB_ROW_GAP =
+            3;
+    private static final int TAB_MIN_WIDTH =
+            58;
 
     private PremiumList premiumList;
 
@@ -184,6 +189,7 @@ public class PremiumMenuScreen extends Screen {
         MOB_SPAWNER("Mobs"),
         WEATHER_CONTROL("Clima"),
         BIOME_TELEPORT("Biomas"),
+        LOCATIONS("Locais"),
         DIMENSION_MENU("Dimensoes"),
         PREMIUM_POWERS("Poderes"),
         STRUCTURE_RAIN("Chuva"),
@@ -201,7 +207,8 @@ public class PremiumMenuScreen extends Screen {
         PREMIUM_ARMOR("Armaduras"),
         NPC_MENU("NPCs"),
         WAVE_SURVIVAL("Hordas"),
-        PREMIUM_MOUNTS("Montarias");
+        PREMIUM_MOUNTS("Montarias"),
+        MINECOLONIES("Colonias");
 
         private final String title;
 
@@ -297,6 +304,10 @@ public class PremiumMenuScreen extends Screen {
             BiomeTeleportMenu.add(premiumEntries);
         }
 
+        else if (activeTab == MenuTab.LOCATIONS) {
+            LocationsMenu.add(premiumEntries);
+        }
+
         else if (activeTab == MenuTab.DIMENSION_MENU) {
             DimensionMenu.add(premiumEntries);
         }
@@ -367,6 +378,10 @@ public class PremiumMenuScreen extends Screen {
 
         else if (activeTab == MenuTab.PREMIUM_MOUNTS) {
             PremiumMountsMenu.add(premiumEntries);
+        }
+
+        else if (activeTab == MenuTab.MINECOLONIES) {
+            MineColoniesMenu.add(premiumEntries);
         }
 
         if (isSystemSubMenu(activeTab)) {
@@ -621,7 +636,7 @@ public class PremiumMenuScreen extends Screen {
 
         addItem(MenuTab.CREATED, "Plantas pequenas", "Small Plants", "Natureza",
                 "Gramas, samambaias, vines, cactus, sugar cane, bamboo, cogumelos, melon e pumpkin -> HAY_BLOCK.",
-                "Volta: HAY_BLOCK -> GRASS.", Items.SHORT_GRASS,
+                "Volta: HAY_BLOCK -> GRASS.", Items.GRASS,
                 giveItem("minecraft:grass"),
                 giveItem("minecraft:hay_block"));
 
@@ -657,7 +672,7 @@ public class PremiumMenuScreen extends Screen {
                 continue;
             }
 
-            Identifier itemId =
+            ResourceLocation itemId =
                     BuiltInRegistries.ITEM.getKey(item);
 
             addItem(
@@ -742,11 +757,18 @@ public class PremiumMenuScreen extends Screen {
                         enemy + " -> " + peaceful + ". Segundo clique no pacifico volta para " + enemy + ".",
                         "Ao matar pacifico: " + reward + ".",
                         icon,
-                        false,
+                        hasPeacefulTexture(peaceful),
                         summonEntity(enemyId),
                         summonPremiumEnemy(peacefulId, enemyId)
                 )
         );
+    }
+
+    private boolean hasPeacefulTexture(
+            String peaceful
+    ) {
+
+        return !peaceful.equals("Skeleton Horse");
     }
 
     private void addMob(
@@ -768,88 +790,11 @@ public class PremiumMenuScreen extends Screen {
                         transformation,
                         attributes,
                         Items.EMERALD,
-                        hasMobTexture(englishName),
+                        true,
                         normalCommand,
                         modifiedCommand
                 )
         );
-    }
-
-    static String mobTextureFileName(
-            String mobName
-    ) {
-
-        return mobName
-                .toLowerCase(Locale.ROOT)
-                .replace(" ", "_");
-    }
-
-    static boolean hasMobTexture(
-            String mobName
-    ) {
-
-        return switch (mobTextureFileName(mobName)) {
-            case "allay",
-                 "axolotl",
-                 "bat",
-                 "bee",
-                 "camel",
-                 "cat",
-                 "chicken",
-                 "cow",
-                 "creeper",
-                 "fox",
-                 "frog",
-                 "goat",
-                 "horse",
-                 "iron_golem",
-                 "panda",
-                 "pig",
-                 "rabbit",
-                 "sheep",
-                 "snow_golem",
-                 "turtle",
-                 "villager",
-                 "wolf" -> true;
-            default -> false;
-        };
-    }
-
-    static int mobTextureWidth(
-            String fileName
-    ) {
-
-        return switch (fileName) {
-            case "allay" -> 32;
-            case "fox",
-                 "frog" -> 48;
-            case "camel",
-                 "iron_golem",
-                 "turtle" -> 128;
-            default -> 64;
-        };
-    }
-
-    static int mobTextureHeight(
-            String fileName
-    ) {
-
-        return switch (fileName) {
-            case "allay",
-                 "cat",
-                 "chicken",
-                 "cow",
-                 "creeper",
-                 "fox",
-                 "pig",
-                 "rabbit",
-                 "sheep",
-                 "wolf" -> 32;
-            case "frog" -> 48;
-            case "camel",
-                 "iron_golem" -> 128;
-            default -> 64;
-        };
     }
 
     private void addItem(
@@ -971,8 +916,8 @@ public class PremiumMenuScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(
-            GuiGraphicsExtractor guiGraphics,
+    public void render(
+            GuiGraphics guiGraphics,
             int mouseX,
             int mouseY,
             float partialTick
@@ -991,17 +936,11 @@ public class PremiumMenuScreen extends Screen {
                 getPanelY();
 
         // BACKGROUND FUTURO:
-        // Identifier background = Identifier.tryBuild(
+        // ResourceLocation background = ResourceLocation.tryBuild(
         //         "magicworld",
         //         "textures/gui/background/background.jpg"
         // );
         // guiGraphics.blit(background, x, y, 0, 0, panelWidth, panelHeight, panelWidth, panelHeight);
-
-        MagicWorldMenuTheme.drawBackdrop(
-                guiGraphics,
-                width,
-                height
-        );
 
         drawMinecraftPanel(
                 guiGraphics,
@@ -1011,7 +950,7 @@ public class PremiumMenuScreen extends Screen {
                 panelHeight
         );
 
-        guiGraphics.centeredText(
+        guiGraphics.drawCenteredString(
                 font,
                 "MagicWorld - Magic Wand",
                 width / 2,
@@ -1019,7 +958,7 @@ public class PremiumMenuScreen extends Screen {
                 NEON
         );
 
-        guiGraphics.centeredText(
+        guiGraphics.drawCenteredString(
                 font,
                 subtitle(),
                 width / 2,
@@ -1042,7 +981,7 @@ public class PremiumMenuScreen extends Screen {
             drawCommandsGate(guiGraphics, mouseX, mouseY);
         }
 
-        super.extractRenderState(
+        super.render(
                 guiGraphics,
                 mouseX,
                 mouseY,
@@ -1062,12 +1001,12 @@ public class PremiumMenuScreen extends Screen {
         if (activeTab == MenuTab.SPAWN_CONSTRUCTIONS) return "Construcoes spawnaveis";
         if (activeTab == MenuTab.COMMANDS_GATE) return "Ativar menus que usam comandos";
         if (activeTab == MenuTab.CONTROL_CENTER) return "Sistema premium";
-        if (activeTab == MenuTab.GRAPHICS_PROFILES) return "Perfis graficos Magic World";
+        if (activeTab == MenuTab.GRAPHICS_PROFILES) return "Perfis graficos, resource packs e shaders";
         return activeTab.getTitle();
     }
 
     private void drawItemGrid(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             int mouseX,
             int mouseY
     ) {
@@ -1140,7 +1079,7 @@ public class PremiumMenuScreen extends Screen {
                     hoveredIndex = index;
                 }
 
-                guiGraphics.item(
+                guiGraphics.renderItem(
                         new ItemStack(
                                 visibleEntries.get(index).getIconItem()
                         ),
@@ -1151,7 +1090,7 @@ public class PremiumMenuScreen extends Screen {
         }
 
         if (hoveredIndex >= 0) {
-            guiGraphics.setTooltipForNextFrame(
+            guiGraphics.renderTooltip(
                     font,
                     Component.literal(
                             visibleEntries.get(hoveredIndex).getDisplayName()
@@ -1163,7 +1102,7 @@ public class PremiumMenuScreen extends Screen {
     }
 
     private void drawItemSearch(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             int mouseX,
             int mouseY
     ) {
@@ -1211,7 +1150,7 @@ public class PremiumMenuScreen extends Screen {
                         ? PLACEHOLDER
                         : WHITE;
 
-        guiGraphics.text(
+        guiGraphics.drawString(
                 font,
                 text,
                 x + 6,
@@ -1234,7 +1173,7 @@ public class PremiumMenuScreen extends Screen {
         }
 
         if (!itemSearchText.isEmpty()) {
-            guiGraphics.text(
+            guiGraphics.drawString(
                     font,
                     "x",
                     x + width - 12,
@@ -1245,7 +1184,7 @@ public class PremiumMenuScreen extends Screen {
     }
 
     private void drawItemCategoryTabs(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             int mouseX,
             int mouseY
     ) {
@@ -1347,7 +1286,7 @@ public class PremiumMenuScreen extends Screen {
         }
 
         if (itemCategoryIndex == 4) {
-            return item.components().get(DataComponents.FOOD) != null;
+            return item.isEdible();
         }
 
         if (itemCategoryIndex == 5) {
@@ -1369,7 +1308,7 @@ public class PremiumMenuScreen extends Screen {
     }
 
     private void drawCommandsGate(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             int mouseX,
             int mouseY
     ) {
@@ -1391,7 +1330,7 @@ public class PremiumMenuScreen extends Screen {
                 74
         );
 
-        guiGraphics.centeredText(
+        guiGraphics.drawCenteredString(
                 font,
                 commandMenusEnabled
                         ? "Menus por comando ativados"
@@ -1415,7 +1354,7 @@ public class PremiumMenuScreen extends Screen {
     }
 
     private void drawWandTab(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             int mouseX,
             int mouseY
     ) {
@@ -1423,14 +1362,11 @@ public class PremiumMenuScreen extends Screen {
         int x =
                 getPanelX();
 
-        int y =
-                getPanelY();
-
         int boxX =
                 x + 16;
 
         int boxY =
-                y + 58;
+                getListTop() + 2;
 
         int iconSize =
                 42;
@@ -1443,19 +1379,19 @@ public class PremiumMenuScreen extends Screen {
                 iconSize
         );
 
-        guiGraphics.pose().pushMatrix();
-        guiGraphics.pose().scale(2.0F, 2.0F);
-        guiGraphics.item(
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().scale(2.0F, 2.0F, 1F);
+        guiGraphics.renderItem(
                 new ItemStack(Items.NETHER_STAR),
                 (boxX + 5) / 2,
                 (boxY + 5) / 2
         );
-        guiGraphics.pose().popMatrix();
+        guiGraphics.pose().popPose();
 
         int textX =
                 boxX + 56;
 
-        guiGraphics.text(
+        guiGraphics.drawString(
                 font,
                 "Varinha magica do MagicWorld.",
                 textX,
@@ -1463,7 +1399,7 @@ public class PremiumMenuScreen extends Screen {
                 WHITE
         );
 
-        guiGraphics.text(
+        guiGraphics.drawString(
                 font,
                 "Clique esquerdo transforma mobs/blocos.",
                 textX,
@@ -1471,7 +1407,7 @@ public class PremiumMenuScreen extends Screen {
                 WHITE
         );
 
-        guiGraphics.text(
+        guiGraphics.drawString(
                 font,
                 "Shift destroi blocos e alvos.",
                 textX,
@@ -1500,7 +1436,7 @@ public class PremiumMenuScreen extends Screen {
     }
 
     private void drawCloseButton(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             int mouseX,
             int mouseY
     ) {
@@ -1519,7 +1455,7 @@ public class PremiumMenuScreen extends Screen {
     }
 
     private void drawTabs(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             int mouseX,
             int mouseY
     ) {
@@ -1532,7 +1468,7 @@ public class PremiumMenuScreen extends Screen {
                     getTabX(i);
 
             int tabY =
-                    getTabY();
+                    getTabY(i);
 
             int tabWidth =
                     getTabWidth();
@@ -1544,14 +1480,14 @@ public class PremiumMenuScreen extends Screen {
                     mouseX >= tabX
                             && mouseX <= tabX + tabWidth
                             && mouseY >= tabY
-                            && mouseY <= tabY + 16;
+                            && mouseY <= tabY + TAB_HEIGHT;
 
             drawMinecraftButton(
                     guiGraphics,
                     tabX,
                     tabY,
                     tabWidth,
-                    16,
+                    TAB_HEIGHT,
                     tabs[i].getTitle(),
                     mouseX,
                     mouseY,
@@ -1562,11 +1498,10 @@ public class PremiumMenuScreen extends Screen {
 
     @Override
     public boolean mouseClicked(
-            MouseButtonEvent event,
-            boolean doubleClick
+            double mouseX,
+            double mouseY,
+            int button
     ) {
-        double mouseX = event.x();
-        double mouseY = event.y();
 
         MenuTab clickedTab =
                 getClickedTab(mouseX, mouseY);
@@ -1662,7 +1597,11 @@ public class PremiumMenuScreen extends Screen {
             return true;
         }
 
-        return super.mouseClicked(event, doubleClick);
+        return super.mouseClicked(
+                mouseX,
+                mouseY,
+                button
+        );
     }
 
     private void spawnWand() {
@@ -1691,12 +1630,12 @@ public class PremiumMenuScreen extends Screen {
                     getTabX(i);
 
             int tabY =
-                    getTabY();
+                    getTabY(i);
 
             if (mouseX >= tabX
                     && mouseX <= tabX + getTabWidth()
                     && mouseY >= tabY
-                    && mouseY <= tabY + 16) {
+                    && mouseY <= tabY + TAB_HEIGHT) {
 
                 return tabs[i];
             }
@@ -1710,7 +1649,7 @@ public class PremiumMenuScreen extends Screen {
     }
 
     private int getPanelHeight() {
-        return Math.min(220, height - 24);
+        return Math.min(260, height - 24);
     }
 
     private int getPanelX() {
@@ -1722,7 +1661,7 @@ public class PremiumMenuScreen extends Screen {
     }
 
     private int getListTop() {
-        return getPanelY() + 56;
+        return getPanelY() + 56 + (getTabRows() - 1) * (TAB_HEIGHT + TAB_ROW_GAP);
     }
 
     private int getListBottom() {
@@ -1730,17 +1669,40 @@ public class PremiumMenuScreen extends Screen {
     }
 
     private int getTabWidth() {
-        return (getPanelWidth() - 20) / visibleTabs().length;
+        return (getPanelWidth() - 20) / getTabsPerRow();
     }
 
     private int getTabX(
             int index
     ) {
-        return getPanelX() + 10 + index * getTabWidth();
+        return getPanelX() + 10 + (index % getTabsPerRow()) * getTabWidth();
     }
 
-    private int getTabY() {
-        return getPanelY() + 34;
+    private int getTabY(int index) {
+        return getPanelY() + 34 + (index / getTabsPerRow()) * (TAB_HEIGHT + TAB_ROW_GAP);
+    }
+
+    private int getTabsPerRow() {
+        int tabCount =
+                visibleTabs().length;
+
+        int availableWidth =
+                Math.max(TAB_MIN_WIDTH, getPanelWidth() - 20);
+
+        int maxTabs =
+                Math.max(1, availableWidth / TAB_MIN_WIDTH);
+
+        return Math.max(1, Math.min(tabCount, maxTabs));
+    }
+
+    private int getTabRows() {
+        int tabCount =
+                visibleTabs().length;
+
+        int tabsPerRow =
+                getTabsPerRow();
+
+        return Math.max(1, (tabCount + tabsPerRow - 1) / tabsPerRow);
     }
 
     private MenuTab[] visibleTabs() {
@@ -1754,7 +1716,6 @@ public class PremiumMenuScreen extends Screen {
                     MenuTab.CREATED,
                     MenuTab.SPAWN_ITEMS,
                     MenuTab.COMMANDS_GATE,
-                    MenuTab.GRAPHICS_PROFILES,
                     MenuTab.SPAWN_VILLAGES,
                     MenuTab.SPAWN_CONSTRUCTIONS,
                     MenuTab.CONTROL_CENTER
@@ -1768,8 +1729,7 @@ public class PremiumMenuScreen extends Screen {
                 MenuTab.ANIMALS,
                 MenuTab.CREATED,
                 MenuTab.SPAWN_ITEMS,
-                MenuTab.COMMANDS_GATE,
-                MenuTab.GRAPHICS_PROFILES
+                MenuTab.COMMANDS_GATE
         };
     }
 
@@ -1892,8 +1852,7 @@ public class PremiumMenuScreen extends Screen {
     public boolean mouseScrolled(
             double mouseX,
             double mouseY,
-            double deltaX,
-            double deltaY
+            double delta
     ) {
 
         if (activeTab == MenuTab.SPAWN_ITEMS) {
@@ -1917,14 +1876,14 @@ public class PremiumMenuScreen extends Screen {
                             0,
                             Math.min(
                                     maxScroll,
-                                    itemGridScroll - (int) Math.signum(deltaY)
+                                    itemGridScroll - (int) Math.signum(delta)
                             )
                     );
 
             return true;
         }
 
-        return super.mouseScrolled(mouseX, mouseY, deltaX, deltaY);
+        return super.mouseScrolled(mouseX, mouseY, delta);
     }
 
     private int getWandButtonX() {
@@ -1945,12 +1904,13 @@ public class PremiumMenuScreen extends Screen {
 
     @Override
     public boolean keyPressed(
-            KeyEvent event
+            int keyCode,
+            int scanCode,
+            int modifiers
     ) {
-        int keyCode = event.key();
 
         if (KeyBindings.OPEN_MENU_KEY != null
-                && KeyBindings.OPEN_MENU_KEY.matches(event)) {
+                && KeyBindings.OPEN_MENU_KEY.matches(keyCode, scanCode)) {
             minecraft.setScreen(null);
             return true;
         }
@@ -1981,30 +1941,30 @@ public class PremiumMenuScreen extends Screen {
             }
         }
 
-        return super.keyPressed(event);
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
     public boolean charTyped(
-            CharacterEvent event
+            char codePoint,
+            int modifiers
     ) {
-        int codePoint = event.codepoint();
 
         if (activeTab == MenuTab.SPAWN_ITEMS
                 && itemSearchFocused
                 && isAllowedSearchCharacter(codePoint)
                 && itemSearchText.length() < 48) {
-            itemSearchText += event.codepointAsString();
+            itemSearchText += codePoint;
             itemGridScroll =
                     0;
 
             return true;
         }
 
-        return super.charTyped(event);
+        return super.charTyped(codePoint, modifiers);
     }
 
-    private boolean isAllowedSearchCharacter(int codePoint) {
+    private boolean isAllowedSearchCharacter(char codePoint) {
         return Character.isLetterOrDigit(codePoint)
                 || codePoint == ' '
                 || codePoint == '_'
@@ -2029,8 +1989,13 @@ public class PremiumMenuScreen extends Screen {
                     PremiumMenuScreen.this.getListBottom()
                             - PremiumMenuScreen.this.getListTop(),
                     PremiumMenuScreen.this.getListTop(),
+                    PremiumMenuScreen.this.getListBottom(),
                     38
             );
+
+            setRenderBackground(false);
+            setRenderTopAndBottom(false);
+            setRenderSelection(false);
 
             for (PremiumEntry entry : premiumEntries) {
                 addEntry(new Entry(entry));
@@ -2048,39 +2013,31 @@ public class PremiumMenuScreen extends Screen {
         }
 
         @Override
-        protected int scrollBarX() {
+        protected int getScrollbarPosition() {
             return getPanelX() + getPanelWidth() - 17;
         }
 
         @Override
-        protected void extractListBackground(GuiGraphicsExtractor guiGraphics) {
-        }
-
-        @Override
-        protected void extractListSeparators(GuiGraphicsExtractor guiGraphics) {
-        }
-
-        @Override
-        protected void extractScrollbar(
-                GuiGraphicsExtractor guiGraphics,
+        protected void renderDecorations(
+                GuiGraphics guiGraphics,
                 int mouseX,
                 int mouseY
         ) {
 
             int scrollX =
-                    premiumList.scrollBarX() + 2;
+                    premiumList.getScrollbarPosition() + 2;
 
             int top =
-                    premiumList.getY() + 4;
+                    premiumList.y0 + 4;
 
             int bottom =
-                    premiumList.getBottom() - 4;
+                    premiumList.y1 - 4;
 
             int trackHeight =
                     bottom - top;
 
             double maxScroll =
-                    premiumList.maxScrollAmount();
+                    premiumList.getMaxScroll();
 
             int thumbHeight =
                     24;
@@ -2090,7 +2047,7 @@ public class PremiumMenuScreen extends Screen {
 
             if (maxScroll > 0) {
                 thumbY += (int) (
-                        (premiumList.scrollAmount() / maxScroll)
+                        (premiumList.getScrollAmount() / maxScroll)
                                 * (trackHeight - thumbHeight)
                 );
             }
@@ -2125,17 +2082,18 @@ public class PremiumMenuScreen extends Screen {
             }
 
             @Override
-            public void extractContent(
-                    GuiGraphicsExtractor guiGraphics,
+            public void render(
+                    GuiGraphics guiGraphics,
+                    int index,
+                    int top,
+                    int left,
+                    int width,
+                    int height,
                     int mouseX,
                     int mouseY,
                     boolean hovered,
                     float partialTick
             ) {
-                int left = getX();
-                int top = getY();
-                int width = getWidth();
-                int height = getHeight();
 
                 guiGraphics.fill(
                         left + 3,
@@ -2184,7 +2142,7 @@ public class PremiumMenuScreen extends Screen {
                         mouseY
                 );
 
-                guiGraphics.text(
+                guiGraphics.drawString(
                         font,
                         entry.getDisplayName(),
                         left + 45,
@@ -2192,7 +2150,7 @@ public class PremiumMenuScreen extends Screen {
                         TEXT_SHADOW
                 );
 
-                guiGraphics.text(
+                guiGraphics.drawString(
                         font,
                         entry.getDisplayName(),
                         left + 44,
@@ -2200,7 +2158,7 @@ public class PremiumMenuScreen extends Screen {
                         WHITE
                 );
 
-                guiGraphics.text(
+                guiGraphics.drawString(
                         font,
                         entry.getCategory(),
                         left + 45,
@@ -2208,7 +2166,7 @@ public class PremiumMenuScreen extends Screen {
                         TEXT_SHADOW
                 );
 
-                guiGraphics.text(
+                guiGraphics.drawString(
                         font,
                         entry.getCategory(),
                         left + 44,
@@ -2218,7 +2176,7 @@ public class PremiumMenuScreen extends Screen {
             }
 
             private void drawEntryIcon(
-                    GuiGraphicsExtractor guiGraphics,
+                    GuiGraphics guiGraphics,
                     int x,
                     int y,
                     int size,
@@ -2231,7 +2189,8 @@ public class PremiumMenuScreen extends Screen {
                                 entry.getNormalCommand()
                         );
 
-                if (entry.getTab() == MenuTab.ANIMALS
+                if ((entry.getTab() == MenuTab.ANIMALS
+                        || entry.getTab() == MenuTab.ENEMIES)
                         && !entityId.isEmpty()) {
 
                     LivingEntity livingEntity =
@@ -2245,16 +2204,13 @@ public class PremiumMenuScreen extends Screen {
                                 y + size - 2
                         );
 
-                        InventoryScreen.extractEntityInInventoryFollowsMouse(
+                        InventoryScreen.renderEntityInInventoryFollowsMouse(
                                 guiGraphics,
-                                x + 2,
-                                y + 2,
-                                x + size - 2,
-                                y + size - 2,
+                                x + size / 2 + entityXOffset(entityId),
+                                y + entityBottom(entityId, size),
                                 entityScale(entityId, 16),
-                                0.0625F,
-                                x + size / 2.0F - entityMouseX(entityId) - entityXOffset(entityId),
-                                y + size / 2.0F - entityMouseY(entityId),
+                                entityMouseX(entityId),
+                                entityMouseY(entityId),
                                 livingEntity
                         );
 
@@ -2267,8 +2223,7 @@ public class PremiumMenuScreen extends Screen {
                     drawMobImage(
                             guiGraphics,
                             x + 4,
-                            y + 4,
-                            size - 8
+                            y + 4
                     );
                     return;
                 }
@@ -2350,29 +2305,30 @@ public class PremiumMenuScreen extends Screen {
             }
 
             private void drawPreviewImage(
-                    GuiGraphicsExtractor guiGraphics,
+                    GuiGraphics guiGraphics,
                     int x,
                     int y,
                     int size,
                     String fileName
             ) {
 
-                Identifier texture =
-                        Identifier.tryParse(
+                ResourceLocation texture =
+                        ResourceLocation.tryParse(
                                 "magicworld:textures/gui/previews/"
                                         + fileName
                                         + ".png"
                         );
 
+                RenderSystem.enableBlend();
+
                 guiGraphics.blit(
-                        RenderPipelines.GUI_TEXTURED,
                         texture,
                         x + 2,
                         y + 2,
-                        0.0F,
-                        0.0F,
                         size - 4,
                         size - 4,
+                        0.0F,
+                        0.0F,
                         PREVIEW_TEXTURE_SIZE,
                         PREVIEW_TEXTURE_SIZE,
                         PREVIEW_TEXTURE_SIZE,
@@ -2394,66 +2350,43 @@ public class PremiumMenuScreen extends Screen {
             }
 
             private void drawMobImage(
-                    GuiGraphicsExtractor guiGraphics,
+                    GuiGraphics guiGraphics,
                     int x,
-                    int y,
-                    int size
+                    int y
             ) {
 
                 String fileName =
-                        mobTextureFileName(entry.getEnglishName());
+                        entry.getEnglishName()
+                                .toLowerCase()
+                                .replace(" ", "_");
 
-                Identifier texture =
-                        Identifier.fromNamespaceAndPath(
-                                "magicworld",
-                                "textures/gui/mobs/" + fileName + ".png"
+                ResourceLocation texture =
+                        ResourceLocation.tryParse(
+                                "magicworld:textures/gui/mobs/"
+                                        + fileName
+                                        + ".png"
                         );
 
-                int textureWidth =
-                        mobTextureWidth(fileName);
-
-                int textureHeight =
-                        mobTextureHeight(fileName);
-
-                int drawWidth =
-                        size;
-
-                int drawHeight =
-                        size;
-
-                if (textureWidth > textureHeight) {
-                    drawHeight = Math.max(1, size * textureHeight / textureWidth);
-                }
-                else if (textureHeight > textureWidth) {
-                    drawWidth = Math.max(1, size * textureWidth / textureHeight);
-                }
-
-                int drawX =
-                        x + (size - drawWidth) / 2;
-
-                int drawY =
-                        y + (size - drawHeight) / 2;
+                RenderSystem.enableBlend();
 
                 guiGraphics.blit(
-                        RenderPipelines.GUI_TEXTURED,
                         texture,
-                        drawX,
-                        drawY,
-                        0.0F,
-                        0.0F,
-                        drawWidth,
-                        drawHeight,
-                        textureWidth,
-                        textureHeight,
-                        textureWidth,
-                        textureHeight
+                        x,
+                        y,
+                        0,
+                        0,
+                        24,
+                        24,
+                        28,
+                        28
                 );
             }
 
             @Override
             public boolean mouseClicked(
-                    MouseButtonEvent event,
-                    boolean doubleClick
+                    double mouseX,
+                    double mouseY,
+                    int button
             ) {
 
                 if (entry.getNormalCommand().startsWith("OPEN_MENU:")) {
@@ -2509,6 +2442,7 @@ public class PremiumMenuScreen extends Screen {
                 || tab == MenuTab.MOB_SPAWNER
                 || tab == MenuTab.WEATHER_CONTROL
                 || tab == MenuTab.BIOME_TELEPORT
+                || tab == MenuTab.LOCATIONS
                 || tab == MenuTab.DIMENSION_MENU
                 || tab == MenuTab.PREMIUM_POWERS
                 || tab == MenuTab.STRUCTURE_RAIN
@@ -2525,7 +2459,8 @@ public class PremiumMenuScreen extends Screen {
                 || tab == MenuTab.PREMIUM_ARMOR
                 || tab == MenuTab.NPC_MENU
                 || tab == MenuTab.WAVE_SURVIVAL
-                || tab == MenuTab.PREMIUM_MOUNTS;
+                || tab == MenuTab.PREMIUM_MOUNTS
+                || tab == MenuTab.MINECOLONIES;
     }
 
     private boolean isSystemSubMenu(
@@ -2533,8 +2468,10 @@ public class PremiumMenuScreen extends Screen {
     ) {
 
         return tab == MenuTab.MOB_SPAWNER
+                || tab == MenuTab.GRAPHICS_PROFILES
                 || tab == MenuTab.WEATHER_CONTROL
                 || tab == MenuTab.BIOME_TELEPORT
+                || tab == MenuTab.LOCATIONS
                 || tab == MenuTab.DIMENSION_MENU
                 || tab == MenuTab.PREMIUM_POWERS
                 || tab == MenuTab.STRUCTURE_RAIN
@@ -2552,7 +2489,8 @@ public class PremiumMenuScreen extends Screen {
                 || tab == MenuTab.PREMIUM_ARMOR
                 || tab == MenuTab.NPC_MENU
                 || tab == MenuTab.WAVE_SURVIVAL
-                || tab == MenuTab.PREMIUM_MOUNTS;
+                || tab == MenuTab.PREMIUM_MOUNTS
+                || tab == MenuTab.MINECOLONIES;
     }
 
     private void runMenuCommand(
@@ -2561,8 +2499,36 @@ public class PremiumMenuScreen extends Screen {
 
         if (command == null
                 || command.trim().isEmpty()
-                || minecraft == null
-                || minecraft.player == null
+                || minecraft == null) {
+            return;
+        }
+
+        if (command.startsWith("GRAPHICS_PROFILE:")) {
+            applyGraphicsProfile(command.substring("GRAPHICS_PROFILE:".length()));
+            return;
+        }
+
+        if (command.equals("OPEN_RESOURCEPACKS_FOLDER")) {
+            openRunFolder("resourcepacks");
+            return;
+        }
+
+        if (command.equals("OPEN_SHADERPACKS_FOLDER")) {
+            openRunFolder("shaderpacks");
+            return;
+        }
+
+        if (command.equals("CHECK_SHADER_LOADER")) {
+            checkShaderLoader();
+            return;
+        }
+
+        if (command.startsWith("PANEL_ACTION:")) {
+            MagicWorldNetwork.sendPanelAction(command.substring("PANEL_ACTION:".length()));
+            return;
+        }
+
+        if (minecraft.player == null
                 || minecraft.getConnection() == null) {
             return;
         }
@@ -2570,13 +2536,6 @@ public class PremiumMenuScreen extends Screen {
         if (command.startsWith("BIOME_TELEPORT:")) {
             teleportToBiome(
                     command.substring("BIOME_TELEPORT:".length())
-            );
-            return;
-        }
-
-        if (command.startsWith("GRAPHICS_PROFILE:")) {
-            applyGraphicsProfile(
-                    command.substring("GRAPHICS_PROFILE:".length())
             );
             return;
         }
@@ -2589,18 +2548,44 @@ public class PremiumMenuScreen extends Screen {
         minecraft.getConnection().sendCommand(command);
     }
 
-    private void applyGraphicsProfile(
-            String profileName
-    ) {
-
+    private void applyGraphicsProfile(String profileName) {
         try {
             MagicWorldGraphicsProfile.valueOf(profileName)
                     .apply(minecraft);
         } catch (IllegalArgumentException exception) {
-            sendClientMessage(
-                    "Perfil grafico invalido: " + profileName
-            );
+            sendClientMessage("Perfil grafico invalido: " + profileName);
         }
+    }
+
+    private void openRunFolder(String folderName) {
+        Path folder =
+                minecraft.gameDirectory.toPath()
+                        .resolve(folderName);
+
+        try {
+            Files.createDirectories(folder);
+            Util.getPlatform()
+                    .openFile(folder.toFile());
+            sendClientMessage("Pasta aberta: " + folder);
+        } catch (Exception exception) {
+            sendClientMessage("Nao foi possivel abrir a pasta: " + folder);
+        }
+    }
+
+    private void checkShaderLoader() {
+        boolean hasOculus =
+                ModList.get()
+                        .isLoaded("oculus");
+        boolean hasIris =
+                ModList.get()
+                        .isLoaded("iris");
+
+        if (hasOculus || hasIris) {
+            sendClientMessage("Loader de shaders detectado. Use o menu dele para ativar o shaderpack.");
+            return;
+        }
+
+        sendClientMessage("Nenhum loader de shaders detectado. Forge 1.20.1 precisa de Oculus/Iris compat para usar shaderpacks.");
     }
 
     private void teleportToBiome(String biomeId) {
@@ -2613,22 +2598,9 @@ public class PremiumMenuScreen extends Screen {
             return;
         }
 
-        UUID playerId =
-                minecraft.player.getUUID();
-
-        server.execute(
-                () -> teleportToBiomeOnServer(server, playerId, biomeId)
-        );
-    }
-
-    private void teleportToBiomeOnServer(
-            MinecraftServer server,
-            UUID playerId,
-            String biomeId
-    ) {
         ServerPlayer serverPlayer =
                 server.getPlayerList().getPlayer(
-                        playerId
+                        minecraft.player.getUUID()
                 );
 
         if (serverPlayer == null) {
@@ -2636,8 +2608,8 @@ public class PremiumMenuScreen extends Screen {
             return;
         }
 
-        Identifier biomeLocation =
-                Identifier.tryParse(biomeId);
+        ResourceLocation biomeLocation =
+                ResourceLocation.tryParse(biomeId);
 
         if (biomeLocation == null) {
             sendClientMessage("Bioma invalido: " + biomeId);
@@ -2686,13 +2658,11 @@ public class PremiumMenuScreen extends Screen {
                 safePos.getX() + 0.5D,
                 safePos.getY(),
                 safePos.getZ() + 0.5D,
-                Set.of(),
                 serverPlayer.getYRot(),
-                serverPlayer.getXRot(),
-                true
+                serverPlayer.getXRot()
         );
 
-        closeScreen();
+        minecraft.setScreen(null);
         sendClientMessage("Teleportado para " + biomeId + ". Use Voltar para retornar.");
     }
 
@@ -2719,10 +2689,10 @@ public class PremiumMenuScreen extends Screen {
                 );
 
         int minY =
-                level.getMinY() + 1;
+                level.getMinBuildHeight() + 1;
 
         int maxY =
-                level.getMaxY() - 2;
+                level.getMaxBuildHeight() - 2;
 
         int startY =
                 Math.max(
@@ -2804,18 +2774,6 @@ public class PremiumMenuScreen extends Screen {
             return;
         }
 
-        UUID playerId =
-                minecraft.player.getUUID();
-
-        server.execute(
-                () -> returnToSavedTeleportOnServer(server, playerId)
-        );
-    }
-
-    private void returnToSavedTeleportOnServer(
-            MinecraftServer server,
-            UUID playerId
-    ) {
         if (savedTeleport == null) {
             sendClientMessage("Nenhuma posicao anterior salva.");
             return;
@@ -2823,7 +2781,7 @@ public class PremiumMenuScreen extends Screen {
 
         ServerPlayer serverPlayer =
                 server.getPlayerList().getPlayer(
-                        playerId
+                        minecraft.player.getUUID()
                 );
 
         if (serverPlayer == null) {
@@ -2844,13 +2802,11 @@ public class PremiumMenuScreen extends Screen {
                 savedTeleport.x,
                 savedTeleport.y,
                 savedTeleport.z,
-                Set.of(),
                 savedTeleport.yRot,
-                savedTeleport.xRot,
-                true
+                savedTeleport.xRot
         );
 
-        closeScreen();
+        minecraft.setScreen(null);
         sendClientMessage("Voltou para a posicao anterior.");
     }
 
@@ -2882,24 +2838,8 @@ public class PremiumMenuScreen extends Screen {
     }
 
     private void sendClientMessage(String message) {
-        if (minecraft != null) {
-            minecraft.execute(
-                    () -> {
-                        if (minecraft.player != null) {
-                            minecraft.player.sendSystemMessage(
-                                    Component.literal(message)
-                            );
-                        }
-                    }
-            );
-        }
-    }
-
-    private void closeScreen() {
-        if (minecraft != null) {
-            minecraft.execute(
-                    () -> minecraft.setScreen(null)
-            );
+        if (minecraft != null && minecraft.gui != null) {
+            minecraft.gui.setOverlayMessage(Component.literal(message), false);
         }
     }
 
@@ -2914,7 +2854,7 @@ public class PremiumMenuScreen extends Screen {
 
         static SavedTeleport from(ServerPlayer player) {
             return new SavedTeleport(
-                    player.level().dimension(),
+                    player.serverLevel().dimension(),
                     player.getX(),
                     player.getY(),
                     player.getZ(),
@@ -2943,7 +2883,7 @@ public class PremiumMenuScreen extends Screen {
         }
 
         Entity entity =
-                entityType.create(minecraft.level, EntitySpawnReason.COMMAND);
+                entityType.create(minecraft.level);
 
         if (entity instanceof LivingEntity livingEntity) {
             return livingEntity;
@@ -3067,22 +3007,22 @@ public class PremiumMenuScreen extends Screen {
     }
 
     private void renderItemPreview(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             ItemStack itemStack,
             int x,
             int y,
             float scale
     ) {
 
-        guiGraphics.pose().pushMatrix();
-        guiGraphics.pose().translate(x, y);
-        guiGraphics.pose().scale(scale, scale);
-        guiGraphics.item(itemStack, -8, -8);
-        guiGraphics.pose().popMatrix();
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().translate(x, y, 120);
+        guiGraphics.pose().scale(scale, scale, 1.0F);
+        guiGraphics.renderItem(itemStack, -8, -8);
+        guiGraphics.pose().popPose();
     }
 
     private void drawThinGreenBox(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             int x,
             int y,
             int width,
@@ -3096,24 +3036,26 @@ public class PremiumMenuScreen extends Screen {
     }
 
     private void drawMinecraftPanel(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             int x,
             int y,
             int width,
             int height
     ) {
 
-        MagicWorldMenuTheme.drawFrame(
-                guiGraphics,
-                x,
-                y,
-                width,
-                height
-        );
+        guiGraphics.fill(x + 6, y + 7, x + width + 6, y + height + 7, SHADOW);
+        guiGraphics.fill(x + 2, y + 2, x + width - 2, y + height - 2, PANEL);
+
+        guiGraphics.fill(x, y, x + width, y + 2, STONE_LIGHT);
+        guiGraphics.fill(x, y, x + 2, y + height, STONE_LIGHT);
+        guiGraphics.fill(x, y + height - 2, x + width, y + height, STONE_DARK);
+        guiGraphics.fill(x + width - 2, y, x + width, y + height, STONE_DARK);
+
+        drawBorder(guiGraphics, x + 4, y + 4, width - 8, height - 8);
     }
 
     private void drawMinecraftButton(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             int x,
             int y,
             int width,
@@ -3124,22 +3066,49 @@ public class PremiumMenuScreen extends Screen {
             boolean selected
     ) {
 
-        MagicWorldMenuTheme.drawButton(
-                guiGraphics,
-                font,
-                x,
-                y,
-                width,
-                height,
-                Component.literal(text),
-                mouseX,
-                mouseY,
+        boolean hovered =
+                mouseX >= x
+                        && mouseX <= x + width
+                        && mouseY >= y
+                        && mouseY <= y + height;
+
+        int fill =
                 selected
+                        ? PREMIUM_GLASS
+                        : hovered
+                                ? BUTTON_HOVER
+                                : VANILLA_BUTTON;
+
+        guiGraphics.fill(x + 2, y + 2, x + width + 2, y + height + 2, SHADOW);
+        guiGraphics.fill(x, y, x + width, y + height, fill);
+        guiGraphics.fill(x, y, x + width, y + 1, VANILLA_BUTTON_LIGHT);
+        guiGraphics.fill(x, y, x + 1, y + height, VANILLA_BUTTON_LIGHT);
+        guiGraphics.fill(x, y + height - 1, x + width, y + height, VANILLA_BUTTON_DARK);
+        guiGraphics.fill(x + width - 1, y, x + width, y + height, VANILLA_BUTTON_DARK);
+
+        if (selected || hovered) {
+            drawBorder(guiGraphics, x + 2, y + 2, width - 4, height - 4);
+        }
+
+        guiGraphics.drawCenteredString(
+                font,
+                text,
+                x + width / 2 + 1,
+                y + height / 2 - 3 + 1,
+                TEXT_SHADOW
+        );
+
+        guiGraphics.drawCenteredString(
+                font,
+                text,
+                x + width / 2,
+                y + height / 2 - 3,
+                WHITE
         );
     }
 
     private void drawRaisedBox(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             int x,
             int y,
             int width,
@@ -3156,7 +3125,7 @@ public class PremiumMenuScreen extends Screen {
     }
 
     private void drawInsetBox(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             int x,
             int y,
             int width,
@@ -3172,7 +3141,7 @@ public class PremiumMenuScreen extends Screen {
     }
 
     private void drawBorder(
-            GuiGraphicsExtractor guiGraphics,
+            GuiGraphics guiGraphics,
             int x,
             int y,
             int width,
@@ -3185,22 +3154,22 @@ public class PremiumMenuScreen extends Screen {
         guiGraphics.fill(x, y + height - 1, x + width, y + height, BORDER);
     }
 
-    private void drawCornerTopLeft(GuiGraphicsExtractor g, int x, int y) {
+    private void drawCornerTopLeft(GuiGraphics g, int x, int y) {
         g.fill(x, y, x + 6, y + 1, WHITE);
         g.fill(x, y, x + 1, y + 6, WHITE);
     }
 
-    private void drawCornerTopRight(GuiGraphicsExtractor g, int x, int y) {
+    private void drawCornerTopRight(GuiGraphics g, int x, int y) {
         g.fill(x - 5, y, x + 1, y + 1, WHITE);
         g.fill(x, y, x + 1, y + 6, WHITE);
     }
 
-    private void drawCornerBottomLeft(GuiGraphicsExtractor g, int x, int y) {
+    private void drawCornerBottomLeft(GuiGraphics g, int x, int y) {
         g.fill(x, y, x + 6, y + 1, WHITE);
         g.fill(x, y - 5, x + 1, y + 1, WHITE);
     }
 
-    private void drawCornerBottomRight(GuiGraphicsExtractor g, int x, int y) {
+    private void drawCornerBottomRight(GuiGraphics g, int x, int y) {
         g.fill(x - 5, y, x + 1, y + 1, WHITE);
         g.fill(x, y - 5, x + 1, y + 1, WHITE);
     }

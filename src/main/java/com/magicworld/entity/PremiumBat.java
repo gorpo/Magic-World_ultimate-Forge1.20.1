@@ -9,16 +9,17 @@ import net.minecraft.world.level.Level;
 
 public class PremiumBat {
 
-    public static boolean transform(
+    public static void transform(
             Level level,
             Bat bat
     ) {
 
-        if (PremiumEntityTags.isAnimal(bat, "bat")) {
-            PremiumEntityTags.clearAnimal(bat, "bat");
+        if (bat.hasEffect(
+                MobEffects.MOVEMENT_SPEED
+        )) {
 
             bat.removeEffect(
-                    MobEffects.SPEED
+                    MobEffects.MOVEMENT_SPEED
             );
 
             bat.removeEffect(
@@ -27,11 +28,10 @@ public class PremiumBat {
         }
 
         else {
-            PremiumEntityTags.markAnimal(bat, "bat");
 
             bat.addEffect(
                     new MobEffectInstance(
-                            MobEffects.SPEED,
+                            MobEffects.MOVEMENT_SPEED,
                             999999,
                             5
                     )
@@ -50,7 +50,5 @@ public class PremiumBat {
                 (ServerLevel) level,
                 bat.blockPosition()
         );
-
-        return true;
     }
 }

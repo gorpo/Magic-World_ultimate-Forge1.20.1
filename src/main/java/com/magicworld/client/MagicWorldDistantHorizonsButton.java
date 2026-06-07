@@ -1,29 +1,22 @@
 package com.magicworld.client;
 
+import com.magicworld.MagicWorld;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 
 import java.lang.reflect.Method;
 
 public class MagicWorldDistantHorizonsButton extends AbstractWidget {
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final int MAGICWORLD_BLUE = 0xFF00D9FF;
-    private static final int MAGICWORLD_BLUE_DIM = 0x6600D9FF;
-    private static final int MAGICWORLD_PANEL = 0x2200294D;
-    private static final int MAGICWORLD_PANEL_HOVER = 0x3300D9FF;
-    private static final Identifier LOGO = Identifier.fromNamespaceAndPath(
-            "magicworld",
-            "textures/gui/magic_world_graphics_logo.png"
-    );
+    private static final ResourceLocation ICON =
+            new ResourceLocation(MagicWorld.MODID, "textures/gui/magic_world_graphics_logo.png");
 
     private final Screen parent;
 
@@ -33,52 +26,36 @@ public class MagicWorldDistantHorizonsButton extends AbstractWidget {
     }
 
     @Override
-    protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        handleCursor(graphics);
+    protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        int left = getX();
+        int top = getY();
+        int right = left + getWidth();
+        int bottom = top + getHeight();
+        int fill = isHoveredOrFocused() ? 0xCC063552 : 0xAA031A2B;
+        int iconSize = Math.max(12, Math.min(16, getHeight() - 4));
+        int iconY = top + (getHeight() - iconSize) / 2;
 
-        int x = getX();
-        int y = getY();
-        int right = getRight();
-        int bottom = getBottom();
-        int logoSize = Math.max(12, Math.min(16, getHeight() - 4));
-        int logoX = x + 4;
-        int logoY = y + ((getHeight() - logoSize) / 2);
-        int textX = logoX + logoSize + 5;
-        int background = isHoveredOrFocused() ? MAGICWORLD_PANEL_HOVER : MAGICWORLD_PANEL;
+        graphics.fill(left, top, right, bottom, fill);
+        graphics.renderOutline(left, top, getWidth(), getHeight(), 0xCC00A9D6);
+        graphics.fill(left, bottom - 2, right, bottom, 0xFF00D9FF);
+        graphics.blit(ICON, left + 4, iconY, iconSize, iconSize, 0, 0, 64, 64, 64, 64);
+
         Component label = getMessage();
-
-        graphics.fill(x, y, right, bottom, background);
-        graphics.fill(x, bottom - 1, right, bottom, MAGICWORLD_BLUE_DIM);
-        graphics.blit(
-                RenderPipelines.GUI_TEXTURED,
-                LOGO,
-                logoX,
-                logoY,
-                0.0F,
-                0.0F,
-                logoSize,
-                logoSize,
-                64,
-                64,
-                64,
-                64
-        );
-
+        int textX = left + iconSize + 9;
         if (Minecraft.getInstance().font.width(label) > right - textX - 4) {
             label = Component.literal("Horiz. Distantes");
         }
-
-        graphics.text(
+        graphics.drawString(
                 Minecraft.getInstance().font,
                 label,
                 textX,
-                y + ((getHeight() - 9) / 2),
-                MAGICWORLD_BLUE
+                top + (getHeight() - 8) / 2,
+                0xFF00D9FF
         );
     }
 
     @Override
-    public void onClick(MouseButtonEvent event, boolean doubleClick) {
+    public void onClick(double mouseX, double mouseY) {
         openDistantHorizonsScreen();
     }
 
@@ -88,18 +65,27 @@ public class MagicWorldDistantHorizonsButton extends AbstractWidget {
     }
 
     private void openDistantHorizonsScreen() {
-        try {
-            Class<?> configScreenClass = Class.forName(
-                    "com.seibel.distanthorizons.common.wrappers.gui.GetConfigScreen"
-            );
-            Method getScreen = configScreenClass.getMethod("getScreen", Screen.class);
-            Object screen = getScreen.invoke(null, parent);
+        openDistantHorizonsScreen(parent);
+    }
 
-            if (screen instanceof Screen distantHorizonsScreen) {
-                Minecraft.getInstance().setScreen(distantHorizonsScreen);
+    public static void openDistantHorizonsScreen(Screen parent) {
+        for (String className : new String[] {
+                "com.seibel.distanthorizons.common.wrappers.gui.GetConfigScreen_forge",
+                "com.seibel.distanthorizons.common.wrappers.gui.GetConfigScreen"
+        }) {
+            try {
+                Class<?> configScreenClass = Class.forName(className);
+                Method getScreen = configScreenClass.getMethod("getScreen", Screen.class);
+                Object screen = getScreen.invoke(null, parent);
+                if (screen instanceof Screen distantHorizonsScreen) {
+                    Minecraft.getInstance().setScreen(distantHorizonsScreen);
+                    return;
+                }
+            } catch (ReflectiveOperationException ignored) {
+                // Try the next class name for another compatible Distant Horizons release.
             }
-        } catch (ReflectiveOperationException exception) {
-            LOGGER.warn("Magic World could not open the Distant Horizons configuration screen.", exception);
         }
+
+        LOGGER.warn("Magic World could not open the Distant Horizons configuration screen.");
     }
 }

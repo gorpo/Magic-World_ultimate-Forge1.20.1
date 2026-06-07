@@ -2,18 +2,26 @@
   "required": false,
   "minVersion": "0.8",
   "package": "com.magicworld.mixin",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_17",
   "client": [
-    "RenderSetupSamplerCompatMixin",
-    "SodiumDonationButtonCompatMixin",
-    "SodiumConfigBuilderMagicWorldMixin",
-    "SodiumVideoSettingsScreenMagicWorldLayoutMixin",
-    "SodiumExternalPageEntryMagicWorldMixin",
-    "IrisConfigMagicWorldMixin",
+    "EmbeddiumAccentColorMagicWorldMixin",
+    "EmbeddiumDistantHorizonsTabIconMagicWorldMixin",
+    "EmbeddiumFlatButtonColorMagicWorldMixin",
+    "EmbeddiumLineColorMagicWorldMixin",
+    "EmbeddiumScrollBarColorMagicWorldMixin",
+    "EmbeddiumTabFrameCircularScrollMagicWorldMixin",
+    "EmbeddiumTabHeaderMagicWorldMixin",
+    "EmbeddiumTickBoxColorMagicWorldMixin",
+    "EmbeddiumVideoOptionsScreenMagicWorldMixin",
+    "MagicWorldCreateWorldScreenBackgroundMixin",
+    "MagicWorldEntityCullingMixin",
+    "MagicWorldMcaPlayerModelMixin",
+    "MagicWorldSelectWorldScreenBackgroundMixin",
     "MagicWorldScreenBackgroundMixin",
-    "CubeMapMagicWorldDepthMixin"
+    "MagicWorldTabButtonMixin",
+    "MagicWorldTabNavigationBarMixin"
   ],
   "injectors": {
-    "defaultRequire": 1
+    "defaultRequire": 0
   }
 }

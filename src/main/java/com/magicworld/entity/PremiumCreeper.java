@@ -9,29 +9,29 @@ import net.minecraft.world.level.Level;
 
 public class PremiumCreeper {
 
-    public static boolean transform(
+    public static void transform(
             Level level,
             Creeper creeper
     ) {
 
-        if (PremiumEntityTags.isAnimal(creeper, "creeper")) {
-            PremiumEntityTags.clearAnimal(creeper, "creeper");
+        if (creeper.hasEffect(
+                MobEffects.MOVEMENT_SPEED
+        )) {
 
             creeper.removeEffect(
-                    MobEffects.SPEED
+                    MobEffects.MOVEMENT_SPEED
             );
 
             creeper.removeEffect(
-                    MobEffects.STRENGTH
+                    MobEffects.DAMAGE_BOOST
             );
         }
 
         else {
-            PremiumEntityTags.markAnimal(creeper, "creeper");
 
             creeper.addEffect(
                     new MobEffectInstance(
-                            MobEffects.SPEED,
+                            MobEffects.MOVEMENT_SPEED,
                             999999,
                             4
                     )
@@ -39,7 +39,7 @@ public class PremiumCreeper {
 
             creeper.addEffect(
                     new MobEffectInstance(
-                            MobEffects.STRENGTH,
+                            MobEffects.DAMAGE_BOOST,
                             999999,
                             4
                     )
@@ -50,7 +50,5 @@ public class PremiumCreeper {
                 (ServerLevel) level,
                 creeper.blockPosition()
         );
-
-        return true;
     }
 }

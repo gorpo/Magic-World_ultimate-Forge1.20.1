@@ -4,22 +4,23 @@ import com.magicworld.MagicWorld;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.animal.wolf.Wolf;
+import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.level.Level;
 
 public class PremiumWolf {
 
-    public static boolean transform(
+    public static void transform(
             Level level,
             Wolf wolf
     ) {
 
-        // premium → normal
-        if (PremiumEntityTags.isAnimal(wolf, "wolf")) {
-            PremiumEntityTags.clearAnimal(wolf, "wolf");
+        // premium â†’ normal
+        if (wolf.hasEffect(MobEffects.DAMAGE_BOOST)
+                || wolf.hasEffect(MobEffects.REGENERATION)
+                || wolf.hasEffect(MobEffects.MOVEMENT_SPEED)) {
 
             wolf.removeEffect(
-                    MobEffects.STRENGTH
+                    MobEffects.DAMAGE_BOOST
             );
 
             wolf.removeEffect(
@@ -27,7 +28,7 @@ public class PremiumWolf {
             );
 
             wolf.removeEffect(
-                    MobEffects.SPEED
+                    MobEffects.MOVEMENT_SPEED
             );
 
             wolf.removeEffect(
@@ -40,19 +41,18 @@ public class PremiumWolf {
             );
         }
 
-        // normal → premium
+        // normal â†’ premium
         else {
-            PremiumEntityTags.markAnimal(wolf, "wolf");
 
             wolf.setHealth(
                     wolf.getMaxHealth()
             );
 
-            wolf.setTame(true, true);
+            wolf.setTame(true);
 
             wolf.addEffect(
                     new MobEffectInstance(
-                            MobEffects.SPEED,
+                            MobEffects.MOVEMENT_SPEED,
                             999999,
                             2
                     )
@@ -60,7 +60,7 @@ public class PremiumWolf {
 
             wolf.addEffect(
                     new MobEffectInstance(
-                            MobEffects.STRENGTH,
+                            MobEffects.DAMAGE_BOOST,
                             999999,
                             2
                     )
@@ -87,7 +87,5 @@ public class PremiumWolf {
                     wolf.blockPosition()
             );
         }
-
-        return true;
     }
 }

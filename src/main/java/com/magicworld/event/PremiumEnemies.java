@@ -5,7 +5,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
@@ -179,13 +178,13 @@ public class PremiumEnemies {
     ) {
 
         Entity newEntity =
-                newType.create(level, EntitySpawnReason.CONVERSION);
+                newType.create(level);
 
         if (newEntity == null) {
             return false;
         }
 
-        newEntity.snapTo(
+        newEntity.moveTo(
                 oldEntity.getX(),
                 oldEntity.getY(),
                 oldEntity.getZ(),
@@ -230,11 +229,11 @@ public class PremiumEnemies {
             Entity entity
     ) {
 
-        if (!entity.entityTags().contains(PREMIUM_TAG)) {
+        if (!entity.getTags().contains(PREMIUM_TAG)) {
             return null;
         }
 
-        for (String tag : entity.entityTags()) {
+        for (String tag : entity.getTags()) {
             if (tag.startsWith(ORIGINAL_TAG)) {
                 return tag.substring(
                         ORIGINAL_TAG.length()
@@ -479,46 +478,28 @@ public class PremiumEnemies {
             Item boots
     ) {
 
-        drop(
-                entity,
+        entity.spawnAtLocation(
                 new ItemStack(helmet)
         );
 
-        drop(
-                entity,
+        entity.spawnAtLocation(
                 new ItemStack(chestplate)
         );
 
-        drop(
-                entity,
+        entity.spawnAtLocation(
                 new ItemStack(leggings)
         );
 
-        drop(
-                entity,
+        entity.spawnAtLocation(
                 new ItemStack(boots)
         );
 
         for (int i = 0; i < 10; i++) {
-            drop(
-                    entity,
+            entity.spawnAtLocation(
                     new ItemStack(
                             blockItem,
                             64
                     )
-            );
-        }
-    }
-
-    private static void drop(
-            LivingEntity entity,
-            ItemStack stack
-    ) {
-
-        if (entity.level() instanceof ServerLevel serverLevel) {
-            entity.spawnAtLocation(
-                    serverLevel,
-                    stack
             );
         }
     }

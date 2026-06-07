@@ -4,21 +4,22 @@ import com.magicworld.MagicWorld;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.animal.rabbit.Rabbit;
+import net.minecraft.world.entity.animal.Rabbit;
 import net.minecraft.world.level.Level;
 
 public class PremiumRabbit {
 
-    public static boolean transform(
+    public static void transform(
             Level level,
             Rabbit rabbit
     ) {
 
-        if (PremiumEntityTags.isAnimal(rabbit, "rabbit")) {
-            PremiumEntityTags.clearAnimal(rabbit, "rabbit");
+        if (rabbit.hasEffect(
+                MobEffects.MOVEMENT_SPEED
+        )) {
 
             rabbit.removeEffect(
-                    MobEffects.SPEED
+                    MobEffects.MOVEMENT_SPEED
             );
 
             rabbit.removeEffect(
@@ -27,11 +28,10 @@ public class PremiumRabbit {
         }
 
         else {
-            PremiumEntityTags.markAnimal(rabbit, "rabbit");
 
             rabbit.addEffect(
                     new MobEffectInstance(
-                            MobEffects.SPEED,
+                            MobEffects.MOVEMENT_SPEED,
                             999999,
                             3
                     )
@@ -50,7 +50,5 @@ public class PremiumRabbit {
                 (ServerLevel) level,
                 rabbit.blockPosition()
         );
-
-        return true;
     }
 }

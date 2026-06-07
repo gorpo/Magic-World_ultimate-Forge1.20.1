@@ -2,7 +2,7 @@ package com.magicworld.client.menus;
 
 import com.magicworld.client.PremiumEntry;
 import com.magicworld.client.PremiumMenuScreen;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
 
 import java.util.List;
@@ -94,11 +94,11 @@ public final class BiomeTeleportMenu {
         );
 
         for (String biomeId : VANILLA_BIOMES) {
-            biome(entries, Identifier.tryParse(biomeId));
+            biome(entries, ResourceLocation.tryParse(biomeId));
         }
     }
 
-    private static void biome(List<PremiumEntry> entries, Identifier biomeId) {
+    private static void biome(List<PremiumEntry> entries, ResourceLocation biomeId) {
         if (biomeId == null) {
             return;
         }
@@ -116,7 +116,7 @@ public final class BiomeTeleportMenu {
         );
     }
 
-    private static String displayName(Identifier biomeId) {
+    private static String displayName(ResourceLocation biomeId) {
         String[] parts = biomeId.getPath().split("_");
         StringBuilder name = new StringBuilder();
 

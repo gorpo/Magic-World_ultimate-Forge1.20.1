@@ -1,0 +1,18 @@
+{
+  "itemGroup.minecolonies": "Magic Colonies",
+  "key.minecolonies.categories.general": "Magic Colonies",
+  "com.minecolonies.configgui.title": "Configuracoes Magic Colonies",
+  "com.minecolonies.coremod.gui.townhalltab.actions": "Acoes Magic",
+  "com.minecolonies.coremod.gui.townhalltab.information": "Info da Colonia",
+  "com.minecolonies.coremod.gui.townhalltab.permissions": "Permissoes",
+  "com.minecolonies.coremod.gui.townhalltab.citizens": "Moradores",
+  "com.minecolonies.coremod.gui.townhalltab.stats": "Prestigio",
+  "com.minecolonies.coremod.gui.townhalltab.alliances": "Aliancas",
+  "com.minecolonies.coremod.gui.townhalltab.settings": "Ajustes",
+  "com.minecolonies.coremod.gui.workerhuts.repair": "Reparar",
+  "com.minecolonies.coremod.gui.workerhuts.upgrade": "Evoluir",
+  "com.minecolonies.coremod.gui.workerhuts.deconstruct": "Desmontar",
+  "com.minecolonies.coremod.gui.workerhuts.pickup": "Recolher",
+  "com.minecolonies.coremod.gui.townhall.prestige": "Prestigio Magic",
+  "com.minecolonies.coremod.townhall.map.warning": "Mapa da colonia Magic World indisponivel neste momento."
+}

@@ -51,9 +51,9 @@ final class MenuEntryFactory {
                 entries,
                 PremiumMenuScreen.MenuTab.CONTROL_CENTER,
                 name,
-                "",
+                englishName,
                 "Menu premium",
-                "Abre " + name + ".",
+                "Abre " + englishName + ".",
                 "Clique para abrir este menu.",
                 icon,
                 "OPEN_MENU:" + target.name()

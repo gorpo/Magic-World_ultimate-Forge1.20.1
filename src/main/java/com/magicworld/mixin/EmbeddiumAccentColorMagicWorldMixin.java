@@ -1,0 +1,97 @@
+package com.magicworld.mixin;
+
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.Constant;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
+
+@Mixin(
+        targets = {
+                "me.jellysquid.mods.sodium.client.gui.options.control.SliderControl$Button",
+                "me.jellysquid.mods.sodium.client.gui.widgets.FlatButtonWidget$Style",
+                "org.embeddedt.embeddium.gui.EmbeddiumVideoOptionsScreen",
+                "org.embeddedt.embeddium.gui.frame.OptionPageFrame",
+                "org.embeddedt.embeddium.gui.frame.components.SearchTextFieldComponent"
+        },
+        remap = false
+)
+public abstract class EmbeddiumAccentColorMagicWorldMixin {
+    private static final int MAGICWORLD_CYAN = 0xFF00D9FF;
+    private static final int MAGICWORLD_PANEL = 0xCC00111F;
+    private static final int MAGICWORLD_PANEL_HOVER = 0xCC063552;
+    private static final int MAGICWORLD_PANEL_DISABLED = 0x99000B16;
+
+    @ModifyConstant(method = "m_88315_", constant = @Constant(intValue = -3179338), require = 0, remap = false)
+    private int magicworld$replacePinkAccent(int original) {
+        return MAGICWORLD_CYAN;
+    }
+
+    @ModifyConstant(method = "renderOptionTooltip", constant = @Constant(intValue = -3179338), require = 0, remap = false)
+    private int magicworld$replaceTooltipAccent(int original) {
+        return MAGICWORLD_CYAN;
+    }
+
+    @ModifyConstant(method = "m_88315_", constant = @Constant(intValue = -698654), require = 0, remap = false)
+    private int magicworld$replaceShaderPink(int original) {
+        return MAGICWORLD_CYAN;
+    }
+
+    @ModifyConstant(method = "m_88315_", constant = @Constant(intValue = -7019309), require = 0, remap = false)
+    private int magicworld$replaceThemePrimary(int original) {
+        return MAGICWORLD_CYAN;
+    }
+
+    @ModifyConstant(method = "m_88315_", constant = @Constant(intValue = -3342866), require = 0, remap = false)
+    private int magicworld$replaceThemeLight(int original) {
+        return MAGICWORLD_CYAN;
+    }
+
+    @ModifyConstant(method = "m_88315_", constant = @Constant(intValue = -8741218), require = 0, remap = false)
+    private int magicworld$replaceThemeDark(int original) {
+        return MAGICWORLD_CYAN;
+    }
+
+    @ModifyConstant(method = "m_88315_", constant = @Constant(intValue = -536870912), require = 0, remap = false)
+    private int magicworld$replacePanelBackground(int original) {
+        return MAGICWORLD_PANEL;
+    }
+
+    @ModifyConstant(method = "m_88315_", constant = @Constant(intValue = -1879048192), require = 0, remap = false)
+    private int magicworld$replaceDeepPanelBackground(int original) {
+        return 0xE6000B16;
+    }
+
+    @ModifyConstant(method = "m_88315_", constant = @Constant(intValue = -3092272), require = 0, remap = false)
+    private int magicworld$replaceSearchText(int original) {
+        return MAGICWORLD_CYAN;
+    }
+
+    @ModifyConstant(method = "m_88315_", constant = @Constant(intValue = -16776961), require = 0, remap = false)
+    private int magicworld$replaceSearchCursor(int original) {
+        return MAGICWORLD_CYAN;
+    }
+
+    @ModifyConstant(method = "defaults", constant = @Constant(intValue = -534765536), require = 0, remap = false)
+    private static int magicworld$replaceDefaultHoveredBackground(int original) {
+        return MAGICWORLD_PANEL_HOVER;
+    }
+
+    @ModifyConstant(method = "defaults", constant = @Constant(intValue = -1879048192), require = 0, remap = false)
+    private static int magicworld$replaceDefaultButtonBackground(int original) {
+        return MAGICWORLD_PANEL;
+    }
+
+    @ModifyConstant(method = "defaults", constant = @Constant(intValue = 1610612736), require = 0, remap = false)
+    private static int magicworld$replaceDefaultDisabledBackground(int original) {
+        return MAGICWORLD_PANEL_DISABLED;
+    }
+
+    @ModifyConstant(
+            method = {"renderSlider", "renderStandaloneValue"},
+            constant = @Constant(intValue = -1),
+            require = 0,
+            remap = false
+    )
+    private int magicworld$replaceSliderWhite(int original) {
+        return MAGICWORLD_CYAN;
+    }
+}

@@ -9,29 +9,29 @@ import net.minecraft.world.level.Level;
 
 public class PremiumFrog {
 
-    public static boolean transform(
+    public static void transform(
             Level level,
             Frog frog
     ) {
 
-        if (PremiumEntityTags.isAnimal(frog, "frog")) {
-            PremiumEntityTags.clearAnimal(frog, "frog");
+        if (frog.hasEffect(
+                MobEffects.JUMP
+        )) {
 
             frog.removeEffect(
-                    MobEffects.JUMP_BOOST
+                    MobEffects.JUMP
             );
 
             frog.removeEffect(
-                    MobEffects.SPEED
+                    MobEffects.MOVEMENT_SPEED
             );
         }
 
         else {
-            PremiumEntityTags.markAnimal(frog, "frog");
 
             frog.addEffect(
                     new MobEffectInstance(
-                            MobEffects.JUMP_BOOST,
+                            MobEffects.JUMP,
                             999999,
                             5
                     )
@@ -39,7 +39,7 @@ public class PremiumFrog {
 
             frog.addEffect(
                     new MobEffectInstance(
-                            MobEffects.SPEED,
+                            MobEffects.MOVEMENT_SPEED,
                             999999,
                             2
                     )
@@ -50,7 +50,5 @@ public class PremiumFrog {
                 (ServerLevel) level,
                 frog.blockPosition()
         );
-
-        return true;
     }
 }

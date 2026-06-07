@@ -1,48 +1,30 @@
 package com.magicworld;
 
-import com.magicworld.client.ClientEvents;
-import com.magicworld.client.MagicWorldClientCompat;
-import com.magicworld.entity.PeacefulDragon;
-import com.magicworld.event.AuraEvents;
 import com.magicworld.event.CraftEvents;
+import com.magicworld.event.AuraEvents;
+import com.magicworld.event.MagicWorldTeleportGuard;
 import com.magicworld.event.MobEvents;
-import com.magicworld.event.PlayerJoinEvents;
 import com.magicworld.event.StarterPortalEvents;
+import com.magicworld.integration.MagicWorldMineColoniesIntegration;
 import com.magicworld.network.MagicWorldNetwork;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.particles.PowerParticleOption;
-import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.equipment.ArmorMaterial;
-import net.minecraft.world.item.equipment.ArmorType;
-import net.minecraft.world.item.equipment.EquipmentAsset;
-import net.minecraft.world.item.equipment.EquipmentAssets;
-
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
-import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
-
-import java.util.Map;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
 @Mod(MagicWorld.MODID)
 public class MagicWorld {
@@ -50,136 +32,70 @@ public class MagicWorld {
     public static final String MODID =
             "magicworld";
 
-    public static final DeferredRegister.Items ITEMS =
-            DeferredRegister.createItems(MODID);
-
-    public static final DeferredRegister.Entities ENTITIES =
-            DeferredRegister.createEntities(MODID);
-
-    public static final DeferredHolder<EntityType<?>, EntityType<PeacefulDragon>> PEACEFUL_DRAGON =
-            ENTITIES.registerEntityType(
-                    "peaceful_dragon",
-                    PeacefulDragon::new,
-                    MobCategory.CREATURE,
-                    builder -> builder
-                            .sized(16.0F, 8.0F)
-                            .fireImmune()
-                            .clientTrackingRange(1024)
-                            .updateInterval(2)
+    public static final DeferredRegister<Item> ITEMS =
+            DeferredRegister.create(
+                    ForgeRegistries.ITEMS,
+                    MODID
             );
 
-    public static final ResourceKey<EquipmentAsset> DRACONIC_AETHER_EQUIPMENT_ASSET =
-            ResourceKey.create(
-                    EquipmentAssets.ROOT_ID,
-                    Identifier.fromNamespaceAndPath(MODID, "draconic_aether")
-            );
-
-    public static final ArmorMaterial DRACONIC_AETHER_ARMOR_MATERIAL =
-            new ArmorMaterial(
-                    45,
-                    makeArmorDefense(4, 7, 9, 4, 12),
-                    30,
-                    SoundEvents.ARMOR_EQUIP_NETHERITE,
-                    5.0F,
-                    0.2F,
-                    ItemTags.REPAIRS_NETHERITE_ARMOR,
-                    DRACONIC_AETHER_EQUIPMENT_ASSET
-            );
-
-    public static final DeferredItem<Item> VARINHA_MAGICA =
-            ITEMS.registerSimpleItem(
+    public static final RegistryObject<Item> VARINHA_MAGICA =
+            ITEMS.register(
                     "varinha_magica",
-                    properties -> properties
-                            .stacksTo(1)
-                            .rarity(Rarity.EPIC)
-                            .fireResistant()
+                    () -> new Item(
+                            new Item.Properties()
+                                    .stacksTo(1)
+                                    .rarity(Rarity.EPIC)
+                                    .fireResistant()
+                    )
             );
 
-    public static final DeferredItem<Item> DRACONIC_AETHER_HELMET =
-            registerDraconicArmor("draconic_aether_helmet", ArmorType.HELMET);
+    public static final RegistryObject<Item> DRACONIC_AETHER_HELMET =
+            registerDraconicArmor("draconic_aether_helmet", ArmorItem.Type.HELMET);
 
-    public static final DeferredItem<Item> DRACONIC_AETHER_CHESTPLATE =
-            registerDraconicArmor("draconic_aether_chestplate", ArmorType.CHESTPLATE);
+    public static final RegistryObject<Item> DRACONIC_AETHER_CHESTPLATE =
+            registerDraconicArmor("draconic_aether_chestplate", ArmorItem.Type.CHESTPLATE);
 
-    public static final DeferredItem<Item> DRACONIC_AETHER_LEGGINGS =
-            registerDraconicArmor("draconic_aether_leggings", ArmorType.LEGGINGS);
+    public static final RegistryObject<Item> DRACONIC_AETHER_LEGGINGS =
+            registerDraconicArmor("draconic_aether_leggings", ArmorItem.Type.LEGGINGS);
 
-    public static final DeferredItem<Item> DRACONIC_AETHER_BOOTS =
-            registerDraconicArmor("draconic_aether_boots", ArmorType.BOOTS);
+    public static final RegistryObject<Item> DRACONIC_AETHER_BOOTS =
+            registerDraconicArmor("draconic_aether_boots", ArmorItem.Type.BOOTS);
 
-    public MagicWorld(
-            IEventBus modEventBus,
-            ModContainer modContainer
-    ) {
+    public MagicWorld() {
+        MagicWorldNetwork.register();
 
-        ITEMS.register(modEventBus);
-        ENTITIES.register(modEventBus);
-        MagicWorldNetwork.register(modEventBus);
-
-        CraftEvents craftEvents = new CraftEvents();
-
-        NeoForge.EVENT_BUS.addListener(
-                craftEvents::onLeftClickBlock
+        ITEMS.register(
+                FMLJavaModLoadingContext
+                        .get()
+                        .getModEventBus()
         );
 
-        MobEvents mobEvents = new MobEvents();
-
-        NeoForge.EVENT_BUS.addListener(
-                mobEvents::onLeftClickEntity
+        MinecraftForge.EVENT_BUS.register(
+                new CraftEvents()
         );
 
-        NeoForge.EVENT_BUS.addListener(
-                mobEvents::onLivingDeath
+        MinecraftForge.EVENT_BUS.register(
+                new MobEvents()
         );
 
-        modEventBus.addListener(this::addCreative);
-        modEventBus.addListener(this::registerEntityAttributes);
-
-        modContainer.registerConfig(
-                ModConfig.Type.COMMON,
-                Config.SPEC
+        MinecraftForge.EVENT_BUS.register(
+                new AuraEvents()
         );
 
-        PlayerJoinEvents.registerListeners();
-        StarterPortalEvents.registerListeners();
-        AuraEvents.registerListeners();
-
-        if (FMLEnvironment.getDist() == Dist.CLIENT) {
-            MagicWorldClientCompat.prepareDistantHorizonsConfig();
-            ClientEvents.registerListeners(modEventBus);
-        }
-    }
-
-    private static DeferredItem<Item> registerDraconicArmor(String name, ArmorType type) {
-        return ITEMS.registerSimpleItem(
-                name,
-                properties -> properties
-                        .humanoidArmor(DRACONIC_AETHER_ARMOR_MATERIAL, type)
-                        .rarity(Rarity.EPIC)
-                        .fireResistant()
+        MinecraftForge.EVENT_BUS.register(
+                new StarterPortalEvents()
         );
-    }
 
-    private static Map<ArmorType, Integer> makeArmorDefense(
-            int boots,
-            int leggings,
-            int chestplate,
-            int helmet,
-            int body
-    ) {
-        return Map.of(
-                ArmorType.BOOTS, boots,
-                ArmorType.LEGGINGS, leggings,
-                ArmorType.CHESTPLATE, chestplate,
-                ArmorType.HELMET, helmet,
-                ArmorType.BODY, body
+        MinecraftForge.EVENT_BUS.register(
+                new MagicWorldTeleportGuard()
         );
-    }
 
-    private void registerEntityAttributes(EntityAttributeCreationEvent event) {
-        event.put(
-                PEACEFUL_DRAGON.get(),
-                PeacefulDragon.createAttributes().build()
+        MinecraftForge.EVENT_BUS.register(
+                new MagicWorldMineColoniesIntegration()
+        );
+
+        MinecraftForge.EVENT_BUS.register(
+                this
         );
     }
 
@@ -189,10 +105,7 @@ public class MagicWorld {
     ) {
 
         level.sendParticles(
-                PowerParticleOption.create(
-                        ParticleTypes.DRAGON_BREATH,
-                        1.0F
-                ),
+                ParticleTypes.DRAGON_BREATH,
                 pos.getX() + 0.5,
                 pos.getY() + 1,
                 pos.getZ() + 0.5,
@@ -225,6 +138,7 @@ public class MagicWorld {
         );
     }
 
+    @SubscribeEvent
     public void addCreative(
             BuildCreativeModeTabContentsEvent event
     ) {
@@ -240,5 +154,21 @@ public class MagicWorld {
             event.accept(DRACONIC_AETHER_LEGGINGS);
             event.accept(DRACONIC_AETHER_BOOTS);
         }
+    }
+
+    private static RegistryObject<Item> registerDraconicArmor(
+            String name,
+            ArmorItem.Type type
+    ) {
+        return ITEMS.register(
+                name,
+                () -> new ArmorItem(
+                        ArmorMaterials.NETHERITE,
+                        type,
+                        new Item.Properties()
+                                .rarity(Rarity.EPIC)
+                                .fireResistant()
+                )
+        );
     }
 }

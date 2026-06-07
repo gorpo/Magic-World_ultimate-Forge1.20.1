@@ -5,13 +5,13 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.equine.Llama;
-import net.minecraft.world.entity.animal.sheep.Sheep;
+import net.minecraft.world.entity.animal.horse.Llama;
+import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.level.Level;
 
 public class PremiumSheep {
 
-    public static boolean transform(
+    public static void transform(
             Level level,
             Object target
     ) {
@@ -24,7 +24,7 @@ public class PremiumSheep {
                             level
                     );
 
-            premium.setPos(
+            premium.moveTo(
                     sheep.getX(),
                     sheep.getY(),
                     sheep.getZ()
@@ -32,13 +32,12 @@ public class PremiumSheep {
 
             premium.addEffect(
                     new MobEffectInstance(
-                            MobEffects.SPEED,
+                            MobEffects.MOVEMENT_SPEED,
                             999999,
                             2
                     )
             );
 
-            PremiumEntityTags.markAnimal(premium, "sheep");
             level.addFreshEntity(
                     premium
             );
@@ -49,12 +48,9 @@ public class PremiumSheep {
                     (ServerLevel) level,
                     sheep.blockPosition()
             );
-
-            return true;
         }
 
-        else if (target instanceof Llama llama
-                && PremiumEntityTags.isAnimal(llama, "sheep")) {
+        else if (target instanceof Llama llama) {
 
             Sheep sheep =
                     new Sheep(
@@ -62,7 +58,7 @@ public class PremiumSheep {
                             level
                     );
 
-            sheep.setPos(
+            sheep.moveTo(
                     llama.getX(),
                     llama.getY(),
                     llama.getZ()
@@ -78,10 +74,6 @@ public class PremiumSheep {
                     (ServerLevel) level,
                     llama.blockPosition()
             );
-
-            return true;
         }
-
-        return false;
     }
 }
