@@ -1274,5 +1274,6 @@ Validacao e processo:
 - Crash reportado: `entity_model_features.mixins.json:MixinModelPart` falhou durante APPLY.
 - Causa operacional: `entity_model_features`/EMF estava carregavel em `.minecraft/mods`.
 - Desativados da pasta `mods` carregavel do pacote e do Minecraft local: EMF, ETF, Fusion, CIT Resewn, ModernFix e FerriteCore.
-- Os JARs foram movidos para `mods_desativados_magicworld`; nao apagar, mas tambem nao carregar.
+- Tambem foram desativadas as copias em `run/dev-mods` e na pasta antiga `mods/`, porque `run/dev-mods` e carregavel pelo Gradle.
+- Os JARs foram movidos para `mods_desativados_magicworld` ou pastas `*-disabled`; nao apagar, mas tambem nao carregar.
 - Regra: esses mods so voltam por teste isolado, um por vez. `entityculling` externo continua fora porque o Magic World ja tem culling interno.

@@ -21,6 +21,7 @@ build
 eclipse
 run
 mods/*.jar
+mods_desativados_magicworld/
 
 # Files from Forge MDK
 forge*changelog.txt

@@ -1990,5 +1990,6 @@ Validacao:
 - Erro recebido do usuario: `entity_model_features.mixins.json:MixinModelPart` falhou durante APPLY.
 - Diagnostico: crash vem do mod externo EMF, nao do JAR principal Magic World.
 - Movidos para `mods_desativados_magicworld` no pacote e no Minecraft local: `entity_model_features`, `entity_texture_features`, `fusion`, `citresewn`, `modernfix` e `ferritecore`.
-- Esses JARs nao devem retornar para `.minecraft/mods` sem teste isolado um por vez.
+- Tambem foram removidos de `run/dev-mods` e da pasta antiga `mods/`; `run/dev-mods` e carregavel pelo Gradle via `build.gradle`.
+- Esses JARs nao devem retornar para nenhuma pasta carregavel sem teste isolado um por vez.
 - `entityculling` externo continua proibido no pacote porque o Magic World ja possui culling interno proprio.
