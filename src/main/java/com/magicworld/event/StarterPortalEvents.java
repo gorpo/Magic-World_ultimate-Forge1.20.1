@@ -4993,18 +4993,25 @@ public class StarterPortalEvents {
     public static void confirmPremiumPortalOptions(ServerPlayer player, boolean resourcePack, boolean shaderPack, boolean completePack) {
         boolean resolvedResourcePack = resourcePack || completePack;
         boolean resolvedShaderPack = shaderPack || completePack;
+        boolean hasVisualSelection = resolvedResourcePack || resolvedShaderPack;
 
-        player.getPersistentData().putBoolean(PREMIUM_UNLOCKED_KEY, true);
+        player.getPersistentData().putBoolean(PREMIUM_UNLOCKED_KEY, hasVisualSelection);
         player.getPersistentData().putBoolean(PREMIUM_RESOURCE_PACK_KEY, resolvedResourcePack);
         player.getPersistentData().putBoolean(PREMIUM_SHADER_PACK_KEY, resolvedShaderPack);
         player.getPersistentData().putBoolean(PREMIUM_COMPLETE_PACK_KEY, completePack);
-        player.addEffect(hiddenEffect(MobEffects.NIGHT_VISION, 20 * 60, 0));
-        player.addEffect(hiddenEffect(MobEffects.LUCK, 20 * 60, 0));
 
-        if (player.level() instanceof ServerLevel level) {
-            MagicWorld.effects(level, player.blockPosition());
+        if (hasVisualSelection) {
+            player.addEffect(hiddenEffect(MobEffects.NIGHT_VISION, 20 * 60, 0));
+            player.addEffect(hiddenEffect(MobEffects.LUCK, 20 * 60, 0));
+
+            if (player.level() instanceof ServerLevel level) {
+                MagicWorld.effects(level, player.blockPosition());
+            }
+        } else {
+            player.removeEffect(MobEffects.NIGHT_VISION);
+            player.removeEffect(MobEffects.LUCK);
         }
-        MagicWorldNetwork.applyPremiumPortalVisual(player, true, resolvedResourcePack, resolvedShaderPack);
+        MagicWorldNetwork.applyPremiumPortalVisual(player, hasVisualSelection, resolvedResourcePack, resolvedShaderPack);
     }
 
     private static void handleAmbientEffects(ServerPlayer player, ServerLevel level, BlockPos estateBase) {

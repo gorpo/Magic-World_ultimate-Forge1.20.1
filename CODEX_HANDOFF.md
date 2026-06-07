@@ -1948,3 +1948,10 @@ Validacao:
 - Mensagens removidas: ativacao premium, final do loading, perfil grafico e toast de menu nao escrevem mais no chat.
 - Pacote local: atualizado somente `pacote_distribuivel/.minecraft/mods/Magic_World_Mod_1.20.1-1.0.0.1.jar`; nao foi gerado ZIP.
 - Validado com `./gradlew.bat build`.
+
+## Handoff 2026-06-07 - opcao remover efeitos do portal visual
+- Pedido: no menu de shader/resource do portal, adicionar opcao para remover efeitos.
+- `PremiumPortalOptionsScreen` agora tem `Remover efeitos`.
+- A escolha envia `confirm(false, false, false)`.
+- `StarterPortalEvents.confirmPremiumPortalOptions` trata ausencia de selecao como desativacao: flags premium visuais ficam falsas, night vision/luck do portal sao removidos e o cliente recebe `applyPremiumPortalVisual(false, false, false)`.
+- Build validada e JAR all-in-one atualizado no pacote local, sem ZIP.

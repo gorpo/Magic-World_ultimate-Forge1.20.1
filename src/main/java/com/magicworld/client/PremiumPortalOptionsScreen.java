@@ -15,7 +15,7 @@ public class PremiumPortalOptionsScreen extends Screen {
     protected void init() {
         int panelWidth = Math.min(340, width - 32);
         int left = width / 2 - panelWidth / 2;
-        int top = Math.max(30, height / 2 - 100);
+        int top = Math.max(18, height / 2 - 105);
         int buttonWidth = panelWidth - 64;
         int buttonLeft = left + 32;
 
@@ -41,10 +41,17 @@ public class PremiumPortalOptionsScreen extends Screen {
                 .build());
 
         addRenderableWidget(Button.builder(
+                        Component.literal("Remover efeitos"),
+                        button -> confirm(false, false, false)
+                )
+                .bounds(buttonLeft, top + 144, buttonWidth, 22)
+                .build());
+
+        addRenderableWidget(Button.builder(
                         Component.literal("Cancelar"),
                         button -> onClose()
                 )
-                .bounds(buttonLeft, top + 154, buttonWidth, 20)
+                .bounds(buttonLeft, top + 176, buttonWidth, 20)
                 .build());
     }
 
@@ -53,17 +60,17 @@ public class PremiumPortalOptionsScreen extends Screen {
         renderBackground(graphics);
 
         int panelWidth = Math.min(340, width - 32);
-        int panelHeight = 200;
+        int panelHeight = 212;
         int left = width / 2 - panelWidth / 2;
-        int top = Math.max(30, height / 2 - 100);
+        int top = Math.max(18, height / 2 - 105);
 
         graphics.fill(0, 0, width, height, 0xAA030611);
         graphics.fill(left, top, left + panelWidth, top + panelHeight, 0xEE0B1020);
         graphics.renderOutline(left, top, panelWidth, panelHeight, 0xCC8C5CFF);
         graphics.renderOutline(left + 4, top + 4, panelWidth - 8, panelHeight - 8, 0x773AD7FF);
 
-        graphics.drawCenteredString(font, Component.literal("ATIVAR MODO PREMIUM"), width / 2, top + 14, 0xFFFFFFFF);
-        graphics.drawCenteredString(font, Component.literal("Escolha o que carregar no Magic World."), width / 2, top + 31, 0xFFBFD7FF);
+        graphics.drawCenteredString(font, Component.literal("MODO VISUAL MAGIC WORLD"), width / 2, top + 14, 0xFFFFFFFF);
+        graphics.drawCenteredString(font, Component.literal("Escolha shader, resource ou remova os efeitos."), width / 2, top + 31, 0xFFBFD7FF);
 
         super.render(graphics, mouseX, mouseY, partialTick);
     }

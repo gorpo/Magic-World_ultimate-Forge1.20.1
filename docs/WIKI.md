@@ -1235,3 +1235,10 @@ Validacao e processo:
 - A ativacao premium, o fim do loading e o perfil de PC nao escrevem mais mensagens no chat.
 - O pacote local foi atualizado somente em `pacote_distribuivel/.minecraft/mods/Magic_World_Mod_1.20.1-1.0.0.1.jar`; nao gerar ZIP.
 - Validacao: `./gradlew.bat build` passou.
+
+## Registro 2026-06-07 - remover efeitos do portal visual
+- O menu do portal visual ganhou a opcao `Remover efeitos`.
+- Essa opcao desliga shader/resourcepack MagicWorld e remove os buffs premium aplicados pelo portal.
+- A remocao nao escreve mensagem no chat.
+- O pacote local foi atualizado somente no JAR all-in-one; nao gerar ZIP.
+- Validacao: `./gradlew.bat build` passou.
