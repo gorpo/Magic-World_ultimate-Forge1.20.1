@@ -1400,7 +1400,7 @@ Estado encontrado:
 - Ultimas entregas reais, em ordem do Git:
   - `6a0a554`: revisao do dropdown de seeds para abrir para baixo/cima conforme espaco;
   - `9b47857`: campo `Seed manual`, dropdown de seeds e `docs/SEEDS_MAGIC_WORLD.md`;
-  - `c4eaaa4`: santuario magico no fim da rua, loading em `97%` e reparo versao `18`;
+  - `c4eaaa4`: Santuario magico no fim da rua, loading em `97%` e reparo versao `18`;
   - `dcc83be`: casa NBT no fim da rua durante loading e correcao dos paths de textura do menu.
 
 Auditoria NeoForge -> Forge:
@@ -1434,7 +1434,7 @@ Validacao executada nesta retomada:
 
 Proximo passo recomendado:
 
-- Se continuar no escopo atual: usuario deve testar visualmente no cliente a tela principal, criacao de mundo, dropdown de seeds, loading, casa do fim da rua e santuario.
+- Se continuar no escopo atual: usuario deve testar visualmente no cliente a tela principal, criacao de mundo, dropdown de seeds, loading, casa do fim da rua e Santuario.
 - Se abrir novo escopo de port: escolher um bloco isolado entre `portal visual/resource/shader`, `entidades/dragao`, ou `culling/performance`, sempre com downgrade Forge 1.20.1 manual e validacao Gradle.
 
 ## Correcao dropdown seeds e port Entity Culling - 2026-06-06 16:01:54 -03:00
@@ -1486,12 +1486,12 @@ Validacao executada:
 - `git diff --check`: sem erros; apenas avisos esperados de CRLF no Windows.
 - Cliente nao foi aberto pelo Codex.
 
-## Correcao casa e santuario do fim da rua - 2026-06-06 16:10:00 -03:00
+## Correcao casa e Santuario do fim da rua - 2026-06-06 16:10:00 -03:00
 
 Pedido atual:
 
 - A casa do fim da rua nao esta no local do print 1.
-- O santuario criado mais cedo nao esta no sentido da rua/caverna do print 2.
+- O Santuario criado mais cedo nao esta no sentido da rua/caverna do print 2.
 - Reposicionar/corrigir sem abrir o cliente pelo Codex.
 
 Diagnostico:
@@ -1501,19 +1501,19 @@ Diagnostico:
 - Posicao salva do jogador: aproximadamente `8.19 / 111.08 / -0.69`.
 - Rotacao salva: `yaw ~ -95.99`, ou seja, olhando para oeste.
 - A casa do fim da rua estava em area distante; sem carregar chunks explicitamente antes da colocacao, o NBT podia ficar parcialmente aplicado.
-- O santuario anterior estava em `base.offset(296,0,-86)`, lado leste/nordeste, contrario ao sentido oeste mostrado no print 2.
+- O Santuario anterior estava em `base.offset(296,0,-86)`, lado leste/nordeste, contrario ao sentido oeste mostrado no print 2.
 
 Implementado:
 
 - `CURRENT_ESTATE_REPAIR_VERSION` elevado de `18` para `19`.
-- Mensagem de reparo atualizada para `Magic World: casa e santuario do fim da rua reposicionados e atualizados.`
+- Mensagem de reparo atualizada para `Magic World: casa e Santuario do fim da rua reposicionados e atualizados.`
 - `buildStarterRoadEndHouse` agora chama `forceLoadStructureArea` antes de limpar volume/posicionar `starter_house_1.nbt`.
 - `clearStructureVolume` agora limpa o conteudo de qualquer `Container` antes de trocar o bloco por ar, evitando drops de baus antigos no reparo.
 - `roadEndMagicSanctuaryOrigin(base)` foi movido para `base.offset(-176,0,-8)`, no eixo oeste da estrada real.
 - `buildRoadEndMagicSanctuary` agora:
-  - carrega os chunks da estrada/santuario antes de mexer na area;
-  - estende a estrada do oeste a partir de `base.offset(-76,-1,0)` ate a entrada leste do santuario;
-  - constrÃƒÆ’Ã‚Â³i o santuario depois da estrada, com o mesmo conteudo premium anterior.
+  - carrega os chunks da estrada/Santuario antes de mexer na area;
+  - estende a estrada do oeste a partir de `base.offset(-76,-1,0)` ate a entrada leste do Santuario;
+  - constrÃƒÆ’Ã‚Â³i o Santuario depois da estrada, com o mesmo conteudo premium anterior.
 - Novos helpers:
   - `forceLoadStructureArea`;
   - `forceLoadAreaBetween`.
@@ -1529,7 +1529,7 @@ Teste esperado pelo usuario:
 
 - Entrar novamente no save existente para disparar o reparo versao `19`.
 - Conferir a casa do fim da rua no ponto antigo do print 1, agora com NBT completo.
-- Conferir o santuario no sentido oeste da rua/caverna mostrado no print 2.
+- Conferir o Santuario no sentido oeste da rua/caverna mostrado no print 2.
 
 ## Seeds no menu Magic World - 2026-06-06 15:30:59 -03:00
 
@@ -1562,8 +1562,8 @@ Validacao:
 
 Pedido atual:
 
-- Dentro das coordenadas dos prints, no final da rua em frente a casa, transformar a caverna/espaco vazio em santuario.
-- O santuario deve ter muita luz, decoracao, blocos coloridos, coisas premium, parede de baus com todos os itens do jogo, ferramentas, armaduras, quadros/decoracao, plantas, mesa central, sinos, brilhos, redstone, coelhos e passaros.
+- Dentro das coordenadas dos prints, no final da rua em frente a casa, transformar a caverna/espaco vazio em Santuario.
+- O Santuario deve ter muita luz, decoracao, blocos coloridos, coisas premium, parede de baus com todos os itens do jogo, ferramentas, armaduras, quadros/decoracao, plantas, mesa central, sinos, brilhos, redstone, coelhos e passaros.
 - Precisa entrar no sistema de loading.
 
 Coordenadas lidas dos prints:
@@ -1576,7 +1576,7 @@ Coordenadas lidas dos prints:
 Implementado:
 
 - `CURRENT_ESTATE_REPAIR_VERSION` elevado para `18`.
-- `handleEstateTask` ganhou etapa `6` em `97%`, mensagem `Carregando santuario magico do fim da rua...`.
+- `handleEstateTask` ganhou etapa `6` em `97%`, mensagem `Carregando Santuario magico do fim da rua...`.
 - O santuÃƒÆ’Ã‚Â¡rio e construido antes do `ESTATE_CREATED_KEY` e antes do progresso `100%`.
 - `repairExistingEstate` chama `buildRoadEndMagicSanctuary` para saves ja existentes.
 - O santuÃƒÆ’Ã‚Â¡rio tem shell proprio com piso colorido/iluminado, paredes decoradas, teto de calcite/amethyst, redstone blocks, redstone lamps, glowstone e sea lanterns.
@@ -1618,10 +1618,10 @@ Validacao:
 ## Handoff 2026-06-06 - commit de preservacao solicitado
 - Branch: Inicio-Port-Neoforge.
 - Usuario pediu commit/push imediato para nao perder versionamento antes de continuar testes.
-- Alteracoes incluidas: seed dropdown sem sobreposicao; EntityCulling portado; defaults Criativo/Facil; loading com logo menor e painel mais transparente; casa do fim da rua reposicionada e sem gramado extra; santuario rebaixado e com porta voltada para a casa; entradas da casa grande perto dos currais desobstruidas; cerejeiras restritas ao espaco do jogador/castelo.
+- Alteracoes incluidas: seed dropdown sem sobreposicao; EntityCulling portado; defaults Criativo/Facil; loading com logo menor e painel mais transparente; casa do fim da rua reposicionada e sem gramado extra; Santuario rebaixado e com porta voltada para a casa; entradas da casa grande perto dos currais desobstruidas; cerejeiras restritas ao espaco do jogador/castelo.
 - Observacao: compileJava foi iniciado e interrompido pelo usuario nesta rodada; proxima sessao deve rodar ./gradlew.bat compileJava --stacktrace e depois ./gradlew.bat build --stacktrace.
 
-## Handoff 2026-06-06 - ajuste pos-prints casa/santuario
+## Handoff 2026-06-06 - ajuste pos-prints casa/Santuario
 - Usuario reportou aviso Can't keep up durante geracao; provavelmente pico de geracao inicial. Foi reduzido o range vertical de conversao das arvores para aliviar custo, mas a geracao grande ainda pode causar aviso pontual.
 - Casa do fim da rua: StarterPortalEvents.starterRoadEndHouseOrigin agora base.offset(-5, -4, -90). Template starter_house_1 usa Rotation.CLOCKWISE_180 com pivot central. Porta/decoracao recalculada por size para coordenada rotacionada.
 - Santuario: roadEndMagicSanctuaryOrigin agora base.offset(-54, -4, -8), width 36, entrada leste em x ~= -18 relativa ao base, voltada para a casa.
@@ -1644,7 +1644,7 @@ Validacao:
 ## Handoff 2026-06-06 - casa das bruxas e casa fim da rua limpa
 - Branch: Inicio-Port-Neoforge.
 - Pedido implementado: casa de bruxas na mata do print, com ponto absoluto observado `447 103 -87` convertido para `witchCovenAnchor(base) = base.offset(507, 0, -117)` usando a base historica aproximada `-60 74 30` registrada nos prints anteriores.
-- A geracao agora tem etapa `7` em `98%` (`Carregando casa das bruxas na mata...`) depois do santuario em `97%`, evitando construir santuario e casa das bruxas no mesmo tick.
+- A geracao agora tem etapa `7` em `98%` (`Carregando casa das bruxas na mata...`) depois do Santuario em `97%`, evitando construir Santuario e casa das bruxas no mesmo tick.
 - A casa das bruxas usa origem calculada a partir do portao: portao no ponto indicado, casa 34 blocos para oeste e 12 para norte, largura 28, profundidade 24, porta voltada para leste/entrada visivel.
 - Conteudo: cerca, portao, placa `fiquem longe` / `daqui`, 3 quartos, mesa/cadeiras, canto de alquimia, caldeiroes, lareira/chamine, teias, morcegos, feno, jack o lanterns, cogumelos, iluminacao com soul lantern/lantern/glowstone.
 - Baus: pocoes diversas, varinha Magic World, Totem, livros, XP bottles, ender pearls, blaze/ghast/spider ingredients, armaduras Draconic Aether/netherite/diamond, armas, escudo, flechas e foguetes.
@@ -1787,3 +1787,13 @@ Validacao:
 - Selecao de seed virou modal frontal: fundo preto opaco, painel central maior, render com z elevado e fechamento imediato ao selecionar uma seed.
 - Reparo `24` agora e leve quando o save ja estava no `23`: aplica apenas `placeEstateIdentificationSigns`, sem reconstruir casas, baus e estruturas inteiras no login.
 - Morcegos decorativos usam `spawnDecorativeBat`, que procura bolso de ar proximo e evita spawn dentro de parede; todos os antigos `spawnNamed(... EntityType.BAT ...)` foram substituidos.
+
+## Handoff 2026-06-06 - foco definitivo em mapas novos
+- Diretriz do usuario: nao gastar mais tempo com reparo de save existente; ele sempre cria um mapa novo para testar.
+- Em pedidos futuros, priorizar a geracao limpa do novo mundo e so mexer em reparo versionado se for explicitamente solicitado.
+- Santuario Violeta reposicionado usando o bloco exato do print como centro: `Targeted Block 201 110 13`; piso em `Y=110`.
+- Entrada do Santuario invertida 180 graus para o lado oeste, com caminho/degraus externos para acesso quando houver desnivel.
+- Casa NBT `starter_house_1` passou a escanear portas apos ser colocada e criar degraus externos automaticamente.
+- Mesas centrais das casas grandes/areas de profissao foram substituidas por espaco central livre iluminado para evitar aldeoes presos.
+- Todos os nomes customizados de entidades continuam como NBT, mas ficam invisiveis acima da cabeca (`setCustomNameVisible(false)`).
+- Tela visual de progresso/avisos de carregamento foi desativada; mensagem final curta permanece no chat.

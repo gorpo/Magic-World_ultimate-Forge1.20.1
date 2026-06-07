@@ -41,7 +41,6 @@ public class AuraEvents {
     public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player && MagicWorldWorldOptions.isAuraEnabled()) {
             player.getPersistentData().putBoolean(PLAYER_AURA_KEY, true);
-            player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Magic World: aura inicial ativada."));
         }
     }
 

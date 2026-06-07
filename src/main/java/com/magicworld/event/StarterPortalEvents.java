@@ -2,7 +2,6 @@ package com.magicworld.event;
 
 import com.magicworld.MagicWorld;
 import com.magicworld.MagicWorldWorldOptions;
-import com.magicworld.network.MagicWorldNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -123,6 +122,10 @@ public class StarterPortalEvents {
     private static final int CASTLE_SIZE_Z = 221;
     private static final int ESTATE_REPAIR_VERSION_BEFORE_IDENTIFICATION_SIGNS = 23;
     private static final int CURRENT_ESTATE_REPAIR_VERSION = 24;
+    private static final int SANCTUARY_WIDTH = 36;
+    private static final int SANCTUARY_DEPTH = 17;
+    private static final int SANCTUARY_HEIGHT = 10;
+    private static final BlockPos SANCTUARY_TARGET_CENTER = new BlockPos(201, 110, 13);
     private static final int GLOBAL_VILLAGER_WORK_RADIUS = 384;
     private static final int ESTATE_MAINTENANCE_INTERVAL_TICKS = 20 * 60;
     private static final int PORTAL_CHECK_INTERVAL_TICKS = 10;
@@ -180,8 +183,8 @@ public class StarterPortalEvents {
         BlockPos base = findEstateBase(player);
         storeEstateBase(player, base);
         TASKS.put(player.getUUID(), new EstateTask(base, 0, START_DELAY_TICKS));
-        MagicWorldNetwork.openInitialLoadNotice(player);
-        MagicWorldNetwork.sendInitialLoadProgress(player, 3, "Preparando terreno Magic World...", false);
+        openInitialLoadNotice(player);
+        sendInitialLoadProgress(player, 3, "Preparando terreno Magic World...", false);
     }
 
     @SubscribeEvent
@@ -251,14 +254,14 @@ public class StarterPortalEvents {
 
         switch (task.step) {
             case 0 -> {
-                MagicWorldNetwork.sendInitialLoadProgress(player, 12, "Carregando casa importada...", false);
+                sendInitialLoadProgress(player, 12, "Carregando casa importada...", false);
                 prepareImportedEstateFoundation(level, task.base);
                 buildImportedHouse(level, task.base);
                 TASKS.put(player.getUUID(), new EstateTask(task.base, 1, STEP_DELAY_TICKS));
             }
             case 1 -> {
                 if (MagicWorldWorldOptions.isFarmsEnabled()) {
-                    MagicWorldNetwork.sendInitialLoadProgress(player, 35, "Carregando fazendas, animais e trabalhadores...", false);
+                    sendInitialLoadProgress(player, 35, "Carregando fazendas, animais e trabalhadores...", false);
                     prepareImportedEstateFoundation(level, task.base);
                     buildImportedEstateFarms(level, task.base);
                     spawnImportedStarterAnimals(level, task.base);
@@ -267,18 +270,18 @@ public class StarterPortalEvents {
                 TASKS.put(player.getUUID(), new EstateTask(task.base, 2, STEP_DELAY_TICKS));
             }
             case 2 -> {
-                MagicWorldNetwork.sendInitialLoadProgress(player, 55, "Carregando portal inicial...", false);
+                sendInitialLoadProgress(player, 55, "Carregando portal inicial...", false);
                 buildStarterPortal(level, starterPortalCenter(task.base));
                 TASKS.put(player.getUUID(), new EstateTask(task.base, 3, STEP_DELAY_TICKS));
             }
             case 3 -> {
-                MagicWorldNetwork.sendInitialLoadProgress(player, 72, "Carregando praca de portais funcionais...", false);
+                sendInitialLoadProgress(player, 72, "Carregando praca de portais funcionais...", false);
                 buildFunctionalPortalPlaza(level, task.base);
                 TASKS.put(player.getUUID(), new EstateTask(task.base, 4, STEP_DELAY_TICKS));
             }
             case 4 -> {
                 if (MagicWorldWorldOptions.isCastlesEnabled()) {
-                    MagicWorldNetwork.sendInitialLoadProgress(player, 86, "Carregando castelo importado...", false);
+                    sendInitialLoadProgress(player, 86, "Carregando castelo importado...", false);
                     buildImportedCastle(level, castleOrigin(task.base));
                     decorateCastleStarterLife(level, castleCenter(task.base));
                     convertCastlePerimeterTreesToCherry(level, task.base);
@@ -286,17 +289,17 @@ public class StarterPortalEvents {
                 TASKS.put(player.getUUID(), new EstateTask(task.base, 5, STEP_DELAY_TICKS));
             }
             case 5 -> {
-                MagicWorldNetwork.sendInitialLoadProgress(player, 94, "Carregando casa do fim da rua...", false);
+                sendInitialLoadProgress(player, 94, "Carregando casa do fim da rua...", false);
                 buildStarterRoadEndHouse(level, task.base);
                 TASKS.put(player.getUUID(), new EstateTask(task.base, 6, STEP_DELAY_TICKS));
             }
             case 6 -> {
-                MagicWorldNetwork.sendInitialLoadProgress(player, 97, "Carregando santuario magico do fim da rua...", false);
+                sendInitialLoadProgress(player, 97, "Carregando santuario magico do fim da rua...", false);
                 buildRoadEndMagicSanctuary(level, task.base);
                 TASKS.put(player.getUUID(), new EstateTask(task.base, 7, STEP_DELAY_TICKS));
             }
             case 7 -> {
-                MagicWorldNetwork.sendInitialLoadProgress(player, 98, "Carregando casa das bruxas na mata...", false);
+                sendInitialLoadProgress(player, 98, "Carregando casa das bruxas na mata...", false);
                 buildWitchCovenHouse(level, task.base);
                 TASKS.put(player.getUUID(), new EstateTask(task.base, 8, FINAL_DELAY_TICKS));
             }
@@ -307,7 +310,7 @@ public class StarterPortalEvents {
                 player.getPersistentData().putInt(ESTATE_REPAIR_VERSION_KEY, CURRENT_ESTATE_REPAIR_VERSION);
                 applyMagicWorldServerSettings(player);
                 teleportPlayerToEstateSpawn(player, level, task.base);
-                MagicWorldNetwork.sendInitialLoadProgress(player, 100, "Magic World carregado.", true);
+                sendInitialLoadProgress(player, 100, "Magic World carregado.", true);
                 player.sendSystemMessage(Component.literal("Magic World: casa, fazendas, portais, castelo e placas carregados."));
                 TASKS.remove(player.getUUID());
             }
@@ -400,6 +403,14 @@ public class StarterPortalEvents {
 
     private static ServerLevel levelFor(ServerPlayer player) {
         return player.serverLevel();
+    }
+
+    private static void openInitialLoadNotice(ServerPlayer player) {
+        // O usuario prefere criar mapas novos sem overlay de aviso ao spawnar.
+    }
+
+    private static void sendInitialLoadProgress(ServerPlayer player, int progress, String message, boolean complete) {
+        // Mantem a geracao silenciosa na tela; a confirmacao final fica no chat.
     }
 
     private static void repairExistingEstate(ServerLevel level, BlockPos base) {
@@ -692,6 +703,7 @@ public class StarterPortalEvents {
                 RandomSource.create(level.getSeed() ^ origin.asLong()),
                 2
         );
+        buildStarterRoadEndHouseDoorAccess(level, origin, size);
     }
 
     private static void prepareStarterRoadEndHouseCleanSupport(ServerLevel level, BlockPos origin, Vec3i size) {
@@ -704,26 +716,61 @@ public class StarterPortalEvents {
         }
     }
 
+    private static void buildStarterRoadEndHouseDoorAccess(ServerLevel level, BlockPos origin, Vec3i size) {
+        for (int x = -2; x <= size.getX() + 2; x++) {
+            for (int y = 0; y <= size.getY() + 3; y++) {
+                for (int z = -2; z <= size.getZ() + 2; z++) {
+                    BlockPos door = origin.offset(x, y, z);
+                    BlockState state = level.getBlockState(door);
+                    if (!(state.getBlock() instanceof DoorBlock)
+                            || state.getValue(DoorBlock.HALF) != DoubleBlockHalf.LOWER) {
+                        continue;
+                    }
+                    buildDoorStairAccess(level, door, state.getValue(DoorBlock.FACING), 10);
+                }
+            }
+        }
+    }
+
+    private static void buildDoorStairAccess(ServerLevel level, BlockPos lowerDoor, Direction facing, int length) {
+        for (int step = 1; step <= length; step++) {
+            int drop = Math.min(5, (step - 1) / 2);
+            BlockPos floor = lowerDoor.below().relative(facing, step).below(drop);
+            Direction side = facing.getClockWise();
+            for (int width = -1; width <= 1; width++) {
+                BlockPos path = floor.relative(side, width);
+                for (int support = 1; support <= 4; support++) {
+                    level.setBlock(path.below(support), Blocks.DIRT.defaultBlockState(), 2);
+                }
+                level.setBlock(path, width == 0
+                        ? Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, facing)
+                        : Blocks.SMOOTH_STONE.defaultBlockState(), 2);
+                level.setBlock(path.above(), Blocks.AIR.defaultBlockState(), 2);
+                level.setBlock(path.above(2), Blocks.AIR.defaultBlockState(), 2);
+            }
+        }
+    }
+
     private static BlockPos roadEndMagicSanctuaryOrigin(BlockPos base) {
-        return base.offset(-54, -4, -8);
+        return SANCTUARY_TARGET_CENTER.offset(-SANCTUARY_WIDTH / 2, 0, -SANCTUARY_DEPTH / 2);
     }
 
     private static void buildRoadEndMagicSanctuary(ServerLevel level, BlockPos base) {
         BlockPos origin = roadEndMagicSanctuaryOrigin(base);
-        int width = 36;
-        int depth = 17;
-        int height = 10;
+        int width = SANCTUARY_WIDTH;
+        int depth = SANCTUARY_DEPTH;
+        int height = SANCTUARY_HEIGHT;
         int centerZ = depth / 2;
 
-        forceLoadAreaBetween(level, base.offset(-18, 0, -12), origin.offset(width + 8, 0, depth + 6));
-        buildRoadBetween(level, base, base.offset(-4, -1, 0), origin.offset(width, -1, centerZ));
+        forceLoadStructureArea(level, origin, width, depth, 18);
         prepareRoadEndMagicSanctuaryShell(level, origin, width, depth, height, centerZ);
         clearRoadEndSanctuaryEntrance(level, origin, width, centerZ);
         buildRoadEndSanctuaryStorage(level, origin, width, depth);
         buildRoadEndSanctuaryStations(level, origin, width, depth);
-        buildRoadEndSanctuaryMeetingTable(level, origin, width, depth);
+        clearCentralWalkSpace(level, origin.offset(width / 2, 1, depth / 2), 7, 4);
         buildRoadEndSanctuaryArmorGallery(level, origin, width, depth);
         decorateRoadEndSanctuary(level, origin, width, depth, height);
+        buildSanctuaryWestEntranceStairs(level, origin, centerZ);
         populateRoadEndSanctuary(level, origin, width, depth);
     }
 
@@ -739,7 +786,7 @@ public class StarterPortalEvents {
             for (int z = 0; z <= depth; z++) {
                 BlockPos floor = origin.offset(x, 0, z);
                 boolean edge = x == 0 || x == width || z == 0 || z == depth;
-                boolean entrance = (z >= centerZ - 2 && z <= centerZ + 2) && x == width;
+                boolean entrance = (z >= centerZ - 2 && z <= centerZ + 2) && x == 0;
                 level.setBlock(floor.below(), Blocks.POLISHED_DEEPSLATE.defaultBlockState(), 2);
                 level.setBlock(floor, sanctuaryFloorBlock(x, z), 2);
                 for (int y = 1; y <= height; y++) {
@@ -776,7 +823,7 @@ public class StarterPortalEvents {
     private static void clearRoadEndSanctuaryEntrance(ServerLevel level, BlockPos origin, int width, int centerZ) {
         for (int dx = 1; dx <= 6; dx++) {
             for (int dz = -2; dz <= 2; dz++) {
-                BlockPos floor = origin.offset(width + dx, 0, centerZ + dz);
+                BlockPos floor = origin.offset(-dx, 0, centerZ + dz);
                 level.setBlock(floor.below(), Blocks.DIRT.defaultBlockState(), 2);
                 level.setBlock(floor, Math.abs(dz) <= 1
                         ? Blocks.SMOOTH_STONE.defaultBlockState()
@@ -788,14 +835,32 @@ public class StarterPortalEvents {
         }
 
         for (int dz = -2; dz <= 2; dz++) {
-            BlockPos mouth = origin.offset(width, 0, centerZ + dz);
+            BlockPos mouth = origin.offset(0, 0, centerZ + dz);
             for (int y = 1; y <= 5; y++) {
                 level.setBlock(mouth.above(y), Blocks.AIR.defaultBlockState(), 2);
             }
         }
 
-        level.setBlock(origin.offset(width + 1, 1, centerZ - 3), Blocks.SEA_LANTERN.defaultBlockState(), 2);
-        level.setBlock(origin.offset(width + 1, 1, centerZ + 3), Blocks.SEA_LANTERN.defaultBlockState(), 2);
+        level.setBlock(origin.offset(-1, 1, centerZ - 3), Blocks.SEA_LANTERN.defaultBlockState(), 2);
+        level.setBlock(origin.offset(-1, 1, centerZ + 3), Blocks.SEA_LANTERN.defaultBlockState(), 2);
+    }
+
+    private static void buildSanctuaryWestEntranceStairs(ServerLevel level, BlockPos origin, int centerZ) {
+        for (int step = 1; step <= 18; step++) {
+            int drop = Math.min(8, (step - 1) / 2);
+            for (int dz = -2; dz <= 2; dz++) {
+                BlockPos floor = origin.offset(-step, -drop, centerZ + dz);
+                for (int support = 1; support <= 4; support++) {
+                    level.setBlock(floor.below(support), Blocks.DIRT.defaultBlockState(), 2);
+                }
+                level.setBlock(floor, Math.abs(dz) <= 1
+                        ? Blocks.DEEPSLATE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.WEST)
+                        : Blocks.POLISHED_ANDESITE.defaultBlockState(), 2);
+                for (int y = 1; y <= 4; y++) {
+                    level.setBlock(floor.above(y), Blocks.AIR.defaultBlockState(), 2);
+                }
+            }
+        }
     }
 
     private static BlockState sanctuaryFloorBlock(int x, int z) {
@@ -905,27 +970,7 @@ public class StarterPortalEvents {
 
     private static void buildRoadEndSanctuaryMeetingTable(ServerLevel level, BlockPos origin, int width, int depth) {
         BlockPos center = origin.offset(width / 2, 1, depth / 2);
-        for (int x = -5; x <= 5; x++) {
-            for (int z = -2; z <= 2; z++) {
-                BlockPos table = center.offset(x, 0, z);
-                level.setBlock(table, Blocks.DARK_OAK_FENCE.defaultBlockState(), 2);
-                level.setBlock(table.above(), Math.floorMod(x + z, 2) == 0
-                        ? Blocks.PURPLE_CARPET.defaultBlockState()
-                        : Blocks.LIGHT_BLUE_CARPET.defaultBlockState(), 2);
-            }
-        }
-        for (int x = -5; x <= 5; x += 2) {
-            level.setBlock(center.offset(x, 0, -3), Blocks.DARK_OAK_STAIRS.defaultBlockState()
-                    .setValue(StairBlock.FACING, Direction.SOUTH), 2);
-            level.setBlock(center.offset(x, 0, 3), Blocks.DARK_OAK_STAIRS.defaultBlockState()
-                    .setValue(StairBlock.FACING, Direction.NORTH), 2);
-        }
-        for (int z = -2; z <= 2; z += 2) {
-            level.setBlock(center.offset(-6, 0, z), Blocks.DARK_OAK_STAIRS.defaultBlockState()
-                    .setValue(StairBlock.FACING, Direction.EAST), 2);
-            level.setBlock(center.offset(6, 0, z), Blocks.DARK_OAK_STAIRS.defaultBlockState()
-                    .setValue(StairBlock.FACING, Direction.WEST), 2);
-        }
+        clearCentralWalkSpace(level, center, 7, 4);
         level.setBlock(center.above(4), Blocks.SEA_LANTERN.defaultBlockState(), 2);
         level.setBlock(center.above(5), Blocks.BELL.defaultBlockState(), 2);
     }
@@ -1138,12 +1183,7 @@ public class StarterPortalEvents {
         placeBed(level, origin.offset(8, 1, 2), Direction.SOUTH);
 
         BlockPos table = origin.offset(6, 1, 7);
-        for (int dx = -1; dx <= 1; dx++) {
-            level.setBlock(table.offset(dx, 0, 0), Blocks.DARK_OAK_FENCE.defaultBlockState(), 2);
-            level.setBlock(table.offset(dx, 1, 0), dx == 0 ? Blocks.PURPLE_CARPET.defaultBlockState() : Blocks.BLACK_CARPET.defaultBlockState(), 2);
-        }
-        level.setBlock(table.north(), Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH), 2);
-        level.setBlock(table.south(), Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH), 2);
+        clearCentralWalkSpace(level, table, 2, 2);
 
         level.setBlock(origin.offset(3, 1, 9), Blocks.CAULDRON.defaultBlockState(), 2);
         level.setBlock(origin.offset(4, 1, 9), Blocks.BREWING_STAND.defaultBlockState(), 2);
@@ -1469,14 +1509,7 @@ public class StarterPortalEvents {
         buildWitchBedroom(level, origin.offset(2, 1, 17), Direction.EAST, origin.offset(7, 1, 16), "Bruxa Alquimista");
 
         BlockPos table = origin.offset(18, 1, depth / 2);
-        for (int dx = -3; dx <= 3; dx++) {
-            level.setBlock(table.offset(dx, 0, 0), Blocks.DARK_OAK_FENCE.defaultBlockState(), 2);
-            level.setBlock(table.offset(dx, 1, 0), dx % 2 == 0 ? Blocks.PURPLE_CARPET.defaultBlockState() : Blocks.BLACK_CARPET.defaultBlockState(), 2);
-        }
-        for (int dx = -3; dx <= 3; dx += 2) {
-            level.setBlock(table.offset(dx, 0, -2), Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH), 2);
-            level.setBlock(table.offset(dx, 0, 2), Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH), 2);
-        }
+        clearCentralWalkSpace(level, table, 5, 3);
 
         buildWitchAlchemyCorner(level, origin, width, depth);
         buildWitchStorage(level, origin, width, depth);
@@ -1709,7 +1742,7 @@ public class StarterPortalEvents {
                 "ID LOCAL", "Portal", "End Gateway", "Funcional");
 
         placeRoadEndHouseIdentificationSign(level, base);
-        placeGroundIdentificationSign(level, roadEndMagicSanctuaryOrigin(base).offset(40, 0, 8), Direction.EAST,
+        placeGroundIdentificationSign(level, roadEndMagicSanctuaryOrigin(base).offset(-5, 0, SANCTUARY_DEPTH / 2), Direction.WEST,
                 "ID LOCAL", "Santuario", "Violeta", "Fim da Rua");
         placeWitchCovenIdentificationSign(level, base);
         placeGroundIdentificationSign(level, base.offset(67, 0, 38), Direction.NORTH,
@@ -1883,7 +1916,7 @@ public class StarterPortalEvents {
         witch.moveTo(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D, 0.0F, 0.0F);
         witch.getPersistentData().putBoolean(FRIENDLY_WITCH_KEY, true);
         witch.setCustomName(Component.literal(name));
-        witch.setCustomNameVisible(true);
+        witch.setCustomNameVisible(false);
         witch.setPersistenceRequired();
         witch.setNoAi(false);
         witch.setInvulnerable(true);
@@ -2614,24 +2647,21 @@ public class StarterPortalEvents {
 
     private static void placePremiumWorkCenterTable(ServerLevel level, BlockPos corner, int width, int depth) {
         BlockPos center = corner.offset(width / 2, 1, depth / 2);
-        for (int x = -3; x <= 3; x++) {
-            for (int z = -1; z <= 1; z++) {
-                BlockPos table = center.offset(x, 0, z);
-                level.setBlock(table, Blocks.DARK_OAK_FENCE.defaultBlockState(), 2);
-                level.setBlock(table.above(), Blocks.LIGHT_BLUE_CARPET.defaultBlockState(), 2);
+        clearCentralWalkSpace(level, center, 5, 3);
+        level.setBlock(center.above(3), Blocks.SEA_LANTERN.defaultBlockState(), 2);
+    }
+
+    private static void clearCentralWalkSpace(ServerLevel level, BlockPos center, int radiusX, int radiusZ) {
+        for (int x = -radiusX; x <= radiusX; x++) {
+            for (int z = -radiusZ; z <= radiusZ; z++) {
+                BlockPos pos = center.offset(x, 0, z);
+                if (level.getBlockEntity(pos) instanceof Container container) {
+                    container.clearContent();
+                }
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
+                level.setBlock(pos.above(), Blocks.AIR.defaultBlockState(), 2);
             }
         }
-        for (int x = -3; x <= 3; x += 2) {
-            level.setBlock(center.offset(x, 0, -2), Blocks.DARK_OAK_STAIRS.defaultBlockState()
-                    .setValue(StairBlock.FACING, Direction.SOUTH), 2);
-            level.setBlock(center.offset(x, 0, 2), Blocks.DARK_OAK_STAIRS.defaultBlockState()
-                    .setValue(StairBlock.FACING, Direction.NORTH), 2);
-        }
-        level.setBlock(center.offset(-4, 0, 0), Blocks.DARK_OAK_STAIRS.defaultBlockState()
-                .setValue(StairBlock.FACING, Direction.EAST), 2);
-        level.setBlock(center.offset(4, 0, 0), Blocks.DARK_OAK_STAIRS.defaultBlockState()
-                .setValue(StairBlock.FACING, Direction.WEST), 2);
-        level.setBlock(center.above(3), Blocks.SEA_LANTERN.defaultBlockState(), 2);
     }
 
     private static void placePremiumWorkCenterBedsAndArmor(ServerLevel level, BlockPos corner, int width, int depth) {
@@ -3088,12 +3118,7 @@ public class StarterPortalEvents {
 
     private static void decorateWorkerHome(ServerLevel level, BlockPos corner, int width, int depth, String label) {
         BlockPos table = corner.offset(width / 2, 1, depth / 2);
-        level.setBlock(table, Blocks.OAK_FENCE.defaultBlockState(), 2);
-        level.setBlock(table.above(), Blocks.LIGHT_BLUE_CARPET.defaultBlockState(), 2);
-        level.setBlock(table.north(), Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH), 2);
-        level.setBlock(table.south(), Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH), 2);
-        level.setBlock(table.east(), Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.WEST), 2);
-        level.setBlock(table.west(), Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.EAST), 2);
+        clearCentralWalkSpace(level, table, 2, 2);
 
         level.setBlock(corner.offset(width - 2, 1, 2), Blocks.SMOKER.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.WEST), 2);
         level.setBlock(corner.offset(width - 2, 1, 3), Blocks.BLAST_FURNACE.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.WEST), 2);
@@ -3105,15 +3130,6 @@ public class StarterPortalEvents {
         level.setBlock(corner.offset(5, 1, depth - 2), Blocks.ANVIL.defaultBlockState(), 2);
         level.setBlock(corner.offset(width - 3, 1, depth - 2), Blocks.SMITHING_TABLE.defaultBlockState(), 2);
         level.setBlock(corner.offset(width - 4, 1, depth - 2), Blocks.JUKEBOX.defaultBlockState(), 2);
-
-        for (BlockPos carpet : new BlockPos[] {
-                table.north().north(), table.south().south(),
-                table.east().east(), table.west().west()
-        }) {
-            if (level.getBlockState(carpet).isAir()) {
-                level.setBlock(carpet, Blocks.CYAN_CARPET.defaultBlockState(), 2);
-            }
-        }
 
         for (BlockPos light : new BlockPos[] {
                 corner.offset(width / 2, 4, depth / 2),
@@ -5402,7 +5418,7 @@ public class StarterPortalEvents {
         ArmorStand stand = EntityType.ARMOR_STAND.create(level);
         if (stand != null) {
             stand.setCustomName(Component.literal("Dragao Magic World"));
-            stand.setCustomNameVisible(true);
+            stand.setCustomNameVisible(false);
             stand.moveTo(center.getX() + 0.5D, center.getY() + 18.0D, center.getZ() + 0.5D, 0.0F, 0.0F);
             stand.setNoGravity(true);
             level.addFreshEntity(stand);
@@ -5643,7 +5659,7 @@ public class StarterPortalEvents {
 
         villager.moveTo(spawn.getX() + 0.5D, spawn.getY(), spawn.getZ() + 0.5D, outward.toYRot(), 0.0F);
         villager.setCustomName(Component.literal(name));
-        villager.setCustomNameVisible(true);
+        villager.setCustomNameVisible(false);
         villager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(heldItem));
         empowerMagicWorldVillager(villager, profession, spawn, seat, GLOBAL_VILLAGER_WORK_RADIUS);
 
@@ -5687,7 +5703,7 @@ public class StarterPortalEvents {
         }
         if (resident != null) {
             resident.setCustomName(Component.literal(name));
-            resident.setCustomNameVisible(true);
+            resident.setCustomNameVisible(false);
             resident.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(heldItem));
             empowerMagicWorldVillager(resident, professionForJobBlock(jobBlock), spot, requested, GLOBAL_VILLAGER_WORK_RADIUS);
         }
@@ -5850,7 +5866,7 @@ public class StarterPortalEvents {
         stand.setItemSlot(EquipmentSlot.LEGS, new ItemStack(leggings));
         stand.setItemSlot(EquipmentSlot.FEET, new ItemStack(boots));
         stand.setCustomName(Component.literal(name));
-        stand.setCustomNameVisible(true);
+        stand.setCustomNameVisible(false);
         stand.setNoGravity(true);
     }
 
@@ -5883,7 +5899,7 @@ public class StarterPortalEvents {
         stand.setItemSlot(EquipmentSlot.LEGS, leggings);
         stand.setItemSlot(EquipmentSlot.FEET, boots);
         stand.setCustomName(Component.literal(name));
-        stand.setCustomNameVisible(true);
+        stand.setCustomNameVisible(false);
         stand.setNoGravity(true);
     }
 
@@ -5895,7 +5911,7 @@ public class StarterPortalEvents {
         Entity entity = EntityType.VILLAGER.spawn(level, pos, MobSpawnType.STRUCTURE);
         if (entity instanceof Villager villager) {
             villager.setCustomName(Component.literal(name));
-            villager.setCustomNameVisible(true);
+            villager.setCustomNameVisible(false);
             villager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(heldItem));
             empowerMagicWorldVillager(villager, VillagerProfession.FARMER, home, farmCenter, 128);
             villager.getPersistentData().putInt("MagicWorldHomeX", home.getX());
@@ -5927,7 +5943,7 @@ public class StarterPortalEvents {
         }
 
         villager.setCustomName(Component.literal(name));
-        villager.setCustomNameVisible(true);
+        villager.setCustomNameVisible(false);
         villager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(heldItem));
         if (guardian) {
             villager.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.TOTEM_OF_UNDYING));
@@ -6095,7 +6111,7 @@ public class StarterPortalEvents {
 
         if (!name.isBlank()) {
             entity.setCustomName(Component.literal(name));
-            entity.setCustomNameVisible(true);
+            entity.setCustomNameVisible(false);
         }
         if (entity instanceof Mob mob) {
             mob.setPersistenceRequired();
@@ -6123,7 +6139,7 @@ public class StarterPortalEvents {
 
         entity.moveTo(safePos.getX() + 0.5D, safePos.getY() + 0.35D, safePos.getZ() + 0.5D, level.getRandom().nextFloat() * 360.0F, 0.0F);
         entity.setCustomName(Component.literal(name));
-        entity.setCustomNameVisible(true);
+        entity.setCustomNameVisible(false);
         if (entity instanceof Mob mob) {
             mob.setPersistenceRequired();
         }

@@ -781,16 +781,16 @@ Validacao e processo:
 - `git diff --check`: sem erros; apenas avisos esperados de CRLF no Windows.
 - O Codex valida somente com Gradle e nao abre o cliente.
 
-## Correcao casa e santuario do fim da rua - 2026-06-06 16:10:00 -03:00
+## Correcao casa e Santuario do fim da rua - 2026-06-06 16:10:00 -03:00
 
-- Os prints mostraram que a casa do fim da rua nao ficou completa no local esperado e que o santuario nao apareceu no sentido da rua olhando para o morro.
+- Os prints mostraram que a casa do fim da rua nao ficou completa no local esperado e que o Santuario nao apareceu no sentido da rua olhando para o morro.
 - O save local `Novo mundo` registrava base real `MagicWorldForgeStarterEstateBaseX/Y/Z = 0/105/0` e jogador olhando para oeste (`yaw ~ -96`).
 - O reparo foi elevado para `CURRENT_ESTATE_REPAIR_VERSION = 19`, forcando reaplicacao no proximo login do save existente.
 - A casa `starter_house_1.nbt` continua no ponto definido anteriormente, mas agora a rotina forca carregamento dos chunks antes de limpar e posicionar a estrutura.
 - A limpeza de volumes agora esvazia containers antes de remover blocos, evitando drops de baus antigos durante reparos repetidos.
-- O santuario foi movido para o eixo oeste da estrada real, no sentido do print olhando para o morro: `roadEndMagicSanctuaryOrigin(base) = base.offset(-176,0,-8)`.
-- A rotina cria/estende uma estrada ate a entrada leste do santuario antes de construir o shell.
-- O santuario tambem forca carregamento de chunks da area antes da construcao.
+- O Santuario foi movido para o eixo oeste da estrada real, no sentido do print olhando para o morro: `roadEndMagicSanctuaryOrigin(base) = base.offset(-176,0,-8)`.
+- A rotina cria/estende uma estrada ate a entrada leste do Santuario antes de construir o shell.
+- O Santuario tambem forca carregamento de chunks da area antes da construcao.
 - Validado com `./gradlew.bat build --stacktrace`: BUILD SUCCESSFUL.
 - `git diff --check`: sem erros; apenas avisos esperados de CRLF no Windows.
 - O Codex valida somente com Gradle e nao abre o cliente.
@@ -811,7 +811,7 @@ Validacao e processo:
 - O reparo foi elevado para a versao `18`, para aplicar no proximo login de saves ja criados.
 - O santuÃƒÂ¡rio usa o volume dos prints no final da rua, aproximadamente `X 236..281`, `Y 74+`, `Z -56..-39`.
 - A origem relativa usada e `base.offset(296,0,-86)`, com largura `45`, profundidade `17` e altura interna de `10`.
-- O loading inicial ganhou etapa propria em `97%`, mensagem `Carregando santuario magico do fim da rua...`, antes de marcar `100%`.
+- O loading inicial ganhou etapa propria em `97%`, mensagem `Carregando Santuario magico do fim da rua...`, antes de marcar `100%`.
 - `repairExistingEstate` tambem chama a rotina, garantindo aplicacao em mundos ja existentes.
 - O espaÃƒÂ§o recebe piso colorido com quartz, andesite, purpur, amethyst e sea lanterns, paredes decoradas, teto iluminado, redstone blocks, redstone lamps e glowstone.
 - A parede leste e laterais recebem baus/barris preenchidos com o catalogo de itens registrados do jogo/mod.
@@ -924,12 +924,12 @@ Validacao e processo:
 - Seed dropdown: lista renderizada como overlay no final do render para nao ficar sob widgets vanilla.
 - MagicWorldEntityCulling: portado do NeoForge para Forge via mixin client-side em EntityRenderer.shouldRender; desliga com propriedade magicworld.entity_culling=false.
 - Geracao nova: casa do fim da rua reposicionada para o fim da rua principal e sem plataforma extra de grama fora do footprint.
-- Geracao nova: santuario rebaixado 4 blocos, com entrada unica voltada para a casa, fora do volume do castelo e sem invadir a casa principal.
+- Geracao nova: Santuario rebaixado 4 blocos, com entrada unica voltada para a casa, fora do volume do castelo e sem invadir a casa principal.
 - Geracao nova: entradas da casa grande perto dos currais limpas por dentro e por fora, mantendo iluminacao embutida.
 - Geracao nova: borda viva e arvores naturais dentro do terreno da casa principal passam para cerejeira; conversao fica limitada aos limites do terreno e ao perimetro do castelo.
 - Validacao: compileJava foi iniciado mas interrompido pelo usuario para priorizar commit/versionamento; precisa rodar depois.
 
-## Registro 2026-06-06 - ajuste casa/santuario/cerejeiras
+## Registro 2026-06-06 - ajuste casa/Santuario/cerejeiras
 - Casa do fim da rua: template rotacionado 180 graus para a porta ficar de frente para a rua.
 - Casa do fim da rua: origem ajustada para base + (-5, -4, -90), deslocando lateralmente para centralizar e avancando a construcao para colar 2 blocos no eixo da rua.
 - Casa do fim da rua: decoracao da porta agora usa a coordenada da porta rotacionada, mantendo acesso no mesmo nivel da rua.
@@ -954,7 +954,7 @@ Validacao e processo:
 - Pedido atual: criar uma casa de bruxas no ponto do print da mata, com decoracao tematica, caldeiroes, feno, teias, morcegos, lareira, chamine, cerca, portao, placa e 3 bruxas funcionais a favor do jogador.
 - Coordenada usada: o print mostra Block `447 103 -87`; como os registros anteriores indicam base historica aproximada `-60 74 30`, a ancora relativa ficou `witchCovenAnchor(base) = base.offset(507, 0, -117)`.
 - A casa nasce com o portao no ponto indicado e se estende para oeste/para tras, entrando na mata/morro; a entrada principal fica limpa e visivel.
-- A geracao inicial ganhou etapa propria em `98%`: `Carregando casa das bruxas na mata...`, separada do santuario para reduzir pico de tick pesado.
+- A geracao inicial ganhou etapa propria em `98%`: `Carregando casa das bruxas na mata...`, separada do Santuario para reduzir pico de tick pesado.
 - A casa inclui cerca de dark oak, portao, placa um bloco a esquerda do portao com `fiquem longe` / `daqui`, quartos para 3 bruxas, mesa, cadeiras, biblioteca, canto de alquimia, caldeiroes, lareira, chamine, jack o lanterns, feno, cogumelos, teias e luzes.
 - Foram adicionados baus internos com pocoes, varinha Magic World, itens magicos, ingredientes, armas, escudos, flechas e armaduras Draconic Aether/netherite/diamond.
 - Foram criadas 3 bruxas vanilla marcadas com NBT `MagicWorldFriendlyWitch`, persistentes, invulneraveis e com NoAI para nao atacar o jogador.
@@ -1085,7 +1085,7 @@ Validacao e processo:
 - Todas as areas principais da propriedade receberam placas de chao com `ID LOCAL` e nome curto do local.
 - As placas ficam na frente ou na borda de chegada das estruturas, sem ocupar o bloco das portas.
 - O texto foi aplicado nos dois lados da placa para facilitar leitura mesmo quando o jogador chega pelo lado oposto.
-- Cobertura: casas, portais, predios, currais, plantacoes, mina, coven, santuario, praca e castelo quando ativo.
+- Cobertura: casas, portais, predios, currais, plantacoes, mina, coven, Santuario, praca e castelo quando ativo.
 - O reparo versionado foi elevado para `24` para aplicar as placas automaticamente em saves ja existentes.
 
 ## Registro 2026-06-06 - nome do mundo, seeds e desempenho de reparo
@@ -1093,3 +1093,12 @@ Validacao e processo:
 - A lista de seeds abre como modal escuro em primeiro plano, escondendo o layout de tras; ao clicar em uma seed, o modal fecha.
 - A atualizacao de placas deixou de reconstruir a propriedade inteira quando o save ja esta na versao anterior; nesse caso so as placas sao aplicadas.
 - Morcegos decorativos ganharam spawn seguro em bolsos de ar para evitar morte por sufocamento em paredes e logs repetidos.
+
+## Registro 2026-06-06 - mapas novos como alvo e ajustes de Santuario
+- Regra operacional: o projeto deve ser ajustado pensando em novo mapa; reparo de saves antigos nao deve ser prioridade sem pedido explicito.
+- O Santuario Violeta agora usa coordenada absoluta do print como centro: `X=201 Y=110 Z=13`, abaixo do castelo.
+- A entrada foi invertida para oeste e recebeu degraus de acesso.
+- A casa do jogador baseada em `starter_house_1.nbt` cria degraus automaticos na frente das portas apos ser carregada.
+- Mesas centrais de areas grandes foram removidas para liberar circulacao de villagers e animais.
+- Entidades nomeadas do Magic World nao exibem mais nome flutuante acima da cabeca.
+- Avisos visuais de carregamento ao spawn foram silenciados; o chat fica reservado para mensagem final curta.
