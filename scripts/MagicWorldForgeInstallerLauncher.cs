@@ -2,8 +2,10 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -11,6 +13,7 @@ internal static class MagicWorldForgeInstallerLauncher
 {
     private const string ScriptName = "install-magicworld-forge-tlauncher.ps1";
     private const string ForgeInstallerName = "forge-1.20.1-47.4.10-installer.jar";
+    private static readonly byte[] FullPayloadMarker = Encoding.ASCII.GetBytes("MAGICWORLD_FULL_PAYLOAD_V1");
 
     [STAThread]
     private static int Main(string[] args)
@@ -56,7 +59,7 @@ internal static class MagicWorldForgeInstallerLauncher
         label.Width = 690;
         label.Height = 54;
         label.Font = new Font("Segoe UI", 10);
-        label.Text = "Instalador Magic World Ultimate Forge 1.20.1: instala/atualiza Forge 47.4.10 e copia mods, resourcepacks, shaderpacks e configuracoes do pacote distribuivel para a .minecraft usada pelo TLauncher.";
+        label.Text = "Instalador FULL Magic World Ultimate Forge 1.20.1: instala/atualiza Forge 47.4.10 e distribui mods, resourcepacks, shaderpacks e configuracoes embutidos para a .minecraft usada pelo TLauncher.";
         form.Controls.Add(label);
 
         TextBox pathBox = new TextBox();
@@ -167,7 +170,7 @@ internal static class MagicWorldForgeInstallerLauncher
                 + " -NoGui -MinecraftDir "
                 + QuoteArgument(minecraftDir);
 
-        string packageMinecraftDir = FindPackageMinecraftDir();
+        string packageMinecraftDir = FindPackageMinecraftDir(Path.GetDirectoryName(scriptPath));
         if (!string.IsNullOrEmpty(packageMinecraftDir))
         {
             powershellArgs += " -PackageMinecraftDir " + QuoteArgument(packageMinecraftDir);
@@ -298,6 +301,7 @@ internal static class MagicWorldForgeInstallerLauncher
                 + "- Mods externos necessarios que ainda nao podem ficar dentro do all-in-one.\r\n"
                 + "- Resource Packs e Shader Packs do pacote distribuivel.\r\n"
                 + "- JourneyMap configurado sem beacons/linhas 3D visiveis.\r\n\r\n"
+                + "Modo FULL: o pacote .minecraft vai embutido dentro deste EXE.\r\n"
                 + "Remove apenas Magic World antigo e conflitos conhecidos: TL Cape, Controllable, EMF/ETF, Fusion, CIT, ModernFix e FerriteCore.\r\n";
     }
 
@@ -309,10 +313,11 @@ internal static class MagicWorldForgeInstallerLauncher
             return null;
         }
 
+        FileInfo exeInfo = new FileInfo(Application.ExecutablePath);
         string extractionRoot = Path.Combine(
                 Path.GetTempPath(),
                 "MagicWorldForgeInstaller",
-                assembly.GetName().Version.ToString()
+                assembly.GetName().Version + "-" + exeInfo.Length + "-" + exeInfo.LastWriteTimeUtc.Ticks
         );
 
         Directory.CreateDirectory(extractionRoot);
@@ -322,7 +327,72 @@ internal static class MagicWorldForgeInstallerLauncher
         ExtractResource(assembly, ScriptName, Path.Combine(extractionRoot, ScriptName));
         ExtractResourceIfPresent(assembly, "banner_installer.png", Path.Combine(extractionRoot, "screenshots", "banner_installer.png"));
         ExtractResourceIfPresent(assembly, "forge-installer.jar", Path.Combine(extractionRoot, "payload", "forge", ForgeInstallerName));
+        ExtractAppendedPayloadIfPresent(extractionRoot);
         return Path.Combine(extractionRoot, ScriptName);
+    }
+
+    private static void ExtractAppendedPayloadIfPresent(string extractionRoot)
+    {
+        string packageDir = Path.Combine(extractionRoot, "payload", ".minecraft");
+        string forgeInstaller = Path.Combine(extractionRoot, "payload", "forge", ForgeInstallerName);
+        if (Directory.Exists(packageDir) && File.Exists(forgeInstaller))
+        {
+            return;
+        }
+
+        using (FileStream executable = File.OpenRead(Application.ExecutablePath))
+        {
+            if (executable.Length < FullPayloadMarker.Length + sizeof(long))
+            {
+                return;
+            }
+
+            executable.Position = executable.Length - FullPayloadMarker.Length;
+            byte[] marker = new byte[FullPayloadMarker.Length];
+            executable.Read(marker, 0, marker.Length);
+            if (!marker.SequenceEqual(FullPayloadMarker))
+            {
+                return;
+            }
+
+            executable.Position = executable.Length - FullPayloadMarker.Length - sizeof(long);
+            byte[] lengthBytes = new byte[sizeof(long)];
+            executable.Read(lengthBytes, 0, lengthBytes.Length);
+            long payloadLength = BitConverter.ToInt64(lengthBytes, 0);
+            long payloadStart = executable.Length - FullPayloadMarker.Length - sizeof(long) - payloadLength;
+            if (payloadLength <= 0 || payloadStart < 0)
+            {
+                throw new InvalidDataException("Payload FULL embutido invalido.");
+            }
+
+            string payloadZip = Path.Combine(extractionRoot, "magicworld-full-payload.zip");
+            if (!File.Exists(payloadZip) || new FileInfo(payloadZip).Length != payloadLength)
+            {
+                executable.Position = payloadStart;
+                using (FileStream output = File.Create(payloadZip))
+                {
+                    CopyBytes(executable, output, payloadLength);
+                }
+            }
+
+            ZipFile.ExtractToDirectory(payloadZip, extractionRoot);
+        }
+    }
+
+    private static void CopyBytes(Stream input, Stream output, long bytes)
+    {
+        byte[] buffer = new byte[1024 * 1024];
+        long remaining = bytes;
+        while (remaining > 0)
+        {
+            int read = input.Read(buffer, 0, (int)Math.Min(buffer.Length, remaining));
+            if (read <= 0)
+            {
+                throw new EndOfStreamException("Fim inesperado ao extrair payload FULL.");
+            }
+            output.Write(buffer, 0, read);
+            remaining -= read;
+        }
     }
 
     private static void ExtractResource(Assembly assembly, string resourceName, string destination)
@@ -365,8 +435,17 @@ internal static class MagicWorldForgeInstallerLauncher
         return candidates.Select(Path.GetFullPath).FirstOrDefault(File.Exists);
     }
 
-    private static string FindPackageMinecraftDir()
+    private static string FindPackageMinecraftDir(string extractionRoot)
     {
+        if (!string.IsNullOrEmpty(extractionRoot))
+        {
+            string embeddedPackage = Path.Combine(extractionRoot, "payload", ".minecraft");
+            if (Directory.Exists(embeddedPackage))
+            {
+                return Path.GetFullPath(embeddedPackage);
+            }
+        }
+
         string exeDir = AppDomain.CurrentDomain.BaseDirectory;
         string[] candidates =
         {

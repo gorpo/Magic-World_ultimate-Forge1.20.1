@@ -83,6 +83,18 @@ function Copy-DirectoryContents {
     Write-Log "Copiado: $Source -> $Destination"
 }
 
+function Copy-FileIfExists {
+    param([string]$Source, [string]$Destination)
+    if (-not (Test-Path -LiteralPath $Source)) {
+        Write-Log "Arquivo opcional ausente, pulando: $Source"
+        return
+    }
+
+    New-Item -ItemType Directory -Path (Split-Path -Parent $Destination) -Force | Out-Null
+    Copy-Item -LiteralPath $Source -Destination $Destination -Force
+    Write-Log "Copiado: $Source -> $Destination"
+}
+
 function Remove-KnownConflictMods {
     param([string]$ModsDir)
     New-Item -ItemType Directory -Path $ModsDir -Force | Out-Null
@@ -152,6 +164,32 @@ function Ensure-JourneyMap3DWaypointsHidden {
     Write-Log "JourneyMap configurado sem beacons/linhas/nomes 3D."
 }
 
+function Ensure-OculusShaderConfig {
+    param([string]$TargetMinecraftDir)
+    $shaderDir = Join-Path $TargetMinecraftDir "shaderpacks"
+    if (-not (Test-Path -LiteralPath $shaderDir)) {
+        return
+    }
+
+    $shader = Get-ChildItem -LiteralPath $shaderDir -File -Filter "*.zip" -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -like "*MagicWorld*" } |
+            Select-Object -First 1
+    if (-not $shader) {
+        return
+    }
+
+    $configDir = Join-Path $TargetMinecraftDir "config"
+    New-Item -ItemType Directory -Path $configDir -Force | Out-Null
+    $irisConfig = Join-Path $configDir "iris.properties"
+    $content = @(
+        "enableShaders=true",
+        "shaderPack=$($shader.Name)",
+        "maxShadowRenderDistance=32"
+    )
+    Set-Content -LiteralPath $irisConfig -Value $content -Encoding UTF8
+    Write-Log "Oculus/Iris configurado para shader: $($shader.Name)"
+}
+
 function Find-Java {
     if (-not [string]::IsNullOrWhiteSpace($env:JAVA_HOME)) {
         $javaFromHome = Join-Path $env:JAVA_HOME "bin\java.exe"
@@ -219,7 +257,11 @@ Copy-DirectoryContents -Source (Join-Path $packageMinecraft "mods") -Destination
 Copy-DirectoryContents -Source (Join-Path $packageMinecraft "resourcepacks") -Destination (Join-Path $targetMinecraft "resourcepacks")
 Copy-DirectoryContents -Source (Join-Path $packageMinecraft "shaderpacks") -Destination (Join-Path $targetMinecraft "shaderpacks")
 Copy-DirectoryContents -Source (Join-Path $packageMinecraft "journeymap") -Destination (Join-Path $targetMinecraft "journeymap")
+Copy-DirectoryContents -Source (Join-Path $packageMinecraft "config") -Destination (Join-Path $targetMinecraft "config")
+Copy-DirectoryContents -Source (Join-Path $packageMinecraft "defaultconfigs") -Destination (Join-Path $targetMinecraft "defaultconfigs")
+Copy-FileIfExists -Source (Join-Path $packageMinecraft "options.txt") -Destination (Join-Path $targetMinecraft "options.txt")
 Ensure-JourneyMap3DWaypointsHidden -TargetMinecraftDir $targetMinecraft
+Ensure-OculusShaderConfig -TargetMinecraftDir $targetMinecraft
 
 $modJar = Join-Path $targetMinecraft ("mods\" + $ModJarName)
 if (-not (Test-Path -LiteralPath $modJar)) {
