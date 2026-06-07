@@ -7,6 +7,7 @@ import com.magicworld.client.menus.DimensionMenu;
 import com.magicworld.client.menus.DungeonSpawnerMenu;
 import com.magicworld.client.menus.GraphicsProfilesMenu;
 import com.magicworld.client.menus.LuckyBlockMenu;
+import com.magicworld.client.menus.LocationsMenu;
 import com.magicworld.client.menus.MineColoniesMenu;
 import com.magicworld.client.menus.VarinhaMagicaControlCenter;
 import com.magicworld.client.menus.MobSpawnerMenu;
@@ -188,6 +189,7 @@ public class PremiumMenuScreen extends Screen {
         MOB_SPAWNER("Mobs"),
         WEATHER_CONTROL("Clima"),
         BIOME_TELEPORT("Biomas"),
+        LOCATIONS("Locais"),
         DIMENSION_MENU("Dimensoes"),
         PREMIUM_POWERS("Poderes"),
         STRUCTURE_RAIN("Chuva"),
@@ -300,6 +302,10 @@ public class PremiumMenuScreen extends Screen {
 
         else if (activeTab == MenuTab.BIOME_TELEPORT) {
             BiomeTeleportMenu.add(premiumEntries);
+        }
+
+        else if (activeTab == MenuTab.LOCATIONS) {
+            LocationsMenu.add(premiumEntries);
         }
 
         else if (activeTab == MenuTab.DIMENSION_MENU) {
@@ -2436,6 +2442,7 @@ public class PremiumMenuScreen extends Screen {
                 || tab == MenuTab.MOB_SPAWNER
                 || tab == MenuTab.WEATHER_CONTROL
                 || tab == MenuTab.BIOME_TELEPORT
+                || tab == MenuTab.LOCATIONS
                 || tab == MenuTab.DIMENSION_MENU
                 || tab == MenuTab.PREMIUM_POWERS
                 || tab == MenuTab.STRUCTURE_RAIN
@@ -2464,6 +2471,7 @@ public class PremiumMenuScreen extends Screen {
                 || tab == MenuTab.GRAPHICS_PROFILES
                 || tab == MenuTab.WEATHER_CONTROL
                 || tab == MenuTab.BIOME_TELEPORT
+                || tab == MenuTab.LOCATIONS
                 || tab == MenuTab.DIMENSION_MENU
                 || tab == MenuTab.PREMIUM_POWERS
                 || tab == MenuTab.STRUCTURE_RAIN

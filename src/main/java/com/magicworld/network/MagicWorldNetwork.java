@@ -1,10 +1,12 @@
 package com.magicworld.network;
 
 import com.magicworld.MagicWorld;
+import com.magicworld.client.MagicWorldJourneyMapWaypoints;
 import com.magicworld.client.MagicWorldPortalVisualController;
 import com.magicworld.client.InitialLoadNoticeScreen;
 import com.magicworld.client.PremiumPortalOptionsScreen;
 import com.magicworld.event.StarterPortalEvents;
+import com.magicworld.integration.MagicWorldLocationManager;
 import com.magicworld.integration.MagicWorldMineColoniesIntegration;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -97,6 +99,15 @@ public final class MagicWorldNetwork {
                 MagicWorldPanelActionPacket::handle,
                 Optional.of(NetworkDirection.PLAY_TO_SERVER)
         );
+
+        CHANNEL.registerMessage(
+                packetId++,
+                MagicWorldWaypointPacket.class,
+                MagicWorldWaypointPacket::encode,
+                MagicWorldWaypointPacket::decode,
+                MagicWorldWaypointPacket::handle,
+                Optional.of(NetworkDirection.PLAY_TO_CLIENT)
+        );
     }
 
     public static void openInitialLoadNotice(ServerPlayer player) {
@@ -121,6 +132,31 @@ public final class MagicWorldNetwork {
 
     public static void sendPanelAction(String action) {
         CHANNEL.sendToServer(new MagicWorldPanelActionPacket(action));
+    }
+
+    public static void sendJourneyMapWaypoint(
+            ServerPlayer player,
+            String id,
+            String label,
+            String dimension,
+            int x,
+            int y,
+            int z,
+            int red,
+            int green,
+            int blue
+    ) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new MagicWorldWaypointPacket(
+                id,
+                label,
+                dimension,
+                x,
+                y,
+                z,
+                red,
+                green,
+                blue
+        ));
     }
 
     public static final class OpenInitialLoadNoticePacket {
@@ -268,10 +304,68 @@ public final class MagicWorldNetwork {
         }
     }
 
+    public record MagicWorldWaypointPacket(
+            String id,
+            String label,
+            String dimension,
+            int x,
+            int y,
+            int z,
+            int red,
+            int green,
+            int blue
+    ) {
+        public static void encode(MagicWorldWaypointPacket packet, FriendlyByteBuf buffer) {
+            buffer.writeUtf(packet.id);
+            buffer.writeUtf(packet.label);
+            buffer.writeUtf(packet.dimension);
+            buffer.writeInt(packet.x);
+            buffer.writeInt(packet.y);
+            buffer.writeInt(packet.z);
+            buffer.writeInt(packet.red);
+            buffer.writeInt(packet.green);
+            buffer.writeInt(packet.blue);
+        }
+
+        public static MagicWorldWaypointPacket decode(FriendlyByteBuf buffer) {
+            return new MagicWorldWaypointPacket(
+                    buffer.readUtf(),
+                    buffer.readUtf(),
+                    buffer.readUtf(),
+                    buffer.readInt(),
+                    buffer.readInt(),
+                    buffer.readInt(),
+                    buffer.readInt(),
+                    buffer.readInt(),
+                    buffer.readInt()
+            );
+        }
+
+        public static void handle(MagicWorldWaypointPacket packet, Supplier<NetworkEvent.Context> contextSupplier) {
+            NetworkEvent.Context context = contextSupplier.get();
+            context.enqueueWork(() -> MagicWorldJourneyMapWaypoints.writeWaypoint(
+                    packet.id,
+                    packet.label,
+                    packet.dimension,
+                    packet.x,
+                    packet.y,
+                    packet.z,
+                    packet.red,
+                    packet.green,
+                    packet.blue
+            ));
+            context.setPacketHandled(true);
+        }
+    }
+
     private static void handlePanelAction(ServerPlayer player, String action) {
         ServerLevel level = player.serverLevel();
         if (action.startsWith("secret_give:")) {
             giveSecretItem(player, action.substring("secret_give:".length()));
+            return;
+        }
+
+        if (MagicWorldLocationManager.handleAction(player, action)) {
             return;
         }
 

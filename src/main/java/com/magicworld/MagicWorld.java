@@ -2,6 +2,7 @@ package com.magicworld;
 
 import com.magicworld.event.CraftEvents;
 import com.magicworld.event.AuraEvents;
+import com.magicworld.event.MagicWorldTeleportGuard;
 import com.magicworld.event.MobEvents;
 import com.magicworld.event.StarterPortalEvents;
 import com.magicworld.integration.MagicWorldMineColoniesIntegration;
@@ -83,6 +84,10 @@ public class MagicWorld {
 
         MinecraftForge.EVENT_BUS.register(
                 new StarterPortalEvents()
+        );
+
+        MinecraftForge.EVENT_BUS.register(
+                new MagicWorldTeleportGuard()
         );
 
         MinecraftForge.EVENT_BUS.register(

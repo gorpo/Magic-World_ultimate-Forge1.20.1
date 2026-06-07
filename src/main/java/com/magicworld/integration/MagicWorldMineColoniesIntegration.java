@@ -49,13 +49,21 @@ public final class MagicWorldMineColoniesIntegration {
         String path = blockId.getPath();
         if (path.equals("blockhuttownhall")) {
             saveTarget(player, TOWN_HALL, pos, player.level().dimension(), "Town Hall");
+            MagicWorldLocationManager.saveLocation(player, MagicWorldLocationManager.MINECOLONIES_TOWN_HALL,
+                    "Town Hall MineColonies", pos, player.level().dimension(), 80, 204, 130);
             saveTarget(player, LAST_COLONY, pos, player.level().dimension(), "Colonia");
+            MagicWorldLocationManager.saveLocation(player, MagicWorldLocationManager.MINECOLONIES_LAST_COLONY,
+                    "Ultima colonia MineColonies", pos, player.level().dimension(), 80, 204, 130);
             return;
         }
 
         if (isColonyBuilding(path)) {
             saveTarget(player, LAST_BUILDING, pos, player.level().dimension(), readableName(path));
+            MagicWorldLocationManager.saveLocation(player, MagicWorldLocationManager.MINECOLONIES_LAST_BUILDING,
+                    "Ultima construcao MineColonies", pos, player.level().dimension(), 170, 130, 255);
             saveTarget(player, LAST_COLONY, pos, player.level().dimension(), "Colonia");
+            MagicWorldLocationManager.saveLocation(player, MagicWorldLocationManager.MINECOLONIES_LAST_COLONY,
+                    "Ultima colonia MineColonies", pos, player.level().dimension(), 80, 204, 130);
         }
     }
 
@@ -88,6 +96,10 @@ public final class MagicWorldMineColoniesIntegration {
     private static void registerCurrentPosition(ServerPlayer player) {
         saveTarget(player, LAST_COLONY, player.blockPosition(), player.level().dimension(), "Colonia manual");
         saveTarget(player, LAST_BUILDING, player.blockPosition(), player.level().dimension(), "Marcador manual");
+        MagicWorldLocationManager.saveLocation(player, MagicWorldLocationManager.MINECOLONIES_LAST_COLONY,
+                "Colonia manual MineColonies", player.blockPosition(), player.level().dimension(), 80, 204, 130);
+        MagicWorldLocationManager.saveLocation(player, MagicWorldLocationManager.MINECOLONIES_LAST_BUILDING,
+                "Marcador manual MineColonies", player.blockPosition(), player.level().dimension(), 170, 130, 255);
         MagicWorld.effects(player.serverLevel(), player.blockPosition());
     }
 
@@ -135,6 +147,7 @@ public final class MagicWorldMineColoniesIntegration {
 
         BlockPos savedPos = new BlockPos(target.getInt("X"), target.getInt("Y"), target.getInt("Z"));
         BlockPos safePos = findSafeTeleportPos(level, savedPos);
+        MagicWorldLocationManager.markAuthorizedTeleport(player);
         player.teleportTo(
                 level,
                 safePos.getX() + 0.5D,

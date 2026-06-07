@@ -2,6 +2,7 @@ package com.magicworld.event;
 
 import com.magicworld.MagicWorld;
 import com.magicworld.MagicWorldWorldOptions;
+import com.magicworld.integration.MagicWorldLocationManager;
 import com.magicworld.network.MagicWorldNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -161,6 +162,7 @@ public class StarterPortalEvents {
 
         CompoundTag data = player.getPersistentData();
         if (data.getBoolean(ESTATE_CREATED_KEY)) {
+            refreshSavedEstateLocations(player);
             if (data.getInt(ESTATE_REPAIR_VERSION_KEY) < CURRENT_ESTATE_REPAIR_VERSION) {
                 // Saves antigos nao sao reparados no login: o alvo de performance e mapa novo.
                 data.putInt(ESTATE_REPAIR_VERSION_KEY, CURRENT_ESTATE_REPAIR_VERSION);
@@ -305,11 +307,31 @@ public class StarterPortalEvents {
                 player.getPersistentData().putBoolean(ESTATE_CREATED_KEY, true);
                 player.getPersistentData().putInt(ESTATE_REPAIR_VERSION_KEY, CURRENT_ESTATE_REPAIR_VERSION);
                 applyMagicWorldServerSettings(player);
-                teleportPlayerToEstateSpawn(player, level, task.base);
+                BlockPos homeSpawn = findEstateSpawn(level, task.base);
+                saveEstateLocationWaypoints(player, level, task.base, homeSpawn);
+                teleportPlayerToEstateSpawn(player, level, homeSpawn);
+                MagicWorldTeleportGuard.startWatch(player);
                 sendInitialLoadProgress(player, 100, "Magic World carregado.", true);
                 TASKS.remove(player.getUUID());
             }
         }
+    }
+
+    private static void refreshSavedEstateLocations(ServerPlayer player) {
+        ServerLevel level = player.serverLevel();
+        BlockPos base = estateBaseFromPlayer(player);
+        BlockPos homeSpawn = findRoadEndHouseBedsideSpawn(level, base);
+        if (homeSpawn == null) {
+            homeSpawn = base.above();
+        }
+        saveEstateLocationWaypoints(player, level, base, homeSpawn);
+    }
+
+    private static void saveEstateLocationWaypoints(ServerPlayer player, ServerLevel level, BlockPos base, BlockPos homeSpawn) {
+        BlockPos sanctuary = roadEndMagicSanctuaryOrigin(base).offset(SANCTUARY_WIDTH / 2, 1, SANCTUARY_DEPTH / 2);
+        BlockPos portalPlaza = functionalPortalPlazaCenter(player, level, base);
+        BlockPos castle = MagicWorldWorldOptions.isCastlesEnabled() ? castleCenter(base) : null;
+        MagicWorldLocationManager.registerEstateLocations(player, homeSpawn, sanctuary, portalPlaza, castle);
     }
 
     private static void applyMagicWorldServerSettings(ServerPlayer player) {
@@ -4632,6 +4654,7 @@ public class StarterPortalEvents {
         BlockPos spawn = returnPortal.south(4);
         buildReturnPortalPlatform(targetLevel, returnPortal, kind);
         setPortalCooldown(player);
+        MagicWorldLocationManager.markAuthorizedTeleport(player);
         player.teleportTo(
                 targetLevel,
                 spawn.getX() + 0.5D,
@@ -4652,6 +4675,7 @@ public class StarterPortalEvents {
         BlockPos plaza = functionalPortalPlazaCenter(player, overworld, estateBase);
         ensureAllFunctionalPortalVisuals(overworld, plaza);
         setPortalCooldown(player);
+        MagicWorldLocationManager.markAuthorizedTeleport(player);
         player.teleportTo(
                 overworld,
                 plaza.getX() + 0.5D,
@@ -4663,9 +4687,9 @@ public class StarterPortalEvents {
         );
     }
 
-    private static void teleportPlayerToEstateSpawn(ServerPlayer player, ServerLevel level, BlockPos base) {
-        BlockPos spawn = findEstateSpawn(level, base);
+    private static void teleportPlayerToEstateSpawn(ServerPlayer player, ServerLevel level, BlockPos spawn) {
         setPlayerEstateRespawn(player, spawn);
+        MagicWorldLocationManager.markAuthorizedTeleport(player);
         player.teleportTo(
                 level,
                 spawn.getX() + 0.5D,

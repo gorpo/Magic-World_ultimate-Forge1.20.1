@@ -1288,3 +1288,13 @@ Validacao e processo:
 - O Magic World agora sobrescreve assets do namespace `mca` para telas GUI: `textures/gui.png` e fundos em `textures/gui/books/*.png`.
 - Paleta aplicada: fundo roxo/azul escuro, botoes roxos e livros lavanda/roxo para manter texto legivel.
 - Nao sobrescrever `mca.png` nem `banner.png` pelo nosso mod; esses ficam sob controle do JAR MCA que o usuario editou.
+
+## Registro 2026-06-07 - locais seguros, JourneyMap e protecao de teleporte
+- Criado o sistema `MagicWorldLocationManager` para salvar locais oficiais por jogador: casa, santuario, praca de portais, castelo, marcador manual, ultimo teleporte externo, ultima colonia, Town Hall e ultima construcao MineColonies.
+- O menu da varinha `H` ganhou a aba `Locais`, acessivel por `Sistema > Locais`.
+- O menu MagicWorld do `Esc` ganhou botoes rapidos para Locais, Casa, Santuario, Praca de Portais, Ultimo Externo e Waypoints.
+- `MagicWorldTeleportGuard` monitora os primeiros 30 segundos apos entrar/criar o mundo; se outro mod mover o jogador longe sem acao Magic World, o ponto e salvo e o jogador volta para casa.
+- MineColonies agora alimenta tambem os locais oficiais do Magic World quando registra colonia, Town Hall ou construcao.
+- JourneyMap recebe waypoints oficiais Magic World por arquivo local quando instalado; nao apagar cache automaticamente.
+- O pacote local foi atualizado somente no JAR all-in-one; nao gerar ZIP.
+- Validacao: `./gradlew.bat build` passou.

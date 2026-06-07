@@ -2005,3 +2005,13 @@ Validacao:
 - A copia modificada do MCA em `.minecraft/mods` foi copiada para `pacote_distribuivel/.minecraft/mods`, preservando a logo alterada no pacote local.
 - Implementado override pelo nosso mod, sem editar o JAR MCA: `assets/mca/textures/gui.png` e `assets/mca/textures/gui/books/*.png`.
 - Nao sobrescrever `mca.png` nem `banner.png` no nosso mod; manter esses arquivos controlados pela copia editada do MCA.
+
+## Handoff 2026-06-07 - locais seguros e protecao de teleporte externo
+- Pedido: jogador nasce certo, mas depois e movido para ponto anterior de MCA/MineColonies; precisa de teleporte, explicacao e apoio do JourneyMap.
+- Implementado `MagicWorldLocationManager`: salva casa, santuario, praca de portais, castelo, marcador manual, ultimo teleporte externo, ultima colonia, Town Hall e ultima construcao.
+- Implementado `MagicWorldTeleportGuard`: nos primeiros 30 segundos apos login/final da geracao, teleporte grande nao autorizado e tratado como externo, salvo como waypoint e revertido para casa.
+- Menus: nova aba `Locais` no menu da varinha `H`; botao `Locais Magic World` e atalhos rapidos tambem no menu MagicWorld do `Esc`.
+- MineColonies: registros antigos sao migrados de NBT legado quando usados; novos cliques/colocacoes ja alimentam os locais oficiais.
+- JourneyMap: `MagicWorldJourneyMapWaypoints` escreve waypoints oficiais locais quando JourneyMap esta instalado; nao apagar cache/tiles automaticamente.
+- Pacote: atualizado somente `pacote_distribuivel/.minecraft/mods/Magic_World_Mod_1.20.1-1.0.0.1.jar`; sem ZIP.
+- Validado com `./gradlew.bat build`.
