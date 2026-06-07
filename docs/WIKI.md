@@ -1325,7 +1325,7 @@ Validacao e processo:
 
 ## Registro 2026-06-07 - instalador Forge local
 - Criado instalador Forge 1.20.1-47.4.10 em `installer/MagicWorldInstaller.exe`.
-- O EXE embute script e Forge installer, mas usa `pacote_distribuivel/.minecraft` como fonte para evitar EXE/ZIP gigante.
+- Estado inicial: o EXE embutia script e Forge installer, mas usava `pacote_distribuivel/.minecraft` como fonte para evitar EXE/ZIP gigante.
 - O instalador copia mods, resourcepacks, shaderpacks e JourneyMap, sem alterar a regra da pasta distribuivel.
 - Remove conflitos conhecidos: Magic World antigo, TL Cape, Controllable, EMF/ETF, Fusion, CIT, ModernFix e FerriteCore.
 - Validacao: script testado com `-SkipForgeInstall`; EXE compilado com sucesso.
@@ -1337,3 +1337,11 @@ Validacao e processo:
 - JAR local atualizado em `pacote_distribuivel/.minecraft/mods/Magic_World_Mod_1.20.1-1.0.0.1.jar`.
 - Installer local recompilado em `installer/MagicWorldInstaller.exe`.
 - Validacao: `./gradlew.bat build` passou.
+
+## Registro 2026-06-07 - instalador FULL standalone
+- `installer/MagicWorldInstaller.exe` agora e FULL: embute `pacote_distribuivel/.minecraft` e o Forge installer no proprio executavel.
+- O EXE pode ficar grande e ser distribuido sozinho; nao precisa ficar ao lado de `pacote_distribuivel`.
+- Ao instalar, distribui `mods`, `resourcepacks`, `shaderpacks`, `journeymap`, `config`, `defaultconfigs` e `options.txt` quando existirem no payload.
+- Configura JourneyMap sem beacons/linhas/nomes 3D e cria `config/iris.properties` para selecionar o shader Magic World quando Oculus/Iris estiver instalado.
+- O modo leve antigo fica disponivel apenas com `scripts/build-magicworld-forge-installer.ps1 -NoFullPayload`.
+- Validacao: payload anexado ao EXE conferido com marcador `MAGICWORLD_FULL_PAYLOAD_V1`; entries principais presentes.

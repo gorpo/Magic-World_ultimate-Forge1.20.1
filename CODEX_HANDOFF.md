@@ -2044,8 +2044,7 @@ Validacao:
 ## Handoff 2026-06-07 - instalador Forge
 - Adicionados `scripts/install-magicworld-forge-tlauncher.ps1`, `scripts/MagicWorldForgeInstallerLauncher.cs` e `scripts/build-magicworld-forge-installer.ps1`.
 - Instalador local gerado em `installer/MagicWorldInstaller.exe`; `installer/` segue ignorado pelo Git.
-- O EXE embute o script e o Forge installer `1.20.1-47.4.10`, mas nao embute `pacote_distribuivel/.minecraft` porque o pacote tem cerca de 1.8 GB.
-- Para funcionar, manter o EXE no projeto ou ao lado da pasta `pacote_distribuivel`.
+- Estado anterior: o EXE embutia script e Forge installer, mas nao o pacote completo.
 - Validacao executada: `install-magicworld-forge-tlauncher.ps1 -SkipForgeInstall` copiou 18 mods, resources, shaderpacks e JourneyMap para `tmp/installer-test/.minecraft`; build do EXE passou.
 
 ## Handoff 2026-06-07 - menu central fechado antes dos releases
@@ -2054,3 +2053,12 @@ Validacao:
 - `MagicWorldCentralPauseScreen` agora usa somente duas colunas, 8 linhas e calculo dinamico de altura/espacamento.
 - Labels encurtadas para caber em escala alta: `Menu secreto`, `Menu varinha`, `Locais Magic`.
 - Build passou, JAR distribuivel atualizado e installer local recompilado.
+
+## Handoff 2026-06-07 - installer FULL standalone
+- Pedido atualizado: installer deve ser um EXE grande com tudo dentro para instalar facil em TLauncher com Minecraft 1.20.1 ja aberto uma vez.
+- `MagicWorldForgeInstallerLauncher.cs` agora detecta payload ZIP anexado ao fim do proprio EXE via marcador `MAGICWORLD_FULL_PAYLOAD_V1`.
+- `build-magicworld-forge-installer.ps1` gera FULL por padrao: cria ZIP interno com `payload/.minecraft` e `payload/forge/forge-1.20.1-47.4.10-installer.jar`, depois anexa ao EXE.
+- `install-magicworld-forge-tlauncher.ps1` copia mods, resourcepacks, shaderpacks, JourneyMap, config/defaultconfigs/options opcionais, remove conflitos conhecidos e aplica config JourneyMap/Oculus.
+- `-NoFullPayload` ainda gera a versao leve antiga se necessario.
+- EXE local FULL gerado em `installer/MagicWorldInstaller.exe`; tamanho aproximado 1.78 GiB / 1.91 GB.
+- Validacao: marcador do payload OK, entries do JAR principal, shader e Forge installer presentes no ZIP interno.

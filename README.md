@@ -1580,10 +1580,12 @@ Portais:
 
 Arquivos:
 
-- `installer/MagicWorldInstaller.exe`: instalador Forge com interface.
+- `installer/MagicWorldInstaller.exe`: instalador Forge FULL com interface e payload embutido.
 - `scripts/install-magicworld-forge-tlauncher.ps1`: instalacao via PowerShell.
-- `scripts/build-magicworld-forge-installer.ps1`: recompila o EXE.
+- `scripts/build-magicworld-forge-installer.ps1`: recompila o EXE FULL.
 
-Regra: o instalador usa `pacote_distribuivel/.minecraft` como fonte. Ele nao gera ZIP e nao embute os resourcepacks/shaders no EXE porque o pacote local e grande. Para usar, mantenha o EXE no projeto ou ao lado da pasta `pacote_distribuivel`.
+Regra atual: o instalador FULL embute `pacote_distribuivel/.minecraft` dentro do proprio EXE. O arquivo fica grande, mas pode ser enviado sozinho.
 
-Ele instala/atualiza Forge `1.20.1-47.4.10`, copia `mods`, `resourcepacks`, `shaderpacks` e `journeymap`, remove conflitos conhecidos e mantem os waypoints 3D invisiveis.
+Ele instala/atualiza Forge `1.20.1-47.4.10`, extrai e copia `mods`, `resourcepacks`, `shaderpacks`, `journeymap`, configs opcionais, remove conflitos conhecidos, configura JourneyMap sem waypoints 3D e tenta selecionar o shader Magic World no Oculus/Iris.
+
+Para gerar uma versao leve antiga, use `scripts/build-magicworld-forge-installer.ps1 -NoFullPayload`.
