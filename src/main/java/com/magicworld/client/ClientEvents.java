@@ -70,7 +70,7 @@ public class ClientEvents {
                 new SeedPreset("Selecione a seed", ""),
                 new SeedPreset("Magic World", "2048005618087379093"),
                 new SeedPreset("Paraiso", "69420070680859076"),
-                new SeedPreset("Magnific", "2048005618087379093"),
+                new SeedPreset("Mina e final", "44647503765050661"),
                 new SeedPreset("Biomas Pertos", "8500081009970950196")
         };
 
