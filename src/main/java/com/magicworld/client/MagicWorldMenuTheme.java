@@ -1,6 +1,5 @@
 package com.magicworld.client;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -69,9 +68,6 @@ public final class MagicWorldMenuTheme {
     }
 
     public static void toast(String message) {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player != null) {
-            minecraft.player.sendSystemMessage(Component.literal(message));
-        }
+        // Intentionally silent: gameplay feedback must not write chat messages.
     }
 }

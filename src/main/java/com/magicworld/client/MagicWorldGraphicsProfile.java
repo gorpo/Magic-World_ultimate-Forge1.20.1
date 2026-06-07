@@ -4,7 +4,6 @@ import net.minecraft.client.CloudStatus;
 import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.ParticleStatus;
-import net.minecraft.network.chat.Component;
 
 public enum MagicWorldGraphicsProfile {
     ULTRA_FRACO(
@@ -142,14 +141,5 @@ public enum MagicWorldGraphicsProfile {
         minecraft.options.framerateLimit()
                 .set(framerateLimit);
         minecraft.options.save();
-
-        if (minecraft.player != null) {
-            minecraft.player.sendSystemMessage(
-                    Component.literal(
-                            "Perfil grafico Magic World aplicado: "
-                                    + label
-                    )
-            );
-        }
     }
 }

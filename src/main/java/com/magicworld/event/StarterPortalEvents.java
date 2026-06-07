@@ -94,6 +94,9 @@ public class StarterPortalEvents {
     private static final String PORTAL_PLAZA_Z_KEY = "MagicWorldForgeFunctionalPortalPlazaZ";
     private static final String ESTATE_REPAIR_VERSION_KEY = "MagicWorldForgeEstateRepairVersion";
     private static final String PREMIUM_UNLOCKED_KEY = "MagicWorldForgePremiumUnlocked";
+    private static final String PREMIUM_RESOURCE_PACK_KEY = "MagicWorldForgePremiumResourcePack";
+    private static final String PREMIUM_SHADER_PACK_KEY = "MagicWorldForgePremiumShaderPack";
+    private static final String PREMIUM_COMPLETE_PACK_KEY = "MagicWorldForgePremiumCompletePack";
     private static final String PORTAL_COOLDOWN_KEY = "MagicWorldForgePortalCooldown";
     private static final String RETURN_PORTAL_PREFIX = "MagicWorldForgeReturnPortal";
     private static final String FRIENDLY_WITCH_KEY = "MagicWorldFriendlyWitch";
@@ -304,7 +307,6 @@ public class StarterPortalEvents {
                 applyMagicWorldServerSettings(player);
                 teleportPlayerToEstateSpawn(player, level, task.base);
                 sendInitialLoadProgress(player, 100, "Magic World carregado.", true);
-                player.sendSystemMessage(Component.literal("Magic World: casa, fazendas, portais, castelo e placas carregados."));
                 TASKS.remove(player.getUUID());
             }
         }
@@ -4981,18 +4983,28 @@ public class StarterPortalEvents {
             return;
         }
         setPortalCooldown(player);
-        boolean wasActive = player.getPersistentData().getBoolean(PREMIUM_UNLOCKED_KEY);
-        player.getPersistentData().putBoolean(PREMIUM_UNLOCKED_KEY, true);
-
-        if (!wasActive) {
-            player.sendSystemMessage(Component.literal("Magic World: experiencia premium ativada."));
-        }
-        player.addEffect(hiddenEffect(MobEffects.NIGHT_VISION, 20 * 60, 0));
-        player.addEffect(hiddenEffect(MobEffects.LUCK, 20 * 60, 0));
+        MagicWorldNetwork.openPremiumPortalOptions(player);
 
         if (player.level() instanceof ServerLevel level) {
             MagicWorld.effects(level, marker);
         }
+    }
+
+    public static void confirmPremiumPortalOptions(ServerPlayer player, boolean resourcePack, boolean shaderPack, boolean completePack) {
+        boolean resolvedResourcePack = resourcePack || completePack;
+        boolean resolvedShaderPack = shaderPack || completePack;
+
+        player.getPersistentData().putBoolean(PREMIUM_UNLOCKED_KEY, true);
+        player.getPersistentData().putBoolean(PREMIUM_RESOURCE_PACK_KEY, resolvedResourcePack);
+        player.getPersistentData().putBoolean(PREMIUM_SHADER_PACK_KEY, resolvedShaderPack);
+        player.getPersistentData().putBoolean(PREMIUM_COMPLETE_PACK_KEY, completePack);
+        player.addEffect(hiddenEffect(MobEffects.NIGHT_VISION, 20 * 60, 0));
+        player.addEffect(hiddenEffect(MobEffects.LUCK, 20 * 60, 0));
+
+        if (player.level() instanceof ServerLevel level) {
+            MagicWorld.effects(level, player.blockPosition());
+        }
+        MagicWorldNetwork.applyPremiumPortalVisual(player, true, resolvedResourcePack, resolvedShaderPack);
     }
 
     private static void handleAmbientEffects(ServerPlayer player, ServerLevel level, BlockPos estateBase) {

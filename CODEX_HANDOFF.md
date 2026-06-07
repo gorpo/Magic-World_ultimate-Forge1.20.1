@@ -1934,7 +1934,17 @@ Validacao:
 ## Handoff 2026-06-07 - perfis de PC no menu de criacao
 - Pedido: verificar se `PC: Ultra fraco/Fraco/Intermediario/Medio/Forte/Ultra forte` realmente funciona no menu de criacao.
 - Diagnostico: no Forge, o botao `PC` so chamava `nextHardwareProfileIndex(...)` e atualizava o texto; nao aplicava `MagicWorldGraphicsProfile.apply(...)`.
-- Correcao: o handler agora aplica o perfil selecionado ao clicar e mostra overlay `Perfil de PC aplicado`.
-- `Criar Mundo` tambem chama `applySelectedHardwareProfile(false)` antes de acionar o botao vanilla, garantindo que o perfil padrao visivel tambem seja aplicado.
+- Correcao: o handler agora aplica o perfil selecionado ao clicar sem mostrar mensagem no chat ou overlay.
+- `Criar Mundo` tambem chama `applySelectedHardwareProfile()` antes de acionar o botao vanilla, garantindo que o perfil padrao visivel tambem seja aplicado.
 - O comportamento foi adaptado do NeoForge, ajustado para Forge 1.20.1 (`GraphicsStatus`/`ParticleStatus` atuais).
+- Validado com `./gradlew.bat build`.
+
+## Handoff 2026-06-07 - portal premium visual sem chat
+- Pedido: ao atravessar o portal de resource/shader, abrir o menu especial Magic World para escolher `Shader`, `Resource` ou ambos; remover as mensagens que aparecem durante o jogo.
+- Correcao: `StarterPortalEvents.activatePremiumPortal` agora chama `MagicWorldNetwork.openPremiumPortalOptions(player)`, nao a tela generica/antiga.
+- Novo menu: `PremiumPortalOptionsScreen` com botoes `ResourcePack`, `ShaderPack`, `Shader + Resource` e `Cancelar`.
+- Confirmacao: `ConfirmPremiumPortalOptionsPacket` grava a escolha no servidor e chama `applyPremiumPortalVisual`.
+- Aplicacao client-side: `MagicWorldPortalVisualController` seleciona os resourcepacks MagicWorld e escreve/aplica `iris.properties` para Oculus/Iris.
+- Mensagens removidas: ativacao premium, final do loading, perfil grafico e toast de menu nao escrevem mais no chat.
+- Pacote local: atualizado somente `pacote_distribuivel/.minecraft/mods/Magic_World_Mod_1.20.1-1.0.0.1.jar`; nao foi gerado ZIP.
 - Validado com `./gradlew.bat build`.

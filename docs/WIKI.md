@@ -1227,3 +1227,11 @@ Validacao e processo:
 - Foi adaptado o comportamento do NeoForge: ao clicar, o perfil selecionado aplica distancia de renderizacao, simulacao, particulas, graficos, nuvens, escala de entidades, oclusao ambiente e limite de FPS.
 - Antes de `Criar Mundo`, o perfil selecionado e reaplicado para garantir que o padrao visivel tambem entre em vigor.
 - Validacao: `./gradlew.bat build` passou.
+
+## Registro 2026-06-07 - portal premium visual e mensagens silenciosas
+- Ao atravessar o portal premium inicial, o mod abre o menu especial Magic World.
+- O menu oferece exatamente: `ResourcePack`, `ShaderPack` e `Shader + Resource`.
+- A escolha aplica os resourcepacks MagicWorld e/ou o shader `MagicWorld_Shaders_Extreme_v1.0_.zip` via Oculus/Iris quando disponivel.
+- A ativacao premium, o fim do loading e o perfil de PC nao escrevem mais mensagens no chat.
+- O pacote local foi atualizado somente em `pacote_distribuivel/.minecraft/mods/Magic_World_Mod_1.20.1-1.0.0.1.jar`; nao gerar ZIP.
+- Validacao: `./gradlew.bat build` passou.

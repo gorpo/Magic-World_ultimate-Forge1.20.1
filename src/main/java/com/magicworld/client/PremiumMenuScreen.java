@@ -2819,11 +2819,8 @@ public class PremiumMenuScreen extends Screen {
     }
 
     private void sendClientMessage(String message) {
-        if (minecraft != null
-                && minecraft.player != null) {
-            minecraft.player.sendSystemMessage(
-                    Component.literal(message)
-            );
+        if (minecraft != null && minecraft.gui != null) {
+            minecraft.gui.setOverlayMessage(Component.literal(message), false);
         }
     }
 

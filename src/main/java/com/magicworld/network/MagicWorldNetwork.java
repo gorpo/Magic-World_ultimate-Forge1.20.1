@@ -1,7 +1,10 @@
 package com.magicworld.network;
 
 import com.magicworld.MagicWorld;
+import com.magicworld.client.MagicWorldPortalVisualController;
 import com.magicworld.client.InitialLoadNoticeScreen;
+import com.magicworld.client.PremiumPortalOptionsScreen;
+import com.magicworld.event.StarterPortalEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -60,6 +63,33 @@ public final class MagicWorldNetwork {
 
         CHANNEL.registerMessage(
                 packetId++,
+                OpenPremiumPortalOptionsPacket.class,
+                OpenPremiumPortalOptionsPacket::encode,
+                OpenPremiumPortalOptionsPacket::decode,
+                OpenPremiumPortalOptionsPacket::handle,
+                Optional.of(NetworkDirection.PLAY_TO_CLIENT)
+        );
+
+        CHANNEL.registerMessage(
+                packetId++,
+                ApplyPremiumPortalVisualPacket.class,
+                ApplyPremiumPortalVisualPacket::encode,
+                ApplyPremiumPortalVisualPacket::decode,
+                ApplyPremiumPortalVisualPacket::handle,
+                Optional.of(NetworkDirection.PLAY_TO_CLIENT)
+        );
+
+        CHANNEL.registerMessage(
+                packetId++,
+                ConfirmPremiumPortalOptionsPacket.class,
+                ConfirmPremiumPortalOptionsPacket::encode,
+                ConfirmPremiumPortalOptionsPacket::decode,
+                ConfirmPremiumPortalOptionsPacket::handle,
+                Optional.of(NetworkDirection.PLAY_TO_SERVER)
+        );
+
+        CHANNEL.registerMessage(
+                packetId++,
                 MagicWorldPanelActionPacket.class,
                 MagicWorldPanelActionPacket::encode,
                 MagicWorldPanelActionPacket::decode,
@@ -74,6 +104,18 @@ public final class MagicWorldNetwork {
 
     public static void sendInitialLoadProgress(ServerPlayer player, int progress, String message, boolean complete) {
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new InitialLoadProgressPacket(progress, message, complete));
+    }
+
+    public static void openPremiumPortalOptions(ServerPlayer player) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new OpenPremiumPortalOptionsPacket());
+    }
+
+    public static void applyPremiumPortalVisual(ServerPlayer player, boolean active, boolean resourcePack, boolean shaderPack) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ApplyPremiumPortalVisualPacket(active, resourcePack, shaderPack));
+    }
+
+    public static void confirmPremiumPortalOptions(boolean resourcePack, boolean shaderPack, boolean completePack) {
+        CHANNEL.sendToServer(new ConfirmPremiumPortalOptionsPacket(resourcePack, shaderPack, completePack));
     }
 
     public static void sendPanelAction(String action) {
@@ -122,6 +164,84 @@ public final class MagicWorldNetwork {
                     packet.message,
                     packet.complete
             ));
+            context.setPacketHandled(true);
+        }
+    }
+
+    public static final class OpenPremiumPortalOptionsPacket {
+        public static void encode(OpenPremiumPortalOptionsPacket packet, FriendlyByteBuf buffer) {
+        }
+
+        public static OpenPremiumPortalOptionsPacket decode(FriendlyByteBuf buffer) {
+            return new OpenPremiumPortalOptionsPacket();
+        }
+
+        public static void handle(OpenPremiumPortalOptionsPacket packet, Supplier<NetworkEvent.Context> contextSupplier) {
+            NetworkEvent.Context context = contextSupplier.get();
+            context.enqueueWork(() -> {
+                Minecraft minecraft = Minecraft.getInstance();
+                if (minecraft.player != null && minecraft.level != null) {
+                    minecraft.setScreen(new PremiumPortalOptionsScreen());
+                }
+            });
+            context.setPacketHandled(true);
+        }
+    }
+
+    public record ApplyPremiumPortalVisualPacket(boolean active, boolean resourcePack, boolean shaderPack) {
+        public static void encode(ApplyPremiumPortalVisualPacket packet, FriendlyByteBuf buffer) {
+            buffer.writeBoolean(packet.active);
+            buffer.writeBoolean(packet.resourcePack);
+            buffer.writeBoolean(packet.shaderPack);
+        }
+
+        public static ApplyPremiumPortalVisualPacket decode(FriendlyByteBuf buffer) {
+            return new ApplyPremiumPortalVisualPacket(
+                    buffer.readBoolean(),
+                    buffer.readBoolean(),
+                    buffer.readBoolean()
+            );
+        }
+
+        public static void handle(ApplyPremiumPortalVisualPacket packet, Supplier<NetworkEvent.Context> contextSupplier) {
+            NetworkEvent.Context context = contextSupplier.get();
+            context.enqueueWork(() -> MagicWorldPortalVisualController.applyPortalSelection(
+                    packet.active,
+                    packet.resourcePack,
+                    packet.shaderPack
+            ));
+            context.setPacketHandled(true);
+        }
+    }
+
+    public record ConfirmPremiumPortalOptionsPacket(boolean resourcePack, boolean shaderPack, boolean completePack) {
+        public static void encode(ConfirmPremiumPortalOptionsPacket packet, FriendlyByteBuf buffer) {
+            buffer.writeBoolean(packet.resourcePack);
+            buffer.writeBoolean(packet.shaderPack);
+            buffer.writeBoolean(packet.completePack);
+        }
+
+        public static ConfirmPremiumPortalOptionsPacket decode(FriendlyByteBuf buffer) {
+            return new ConfirmPremiumPortalOptionsPacket(
+                    buffer.readBoolean(),
+                    buffer.readBoolean(),
+                    buffer.readBoolean()
+            );
+        }
+
+        public static void handle(ConfirmPremiumPortalOptionsPacket packet, Supplier<NetworkEvent.Context> contextSupplier) {
+            NetworkEvent.Context context = contextSupplier.get();
+            context.enqueueWork(() -> {
+                ServerPlayer player = context.getSender();
+                if (player != null) {
+                    StarterPortalEvents.confirmPremiumPortalOptions(
+                            player,
+                            packet.resourcePack,
+                            packet.shaderPack,
+                            packet.completePack
+                    );
+                }
+            });
             context.setPacketHandled(true);
         }
     }

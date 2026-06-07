@@ -291,7 +291,7 @@ public class ClientEvents {
                     Button.builder(hardwareButtonLabel(), pressed -> {
                                 MagicWorldGraphicsProfile[] profiles = MagicWorldGraphicsProfile.values();
                                 MagicWorldWorldOptions.nextHardwareProfileIndex(profiles.length);
-                                applySelectedHardwareProfile(true);
+                                applySelectedHardwareProfile();
                                 pressed.setMessage(hardwareButtonLabel());
                             })
                             .bounds(gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 0), buttonWidth, buttonHeight)
@@ -545,7 +545,7 @@ public class ClientEvents {
         }
 
         private static void createWorldFromMagicTab(CreateWorldScreen screen, List<AbstractWidget> vanillaWidgets) {
-            applySelectedHardwareProfile(false);
+            applySelectedHardwareProfile();
             applyMagicWorldUiState(screen);
             syncWorldCreationOptions(vanillaWidgets);
             AbstractWidget createButton = findCreateWorldButton(vanillaWidgets);
@@ -593,12 +593,9 @@ public class ClientEvents {
             return profiles[index];
         }
 
-        private static void applySelectedHardwareProfile(boolean notify) {
+        private static void applySelectedHardwareProfile() {
             MagicWorldGraphicsProfile profile = selectedHardwareProfile();
             profile.apply(Minecraft.getInstance());
-            if (notify) {
-                showOverlayMessage("Perfil de PC aplicado: " + profile.label());
-            }
         }
 
         private static void applyMagicWorldUiState(CreateWorldScreen screen) {
