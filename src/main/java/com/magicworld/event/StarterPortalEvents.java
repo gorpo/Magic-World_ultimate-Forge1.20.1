@@ -120,7 +120,7 @@ public class StarterPortalEvents {
     private static final int IMPORTED_HOUSE_MAX_Z = HOUSE_ORIGIN_Z + IMPORTED_HOUSE_SIZE_Z;
     private static final int CASTLE_SIZE_X = 265;
     private static final int CASTLE_SIZE_Z = 221;
-    private static final int CURRENT_ESTATE_REPAIR_VERSION = 21;
+    private static final int CURRENT_ESTATE_REPAIR_VERSION = 23;
     private static final int GLOBAL_VILLAGER_WORK_RADIUS = 384;
     private static final int ESTATE_MAINTENANCE_INTERVAL_TICKS = 20 * 60;
     private static final int PORTAL_CHECK_INTERVAL_TICKS = 10;
@@ -159,7 +159,7 @@ public class StarterPortalEvents {
                 && data.getInt(ESTATE_REPAIR_VERSION_KEY) < CURRENT_ESTATE_REPAIR_VERSION) {
             repairExistingEstate(levelFor(player), estateBaseFromPlayer(player));
             data.putInt(ESTATE_REPAIR_VERSION_KEY, CURRENT_ESTATE_REPAIR_VERSION);
-            player.sendSystemMessage(Component.literal("Magic World: Rancho medieval da Plantacao e estruturas iniciais atualizadas."));
+            player.sendSystemMessage(Component.literal("Magic World: Arquivo Medieval da Praca Verde e estruturas iniciais atualizados."));
         }
 
         if (!MagicWorldWorldOptions.isStarterEstateEnabled()
@@ -3370,8 +3370,10 @@ public class StarterPortalEvents {
     }
 
     private static void buildGrandPlantationWarehouse(ServerLevel level, BlockPos corner) {
-        int width = 22;
-        int depth = 16;
+        buildGrandMedievalArchiveHouse(level, corner, 22, 16);
+    }
+
+    private static void buildGrandMedievalArchiveHouse(ServerLevel level, BlockPos corner, int width, int depth) {
         int wallHeight = 7;
 
         forceLoadAreaBetween(level, corner.offset(-4, -10, -4), corner.offset(width + 4, wallHeight + 14, depth + 4));
@@ -3513,10 +3515,10 @@ public class StarterPortalEvents {
             level.setBlock(stations[i], stationStates[i], 2);
         }
 
-        for (int x : new int[] {2, 5, 11, 14, 16}) {
+        for (int x = 2; x <= width - 2; x += 3) {
             placeBed(level, corner.offset(x, 1, depth - 3), Direction.SOUTH);
         }
-        placeGreenHouseArmorGallery(level, corner);
+        placeGreenHouseArmorGallery(level, corner, width, depth);
         decorateGrandGreenHouseInterior(level, corner, width, depth);
 
         BlockPos foodChest = corner.offset(7, 1, depth - 4);
@@ -3529,31 +3531,33 @@ public class StarterPortalEvents {
         level.setBlock(center.offset(5, 0, 0), Blocks.DECORATED_POT.defaultBlockState(), 2);
     }
 
-    private static void placeGreenHouseArmorGallery(ServerLevel level, BlockPos corner) {
-        spawnArmorStand(level, corner.offset(2, 1, 5),
+    private static void placeGreenHouseArmorGallery(ServerLevel level, BlockPos corner, int width, int depth) {
+        int galleryZ = Math.min(5, depth - 4);
+        int[] positions = {2, 5, 8, width - 8, width - 5, width - 2};
+        spawnArmorStand(level, corner.offset(positions[0], 1, galleryZ),
                 Items.LEATHER_HELMET, Items.LEATHER_CHESTPLATE, Items.LEATHER_LEGGINGS, Items.LEATHER_BOOTS,
-                "Armadura de Couro do Rancho");
-        spawnArmorStand(level, corner.offset(5, 1, 5),
+                "Armadura de Couro do Arquivo Medieval");
+        spawnArmorStand(level, corner.offset(positions[1], 1, galleryZ),
                 Items.CHAINMAIL_HELMET, Items.CHAINMAIL_CHESTPLATE, Items.CHAINMAIL_LEGGINGS, Items.CHAINMAIL_BOOTS,
-                "Armadura de Malha do Rancho");
-        spawnArmorStand(level, corner.offset(8, 1, 5),
+                "Armadura de Malha do Arquivo Medieval");
+        spawnArmorStand(level, corner.offset(positions[2], 1, galleryZ),
                 Items.IRON_HELMET, Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS, Items.IRON_BOOTS,
-                "Armadura de Ferro do Rancho");
-        spawnArmorStand(level, corner.offset(14, 1, 5),
+                "Armadura de Ferro do Arquivo Medieval");
+        spawnArmorStand(level, corner.offset(positions[3], 1, galleryZ),
                 Items.GOLDEN_HELMET, Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_BOOTS,
-                "Armadura de Ouro do Rancho");
-        spawnArmorStand(level, corner.offset(17, 1, 5),
+                "Armadura de Ouro do Arquivo Medieval");
+        spawnArmorStand(level, corner.offset(positions[4], 1, galleryZ),
                 Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS, Items.DIAMOND_BOOTS,
-                "Armadura de Diamante do Rancho");
-        spawnArmorStand(level, corner.offset(20, 1, 5),
+                "Armadura de Diamante do Arquivo Medieval");
+        spawnArmorStand(level, corner.offset(positions[5], 1, galleryZ),
                 Items.NETHERITE_HELMET, Items.NETHERITE_CHESTPLATE, Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS,
-                "Armadura de Netherite do Rancho");
-        spawnArmorStand(level, corner.offset(18, 1, 11),
+                "Armadura de Netherite do Arquivo Medieval");
+        spawnArmorStand(level, corner.offset(width / 2 + 1, 1, depth - 3),
                 new ItemStack(MagicWorld.DRACONIC_AETHER_HELMET.get()),
                 new ItemStack(MagicWorld.DRACONIC_AETHER_CHESTPLATE.get()),
                 new ItemStack(MagicWorld.DRACONIC_AETHER_LEGGINGS.get()),
                 new ItemStack(MagicWorld.DRACONIC_AETHER_BOOTS.get()),
-                "Armadura Draconic do Rancho");
+                "Armadura Draconic do Arquivo Medieval");
     }
 
     private static void lightGrandGreenHouse2(ServerLevel level, BlockPos corner, int width, int depth) {
@@ -3689,36 +3693,7 @@ public class StarterPortalEvents {
     }
 
     private static void buildCommunityHall(ServerLevel level, BlockPos corner) {
-        int width = 18;
-        int depth = 14;
-        for (int x = 0; x <= width; x++) {
-            for (int z = 0; z <= depth; z++) {
-                BlockPos pos = corner.offset(x, 0, z);
-                boolean wall = x == 0 || x == width || z == 0 || z == depth;
-                boolean post = (x == 0 || x == width) && (z == 0 || z == depth);
-                level.setBlock(pos.below(), Blocks.COBBLESTONE.defaultBlockState(), 2);
-                level.setBlock(pos, Blocks.SPRUCE_PLANKS.defaultBlockState(), 2);
-                for (int y = 1; y <= 7; y++) {
-                    level.setBlock(pos.above(y), wall ? (post ? Blocks.DARK_OAK_LOG.defaultBlockState() : Blocks.STRIPPED_OAK_LOG.defaultBlockState()) : Blocks.AIR.defaultBlockState(), 2);
-                }
-            }
-        }
-        for (int x = -2; x <= width + 2; x++) {
-            for (int z = -2; z <= depth + 2; z++) {
-                level.setBlock(corner.offset(x, 8, z), Blocks.DARK_OAK_PLANKS.defaultBlockState(), 2);
-            }
-        }
-        placeHouseDoor(level, corner.offset(width / 2, 1, depth), Direction.SOUTH);
-        placeHouseDoor(level, corner.offset(width / 2, 1, 0), Direction.NORTH);
-        for (int x = 4; x <= width - 4; x += 5) {
-            placeWindow(level, corner.offset(x, 3, 0));
-            placeWindow(level, corner.offset(x, 3, depth));
-        }
-        level.setBlock(corner.offset(width / 2, 5, depth / 2), Blocks.LANTERN.defaultBlockState(), 2);
-        level.setBlock(corner.offset(4, 1, 4), Blocks.LECTERN.defaultBlockState(), 2);
-        level.setBlock(corner.offset(width - 4, 1, 4), Blocks.CARTOGRAPHY_TABLE.defaultBlockState(), 2);
-        placeChest(level, corner.offset(width / 2, 1, 3), Direction.SOUTH);
-        putItems(level, corner.offset(width / 2, 1, 3), new ItemStack(Items.MAP, 8), new ItemStack(Items.BREAD, 64), new ItemStack(Items.TORCH, 64));
+        buildGrandMedievalArchiveHouse(level, corner, 18, 14);
     }
 
     private static void buildStoneTreasureMineHouse(ServerLevel level, BlockPos approximateCenter) {
@@ -4518,6 +4493,11 @@ public class StarterPortalEvents {
     }
 
     private static BlockPos findEstateSpawn(ServerLevel level, BlockPos base) {
+        BlockPos roadEndHouseSpawn = findRoadEndHouseBedsideSpawn(level, base);
+        if (roadEndHouseSpawn != null) {
+            return roadEndHouseSpawn;
+        }
+
         int frontZ = IMPORTED_HOUSE_MAX_Z + 3;
         Vec3i[] offsets = {
                 new Vec3i(0, 0, frontZ),
@@ -4536,6 +4516,48 @@ public class StarterPortalEvents {
 
         int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, base.getX(), base.getZ() + frontZ);
         return new BlockPos(base.getX(), y, base.getZ() + frontZ);
+    }
+
+    private static BlockPos findRoadEndHouseBedsideSpawn(ServerLevel level, BlockPos base) {
+        BlockPos origin = starterRoadEndHouseOrigin(base);
+        Optional<StructureTemplate> optional = level.getStructureManager().get(STARTER_ROAD_END_HOUSE);
+        if (optional.isEmpty()) {
+            return null;
+        }
+
+        Vec3i size = optional.get().getSize();
+        for (int x = -4; x <= size.getX() + 4; x++) {
+            for (int y = 0; y <= size.getY() + 4; y++) {
+                for (int z = -4; z <= size.getZ() + 4; z++) {
+                    BlockPos bed = origin.offset(x, y, z);
+                    BlockState state = level.getBlockState(bed);
+                    if (!(state.getBlock() instanceof BedBlock)
+                            || state.getValue(BedBlock.PART) != BedPart.FOOT) {
+                        continue;
+                    }
+
+                    Direction facing = state.getValue(BedBlock.FACING);
+                    for (Direction direction : new Direction[] {
+                            facing.getClockWise(), facing.getCounterClockWise(), facing.getOpposite(), facing
+                    }) {
+                        BlockPos spawn = bed.relative(direction);
+                        if (isSafeIndoorSpawn(level, spawn)) {
+                            return spawn;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private static boolean isSafeIndoorSpawn(ServerLevel level, BlockPos spawn) {
+        return level.isInWorldBounds(spawn)
+                && level.isInWorldBounds(spawn.above())
+                && level.getBlockState(spawn).isAir()
+                && level.getBlockState(spawn.above()).isAir()
+                && level.getBlockState(spawn.below()).isSolid()
+                && level.getFluidState(spawn).isEmpty();
     }
 
     private static BlockPos findSurfaceSpawn(ServerLevel level, BlockPos target) {

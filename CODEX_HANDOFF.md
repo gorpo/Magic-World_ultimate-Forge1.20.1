@@ -1756,3 +1756,20 @@ Validacao:
 - Subsolo: escada oculta por alcapoes e sala de tesouro dourada com baus de preciosidades, beacon, ovo do dragao, ender chest, armaduras e decoracao.
 - Reparo da propriedade elevado para versao `21`, garantindo a reconstrucao unica no save existente ao entrar.
 - Validacao: `./gradlew.bat build --stacktrace` passou; `git diff --check` sem erros.
+
+## Handoff 2026-06-06 - spawn na Casa do Ultimo Farol, README e mods de desenvolvimento
+- `CURRENT_ESTATE_REPAIR_VERSION = 22`; o spawn/respawn procura a cama da estrutura `starter_house_1` e posiciona o jogador com seguranca ao lado dela, usando o spawn frontal antigo apenas como fallback.
+- O README foi reconstruido a partir do README amplo do projeto NeoForge e adaptado ao port Forge 1.20.1, preservando conteudo visual, ampliando a historia do Horizonte Partido e documentando Casa do Ultimo Farol, Santuario Violeta, Coven e Rancho do Cofre Dourado.
+- O artefato atual documentado e `MagicWorld-MagicWand_Mod_1.20.1-1.0.0.1.jar`; mods graficos continuam opcionais e separados.
+- `run/mods/` e carregado diretamente pelo Forge para testes simples. `run/dev-mods/` e detectado automaticamente pelo `build.gradle` e remapeado pelo ForgeGradle para mods complexos.
+- `run/mods-disabled/`, `run/dev-mods-disabled/` e `mods/` na raiz nao sao carregados pelo `runClient`.
+- Validacao real: `runClient` abriu mundo com Distant Horizons, Embeddium e Oculus remapeados, sem o erro anterior de mixin.
+
+## Handoff 2026-06-06 - casa correta reformada: Arquivo Medieval da Praca Verde
+- Os novos prints identificaram definitivamente o alvo: nao era o Rancho da Plantacao, mas o grande `buildCommunityHall` central entre as plantacoes e as Casas Verdes.
+- Confirmacao visual/posicional: interior quase vazio com lectern, cartography table e um bau; coordenadas aproximadas `X -105 / Z 18`; construcao em `center.offset(-8, 0, -28)`, equivalente a `base.offset(-114, -1, 6)`.
+- `buildCommunityHall` agora usa `buildGrandMedievalArchiveHouse(level, corner, 18, 14)`, mantendo a casa exatamente no local dos prints.
+- A casa recebeu quatro portas com acessos livres, paredes de pedra/madeira, muitas janelas, telhado medieval inclinado com dormers e chamine, iluminacao rustica, ferramentas, forja, armaduras, quadros, plantas, teias e morcegos.
+- Uma parede virou arquivo de recipientes preenchido com todos os itens registrados. A escada oculta leva a uma camara subterranea dourada com baus de preciosidades.
+- `CURRENT_ESTATE_REPAIR_VERSION = 23` aplica a reforma no save existente.
+- Validacao: `compileJava` passou; `runClient` entrou no save e exibiu `Magic World: Arquivo Medieval da Praca Verde e estruturas iniciais atualizados.` sem excecao da construcao.

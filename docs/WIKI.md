@@ -1064,3 +1064,19 @@ Validacao e processo:
 - O acesso oculto por alcapoes leva a uma camara subterranea dourada com tesouros, baus, itens raros e armaduras.
 - `CURRENT_ESTATE_REPAIR_VERSION = 21` aplica a reforma uma vez no save existente.
 - Validacao: `./gradlew.bat build --stacktrace` passou; `git diff --check` sem erros.
+
+## Registro 2026-06-06 - casa inicial, README expandido e pastas de mods
+- A Casa do Ultimo Farol, no fim da rua, agora e a residencia oficial do personagem. O spawn e respawn procuram a cama da estrutura e escolhem um bloco livre ao lado dela.
+- O enredo do Horizonte Partido conecta a casa, o Santuario Violeta, as Tres Guardias e o Rancho do Cofre Dourado.
+- O README amplo do projeto de origem foi portado e adaptado para Forge 1.20.1, com imagens locais e sem substituir a secao de creditos reservada ao responsavel.
+- Para testes, `run/mods/` carrega mods simples diretamente. Mods que precisam de remapeamento devem ir em `run/dev-mods/`; o Gradle agora detecta automaticamente JARs nomeados com `-<versao>.jar`.
+- As pastas `*-disabled` e `mods/` da raiz nao sao carregadas pelo cliente de desenvolvimento.
+- Distant Horizons, Embeddium e Oculus foram validados juntos em um mundo pelo `runClient`.
+
+## Registro 2026-06-06 - Arquivo Medieval da Praca Verde
+- Os prints com as plantacoes, Casas Verdes e interior quase vazio confirmaram que a casa pedida era o antigo salao comunitario da Praca Verde, nao o Rancho da Plantacao.
+- O alvo correto e `buildCommunityHall`, em `base.offset(-114, -1, 6)`, dimensoes `18x14`.
+- O salao simples foi substituido pelo Arquivo Medieval da Praca Verde: quatro portas funcionais, pedra e madeira, muitas janelas, telhado inclinado com dormers e chamine.
+- O interior inclui catalogo de todos os itens registrados, ferramentas, forja, fornos, armaduras, quadros, plantas, iluminacao rustica, teias e morcegos.
+- Uma passagem oculta leva ao cofre subterraneo dourado com preciosidades.
+- O reparo `23` foi executado no save real pelo `runClient` sem excecao da construcao.
