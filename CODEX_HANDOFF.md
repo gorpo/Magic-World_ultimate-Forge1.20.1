@@ -1760,7 +1760,7 @@ Validacao:
 ## Handoff 2026-06-06 - spawn na Casa do Ultimo Farol, README e mods de desenvolvimento
 - `CURRENT_ESTATE_REPAIR_VERSION = 22`; o spawn/respawn procura a cama da estrutura `starter_house_1` e posiciona o jogador com seguranca ao lado dela, usando o spawn frontal antigo apenas como fallback.
 - O README foi reconstruido a partir do README amplo do projeto NeoForge e adaptado ao port Forge 1.20.1, preservando conteudo visual, ampliando a historia do Horizonte Partido e documentando Casa do Ultimo Farol, Santuario Violeta, Coven e Rancho do Cofre Dourado.
-- O artefato atual documentado e `MagicWorld-MagicWand_Mod_1.20.1-1.0.0.1.jar`; mods graficos continuam opcionais e separados.
+- O artefato atual documentado e `Magic_World_Mod_1.20.1-1.0.0.1.jar`; mods graficos continuam opcionais e separados.
 - `run/mods/` e carregado diretamente pelo Forge para testes simples. `run/dev-mods/` e detectado automaticamente pelo `build.gradle` e remapeado pelo ForgeGradle para mods complexos.
 - `run/mods-disabled/`, `run/dev-mods-disabled/` e `mods/` na raiz nao sao carregados pelo `runClient`.
 - Validacao real: `runClient` abriu mundo com Distant Horizons, Embeddium e Oculus remapeados, sem o erro anterior de mixin.
@@ -1815,3 +1815,109 @@ Validacao:
 - Catalogo completo de itens fica limitado ao Arquivo Medieval da Praca Verde, preenchendo cada item registrado uma unica vez e usando cache da lista de itens. Santuario/Rancho usam poucos recipientes tematicos.
 - Entidades decorativas foram reduzidas em Santuario, portal, rancho, praca verde e currais para priorizar FPS.
 - Regra de performance futura: nenhum tick/login deve reconstruir propriedade, procurar entidades em AABB gigante, varrer volumes grandes, preencher baus em massa ou chamar `getChunk` fora da geracao inicial.
+
+## Handoff 2026-06-07 - Santuario abaixo do castelo sem coordenada absoluta
+- Pedido final antes de fechar o projeto: manter o Santuario no local da segunda imagem, abaixo do castelo, sem quebrar as construcoes do castelo nem reativar rotinas pesadas.
+- `roadEndMagicSanctuaryOrigin(base)` nao usa mais `new BlockPos(201, 110, 13)` diretamente.
+- A posicao agora e relativa ao castelo: centro em `castleOrigin(base).offset(-15, 43, -95)`, equivalente a `base.offset(25, 43, -115)`.
+- Para o save de referencia com base `176 67 128`, o resultado continua no centro visual `201 110 13`.
+- O volume do Santuario fica fora do footprint do castelo importado; entrada oeste, escada de 28 degraus, plataforma 8x8, conteudo e otimizacoes de entidades foram preservados.
+- Reparo de save antigo continua desligado. Teste esperado: criar mapa novo e conferir visualmente o Santuario abaixo do castelo.
+
+## Handoff 2026-06-07 - primeiro pacote all-in-one local
+- Pedido: alimentar somente `pacote_distribuivel/.minecraft`, mantendo shaders/resource packs estaveis e atualizando futuramente apenas o JAR do mod.
+- Foi criada/limpa a estrutura local:
+  - `pacote_distribuivel/.minecraft/mods`;
+  - `pacote_distribuivel/.minecraft/resourcepacks`;
+  - `pacote_distribuivel/.minecraft/shaderpacks`.
+- Copiado para `mods`: JAR atual do Magic World, Embeddium, Oculus e Distant Horizons validados.
+- Copiado para `resourcepacks`: quatro ZIPs Magic World atuais.
+- Copiado para `shaderpacks`: `MagicWorld_Shaders_Extreme_v1.0_.zip`.
+- Regra local: nao gerar ZIP; o pacote de teste e a propria pasta `pacote_distribuivel/.minecraft`.
+- Criado helper local: `pacote_distribuivel/atualizar_apenas_mod_all_in_one.ps1`, que troca somente o JAR do Magic World em `.minecraft/mods`.
+- `pacote_distribuivel/` esta ignorado pelo Git, entao os binarios locais nao aparecem como arquivos rastreados.
+- Entity Culling externo nao deve entrar nas pastas futuras: o Magic World ja tem culling interno via `MagicWorldEntityCulling` e `MagicWorldEntityCullingMixin`, registrado no mixin config. Para diagnostico, desligar com `-Dmagicworld.entity_culling=false`.
+- Proximos mods a testar separadamente, se necessario: ETF, EMF, Fusion, Forge CIT, ModernFix e FerriteCore.
+
+## Handoff 2026-06-07 - hotfix urgente loading, cama e Santuario
+- Problema reportado: a geracao continuava visivel apos o loading, estruturas apareciam na frente do jogador, o spawn final nao caia ao lado da cama da Casa do Ultimo Farol e o Santuario ainda nao estava no ponto pedido.
+- Causa principal do loading: `openInitialLoadNotice` e `sendInitialLoadProgress` estavam vazios por otimizacao anterior; a rede/tela existiam, mas nao eram chamadas.
+- Fix: `StarterPortalEvents` voltou a chamar `MagicWorldNetwork.openInitialLoadNotice` e `MagicWorldNetwork.sendInitialLoadProgress`.
+- `InitialLoadNoticeScreen.shouldCloseOnEsc()` agora retorna `false`, impedindo fechar a tela durante a geracao.
+- `FINAL_DELAY_TICKS` subiu de `80` para `160`, mantendo a etapa final em loading por mais tempo antes de teleportar/liberar.
+- Spawn: `findEstateSpawn` agora tenta a busca generica da cama e, se falhar, usa `forceRoadEndHouseBedsideSpawn`.
+- A cama do `starter_house_1.nbt` foi identificada com pe local `[10,3,22]`; como a estrutura e colocada com rotacao 180, o fallback prepara um ponto seguro ao lado da cama rotacionada.
+- Santuario: revertido o offset relativo ao castelo; agora usa centro absoluto do print F3 novo `Block 234 113 12`.
+- Validado com `compileJava` e `build`.
+- All-in-one local atualizado em `pacote_distribuivel/.minecraft/mods`.
+
+## Handoff 2026-06-07 - branch inicio-all-in-one e pacote gameplay
+- Pedido: criar branch para iniciar o all-in-one com os mods locais antigos do usuario e priorizar performance, sem incluir Controllable.
+- Branch criado: `inicio-all-in-one` porque Git nao aceita espacos em nome de branch.
+- A pasta `mods/` foi auditada por metadados dos JARs (`META-INF/mods.toml`) para confirmar Forge/1.20.1 e dependencias.
+- `pacote_distribuivel/.minecraft/mods` agora contem o conjunto expandido para teste local.
+- Incluidos para performance/render: Embeddium, Oculus, Distant Horizons, ModernFix `5.27.44`, FerriteCore, ImmediatelyFast e culling interno do Magic World.
+- Incluidos para resource pack/visual: ETF, EMF, CTM, Fusion, CIT Resewn e BetterFoliage.
+- Incluidos por uso antigo/gameplay do usuario: JourneyMap, MineColonies, MCA, REI, WorldEdit e Tectonic.
+- Incluidas dependencias: Architectury, Cloth Config, BlockUI, Structurize, Domum Ornamentum, Lithostitched e Framework.
+- Excluidos:
+  - `entityculling-forge-1.10.2-mc1.20.1.jar`, pois o Magic World ja tem `MagicWorldEntityCulling`/Mixin;
+  - `modernfix-forge-5.27.22+mc1.20.1.jar`, duplicado antigo;
+  - `effortlessbuilding-1.20.1-3.11.jar`, pois falta `flywheel` `[1.0.0,2.0)` e `ponder` `[0.8,)`;
+  - Controllable, por decisao do usuario.
+- Proximo bloco se o pacote abrir: personalizar MineColonies com tema Magic World por assets/resource overrides e, se necessario, baixar/referenciar Flywheel/Ponder para liberar Effortless Building.
+
+## Handoff 2026-06-07 - pes do Santuario e reparo da Casa do Ultimo Farol
+- Pedido: manter o Santuario onde ficou aprovado, mas tirar a aparencia de estar voando; corrigir a Casa do Ultimo Farol porque uma escada apareceu dentro dela e destruiu parte do interior.
+- Santuario: `buildRoadEndMagicSanctuary` agora chama `buildSanctuarySupportPiers` logo apos a shell.
+- Foram adicionados oito pilares 2x2 sob o Santuario, ancorados nos cantos e no meio, descendo ate encontrar terreno solido ou ate 96 blocos abaixo.
+- Materiais dos pilares: `POLISHED_DEEPSLATE`, `DEEPSLATE_BRICKS`, pontos de `AMETHYST_BLOCK` e `SEA_LANTERN`.
+- Casa: removida a chamada `buildStarterRoadEndHouseDoorAccess` e removidos os helpers de escada automatica por porta.
+- Motivo: a varredura de portas podia pegar porta interna da NBT rotacionada e abrir escada no meio da casa.
+- Spawn junto da cama permanece ativo via `findRoadEndHouseBedsideSpawn` e fallback `forceRoadEndHouseBedsideSpawn`.
+- Validado com `compileJava`, `build` e `git diff --check`.
+- `pacote_distribuivel/.minecraft/mods` foi atualizado com o JAR novo.
+
+## Handoff 2026-06-07 - limpeza leve de drops de geracao
+- Pedido: ao gerar a casa onde o jogador spawna e o Santuario, limpar os itens soltos criados por arvores/blocos destruidos para eles nao ficarem coletaveis no chao.
+- Implementado sem tick permanente: apenas chamadas pontuais durante a geracao e uma chamada final antes do teleporte.
+- Novas rotinas: `removeLooseDroppedItemsAroundStarterRoadEndHouse`, `removeLooseDroppedItemsAroundRoadEndMagicSanctuary`, `removeInitialGenerationLooseDrops` e helper comum `removeLooseDroppedItems`.
+- A casa importada inicial tambem chama `removeLooseDroppedItemsAroundImportedHouse` logo apos ser construida.
+- A limpeza descarta somente `ItemEntity` em AABBs locais; nao altera blocos, containers, baus, mobs ou inventarios.
+- Validado com `compileJava`, `build` e `git diff --check`.
+- `pacote_distribuivel/.minecraft/mods` foi atualizado com o JAR novo.
+
+## Handoff permanente - regra do pacote local all-in-one
+- Para testes locais, usar somente `pacote_distribuivel/.minecraft`.
+- Nao gerar ZIP dentro de `pacote_distribuivel`.
+- Em `.minecraft/mods`, manter o JAR all-in-one sempre atualizado e apenas os mods externos que ainda nao couberem nele.
+- `shaderpacks` e `resourcepacks` sao alimentados uma vez e so mudam quando houver atualizacao real.
+- Nome fixo do JAR principal: `Magic_World_Mod_1.20.1-1.0.0.1.jar`.
+
+## Handoff 2026-06-07 - renome do artefato principal
+- Pedido: padronizar o artefato principal como `Magic_World_Mod_1.20.1-1.0.0.1.jar`.
+- `build.gradle` agora usa `archivesName = 'Magic_World_Mod_1.20.1'`.
+- `settings.gradle` agora usa `rootProject.name = 'Magic_World_Mod'`.
+- O script `pacote_distribuivel/atualizar_apenas_mod_all_in_one.ps1` procura o novo JAR e remove o JAR antigo da pasta de mods durante a transicao.
+
+## Handoff 2026-06-07 - hotfix criacao de mundo no launcher local
+- Problemas no TLauncher: tela vanilla de criacao nao mostrava personalizacao suficiente e o botao do painel Magic World ficava parado ao tentar criar o mundo.
+- Causa provavel: `createWorldFromMagicTab` chamava `CreateWorldScreen.onCreate()` por reflexao, caminho fragil em cliente real/remapeado.
+- Correcao: `createWorldFromMagicTab` agora sincroniza as opcoes e chama o botao vanilla real `Criar novo mundo` salvo em `vanillaWidgets`.
+- Foi adicionada faixa visual `MAGIC WORLD` em `ScreenEvent.Render.Post` quando a tela vanilla de criacao esta aberta e o painel Magic World nao esta visivel.
+- Validado com `compileJava`, `build` e `git diff --check`.
+- `pacote_distribuivel/.minecraft/mods/Magic_World_Mod_1.20.1-1.0.0.1.jar` foi atualizado sem gerar ZIP.
+
+## Handoff 2026-06-07 - menu unico Magic World na criacao de mundo
+- Pedido: esconder a experiencia vanilla fragmentada e deixar somente o menu Magic World com funcoes vanilla + funcoes proprias.
+- `onScreenInit` agora chama `showMagicPanel(screen, true)` apos registrar os widgets.
+- `updateMagicTabButton` nao força mais voltar para a aba Jogo; ele apenas esconde o botao Magic World quando o painel ja esta aberto.
+- O painel foi compactado em 4 colunas e 5 linhas de botoes: Portal, Castelo, Fazendas, Aura, PC, Comandos, Modo, Dificuldade, Seed manual, Seed preset, Bau bonus, Estruturas, Regras, Data packs, Avancado, Criar Mundo e Cancelar.
+- `Criar Mundo` continua chamando o botao vanilla real; `Regras` e `Data packs` chamam os botoes vanilla ocultos quando disponiveis.
+- `Avancado` e fallback tecnico para mostrar a interface vanilla original se alguma funcao nao estiver acessivel pelo painel.
+
+## Handoff 2026-06-07 - remocao da faixa informativa e compactacao
+- Pedido: remover o quadro/texto abaixo do botao Magic World nas abas vanilla e fazer o painel caber na tela.
+- Removida a chamada de `renderCreateWorldVanillaBranding`; a faixa `MAGIC WORLD / Use o botao...` nao e mais renderizada.
+- `MagicCreateWorldTitle` e `MagicCreateWorldInfo` ficam invisiveis no painel para remover o texto introdutorio interno.
+- Layout compactado: `MAGIC_PANEL_HEIGHT = 174`, `MAGIC_PANEL_BUTTON_HEIGHT = 18`, `MAGIC_PANEL_GAP = 5`, 4 colunas e 5 linhas.

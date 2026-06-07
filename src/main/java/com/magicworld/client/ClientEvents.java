@@ -30,7 +30,6 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -62,11 +61,11 @@ public class ClientEvents {
         }
 
         private static final WeakHashMap<CreateWorldScreen, MagicCreateWorldPanel> MAGIC_CREATE_WORLD_PANELS = new WeakHashMap<>();
-        private static final int MAGIC_PANEL_MAX_WIDTH = 520;
-        private static final int MAGIC_PANEL_MIN_WIDTH = 340;
-        private static final int MAGIC_PANEL_GAP = 8;
-        private static final int MAGIC_PANEL_BUTTON_HEIGHT = 20;
-        private static final int MAGIC_PANEL_HEIGHT = 260;
+        private static final int MAGIC_PANEL_MAX_WIDTH = 680;
+        private static final int MAGIC_PANEL_MIN_WIDTH = 480;
+        private static final int MAGIC_PANEL_GAP = 5;
+        private static final int MAGIC_PANEL_BUTTON_HEIGHT = 18;
+        private static final int MAGIC_PANEL_HEIGHT = 174;
         private static final SeedPreset[] MAGIC_SEED_PRESETS = {
                 new SeedPreset("Selecione a seed", ""),
                 new SeedPreset("Magic World", "2048005618087379093"),
@@ -98,7 +97,7 @@ public class ClientEvents {
                     hideMagicPanelIfVanillaTabTookOver(panel);
                     relayoutMagicPanel(panel);
                     updateMagicTabButton(panel);
-                    MagicWorldWorldOptions.setCommandsEnabled(true);
+                    refreshMagicPanelLabels(panel);
                     boolean magicPanelVisible = isMagicPanelVisible(panel);
                     if (!magicPanelVisible) {
                         syncWorldNameOptionFromScreen(screen);
@@ -297,28 +296,60 @@ public class ClientEvents {
                             .bounds(gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 0), buttonWidth, buttonHeight)
                             .tooltip(Tooltip.create(Component.literal("Seleciona o perfil de PC do mundo.")))
                             .build(),
-                    Button.builder(difficultyButtonLabel(), pressed -> {
-                                MagicWorldWorldOptions.nextStartingDifficulty();
-                                pressed.setMessage(difficultyButtonLabel());
+                    Button.builder(commandsButtonLabel(), pressed -> {
+                                MagicWorldWorldOptions.toggleCommandsEnabled();
+                                syncAutomaticCommands(vanillaWidgets);
+                                pressed.setMessage(commandsButtonLabel());
                             })
                             .bounds(gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 1), buttonWidth, buttonHeight)
-                            .tooltip(Tooltip.create(Component.literal("Escolhe a dificuldade inicial.")))
+                            .tooltip(Tooltip.create(Component.literal("Ativa comandos. Fica automatico quando estruturas Magic World estao ligadas.")))
                             .build(),
-                    customSeedBox,
                     Button.builder(gameModeButtonLabel(), pressed -> {
                                 MagicWorldWorldOptions.nextStartingGameMode();
                                 pressed.setMessage(gameModeButtonLabel());
                             })
-                            .bounds(gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 2), buttonWidth, buttonHeight)
+                            .bounds(gridX(left, buttonWidth, gap, 0), gridY(buttonsTop, buttonHeight, gap, 2), buttonWidth, buttonHeight)
                             .tooltip(Tooltip.create(Component.literal("Escolhe modo normal ou criativo.")))
                             .build(),
+                    Button.builder(difficultyButtonLabel(), pressed -> {
+                                MagicWorldWorldOptions.nextStartingDifficulty();
+                                pressed.setMessage(difficultyButtonLabel());
+                            })
+                            .bounds(gridX(left, buttonWidth, gap, 1), gridY(buttonsTop, buttonHeight, gap, 2), buttonWidth, buttonHeight)
+                            .tooltip(Tooltip.create(Component.literal("Escolhe a dificuldade inicial.")))
+                            .build(),
+                    customSeedBox,
+                    seedDropdown,
+                    Button.builder(Component.literal("Bau bonus"), pressed -> pressVanillaButton(vanillaWidgets,
+                                    "bonus chest", "bau bonus", "bau de bonus", "bau inicial"))
+                            .bounds(gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 2), buttonWidth, buttonHeight)
+                            .tooltip(Tooltip.create(Component.literal("Alterna o bau bonus vanilla, quando disponivel.")))
+                            .build(),
+                    Button.builder(Component.literal("Estruturas"), pressed -> pressVanillaButton(vanillaWidgets,
+                                    "generate structures", "gerar estruturas", "estruturas"))
+                            .bounds(gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 3), buttonWidth, buttonHeight)
+                            .tooltip(Tooltip.create(Component.literal("Alterna geracao de estruturas vanilla, quando disponivel.")))
+                            .build(),
+                    Button.builder(Component.literal("Regras"), pressed -> pressVanillaButton(vanillaWidgets,
+                                    "game rules", "regras do jogo", "regras"))
+                            .bounds(gridX(left, buttonWidth, gap, 0), gridY(buttonsTop, buttonHeight, gap, 4), buttonWidth, buttonHeight)
+                            .tooltip(Tooltip.create(Component.literal("Abre as regras do jogo vanilla.")))
+                            .build(),
+                    Button.builder(Component.literal("Data packs"), pressed -> pressVanillaButton(vanillaWidgets,
+                                    "data packs", "datapacks", "pacotes de dados"))
+                            .bounds(gridX(left, buttonWidth, gap, 1), gridY(buttonsTop, buttonHeight, gap, 4), buttonWidth, buttonHeight)
+                            .tooltip(Tooltip.create(Component.literal("Abre os pacotes de dados vanilla.")))
+                            .build(),
+                    Button.builder(Component.literal("Avancado"), pressed -> openVanillaAdvancedFallback(screen))
+                            .bounds(gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 4), buttonWidth, buttonHeight)
+                            .tooltip(Tooltip.create(Component.literal("Mostra a interface vanilla apenas como fallback tecnico.")))
+                            .build(),
                     Button.builder(Component.literal("Criar Mundo"), pressed -> createWorldFromMagicTab(screen, vanillaWidgets))
-                            .bounds(left, gridY(buttonsTop, buttonHeight, gap, 3), (gridWidth - gap) / 2, buttonHeight)
+                            .bounds(left, gridY(buttonsTop, buttonHeight, gap, 5), (gridWidth - gap) / 2, buttonHeight)
                             .build(),
-                    Button.builder(Component.literal("Voltar"), pressed -> showMagicPanel(screen, false))
-                            .bounds(left + (gridWidth - gap) / 2 + gap, gridY(buttonsTop, buttonHeight, gap, 3), (gridWidth - gap) / 2, buttonHeight)
-                            .build(),
-                    seedDropdown
+                    Button.builder(Component.literal("Cancelar"), pressed -> cancelWorldCreation(vanillaWidgets))
+                            .bounds(left + (gridWidth - gap) / 2 + gap, gridY(buttonsTop, buttonHeight, gap, 5), (gridWidth - gap) / 2, buttonHeight)
+                            .build()
             );
 
             MAGIC_CREATE_WORLD_PANELS.put(screen, new MagicCreateWorldPanel(screen, vanillaWidgets, magicTabButton, magicWidgets, worldNameBox, seedDropdown));
@@ -331,6 +362,7 @@ public class ClientEvents {
                 widget.active = false;
                 event.addListener(widget);
             }
+            showMagicPanel(screen, true);
         }
 
         @SubscribeEvent
@@ -417,7 +449,9 @@ public class ClientEvents {
             }
 
             for (AbstractWidget widget : panel.magicWidgets()) {
-                widget.visible = show;
+                widget.visible = show
+                        && !(widget instanceof MagicCreateWorldInfo)
+                        && !(widget instanceof MagicCreateWorldTitle);
                 widget.active = show
                         && !(widget instanceof MagicCreateWorldBackdrop)
                         && !(widget instanceof MagicCreateWorldLineCover)
@@ -433,31 +467,25 @@ public class ClientEvents {
         }
 
         private static void updateMagicTabButton(MagicCreateWorldPanel panel) {
-            boolean gameTab = isCreateWorldGameTab(panel.screen());
-            if (!gameTab && isMagicPanelVisible(panel)) {
-                showMagicPanel(panel.screen(), false);
-            }
-
-            if (!isMagicPanelVisible(panel)) {
-                panel.magicTabButton().visible = gameTab;
-                panel.magicTabButton().active = gameTab;
-            }
+            boolean magicVisible = isMagicPanelVisible(panel);
+            panel.magicTabButton().visible = !magicVisible;
+            panel.magicTabButton().active = !magicVisible;
         }
 
         private static MagicPanelLayout magicPanelLayout(CreateWorldScreen screen) {
             int gridWidth = Math.max(Math.min(MAGIC_PANEL_MIN_WIDTH, screen.width - 48), Math.min(MAGIC_PANEL_MAX_WIDTH, screen.width - 56));
             int gap = MAGIC_PANEL_GAP;
-            int buttonWidth = (gridWidth - gap * 2) / 3;
+            int buttonWidth = (gridWidth - gap * 3) / 4;
             int left = screen.width / 2 - gridWidth / 2;
-            int panelHeight = Math.min(MAGIC_PANEL_HEIGHT, Math.max(198, screen.height - 70));
-            int top = Math.max(44, Math.min(screen.height - panelHeight - 14, screen.height / 2 - panelHeight / 2 - 26));
-            int buttonsTop = top + panelHeight - (MAGIC_PANEL_BUTTON_HEIGHT * 4 + gap * 3) - 8;
-            int nameTop = buttonsTop - MAGIC_PANEL_BUTTON_HEIGHT - gap;
+            int panelHeight = Math.min(MAGIC_PANEL_HEIGHT, Math.max(154, screen.height - 54));
+            int top = Math.max(24, Math.min(screen.height - panelHeight - 10, screen.height / 2 - panelHeight / 2 - 10));
+            int nameTop = top + 16;
+            int buttonsTop = nameTop + MAGIC_PANEL_BUTTON_HEIGHT + gap;
             return new MagicPanelLayout(gridWidth, buttonWidth, left, top, buttonsTop, nameTop, panelHeight);
         }
 
         private static void relayoutMagicPanel(MagicCreateWorldPanel panel) {
-            if (panel.magicWidgets().size() < 16) {
+            if (panel.magicWidgets().size() < 22) {
                 return;
             }
 
@@ -483,15 +511,21 @@ public class ClientEvents {
             setBounds(panel.magicWidgets().get(4), left, nameTop, gridWidth, buttonHeight);
             setBounds(panel.magicWidgets().get(5), gridX(left, buttonWidth, gap, 0), gridY(buttonsTop, buttonHeight, gap, 0), buttonWidth, buttonHeight);
             setBounds(panel.magicWidgets().get(6), gridX(left, buttonWidth, gap, 1), gridY(buttonsTop, buttonHeight, gap, 0), buttonWidth, buttonHeight);
-            setBounds(panel.magicWidgets().get(7), gridX(left, buttonWidth, gap, 0), gridY(buttonsTop, buttonHeight, gap, 1), buttonWidth, buttonHeight);
-            setBounds(panel.magicWidgets().get(8), gridX(left, buttonWidth, gap, 1), gridY(buttonsTop, buttonHeight, gap, 1), buttonWidth, buttonHeight);
-            setBounds(panel.magicWidgets().get(9), gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 0), buttonWidth, buttonHeight);
-            setBounds(panel.magicWidgets().get(10), gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 1), buttonWidth, buttonHeight);
-            setBounds(panel.magicWidgets().get(11), gridX(left, buttonWidth, gap, 0), gridY(buttonsTop, buttonHeight, gap, 2), buttonWidth, buttonHeight);
-            setBounds(panel.magicWidgets().get(12), gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 2), buttonWidth, buttonHeight);
-            setBounds(panel.magicWidgets().get(13), left, gridY(buttonsTop, buttonHeight, gap, 3), (gridWidth - gap) / 2, buttonHeight);
-            setBounds(panel.magicWidgets().get(14), left + (gridWidth - gap) / 2 + gap, gridY(buttonsTop, buttonHeight, gap, 3), (gridWidth - gap) / 2, buttonHeight);
-            setBounds(panel.magicWidgets().get(15), gridX(left, buttonWidth, gap, 1), gridY(buttonsTop, buttonHeight, gap, 2), buttonWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(7), gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 0), buttonWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(8), gridX(left, buttonWidth, gap, 3), gridY(buttonsTop, buttonHeight, gap, 0), buttonWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(9), gridX(left, buttonWidth, gap, 0), gridY(buttonsTop, buttonHeight, gap, 1), buttonWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(10), gridX(left, buttonWidth, gap, 1), gridY(buttonsTop, buttonHeight, gap, 1), buttonWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(11), gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 1), buttonWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(12), gridX(left, buttonWidth, gap, 3), gridY(buttonsTop, buttonHeight, gap, 1), buttonWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(13), gridX(left, buttonWidth, gap, 0), gridY(buttonsTop, buttonHeight, gap, 2), buttonWidth * 2 + gap, buttonHeight);
+            setBounds(panel.magicWidgets().get(14), gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 2), buttonWidth * 2 + gap, buttonHeight);
+            setBounds(panel.magicWidgets().get(15), gridX(left, buttonWidth, gap, 0), gridY(buttonsTop, buttonHeight, gap, 3), buttonWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(16), gridX(left, buttonWidth, gap, 1), gridY(buttonsTop, buttonHeight, gap, 3), buttonWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(17), gridX(left, buttonWidth, gap, 2), gridY(buttonsTop, buttonHeight, gap, 3), buttonWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(18), gridX(left, buttonWidth, gap, 3), gridY(buttonsTop, buttonHeight, gap, 3), buttonWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(19), gridX(left, buttonWidth, gap, 0), gridY(buttonsTop, buttonHeight, gap, 4), buttonWidth, buttonHeight);
+            setBounds(panel.magicWidgets().get(20), gridX(left, buttonWidth, gap, 1), gridY(buttonsTop, buttonHeight, gap, 4), buttonWidth * 2 + gap, buttonHeight);
+            setBounds(panel.magicWidgets().get(21), gridX(left, buttonWidth, gap, 3), gridY(buttonsTop, buttonHeight, gap, 4), buttonWidth, buttonHeight);
         }
 
         private static void setBounds(AbstractWidget widget, int x, int y, int width, int height) {
@@ -510,19 +544,44 @@ public class ClientEvents {
         }
 
         private static void createWorldFromMagicTab(CreateWorldScreen screen, List<AbstractWidget> vanillaWidgets) {
-            MagicWorldWorldOptions.setCommandsEnabled(true);
             applyMagicWorldUiState(screen);
             syncWorldCreationOptions(vanillaWidgets);
-            try {
-                Method onCreate = CreateWorldScreen.class.getDeclaredMethod("onCreate");
-                onCreate.setAccessible(true);
-                onCreate.invoke(screen);
-            } catch (ReflectiveOperationException ignored) {
+            AbstractWidget createButton = findCreateWorldButton(vanillaWidgets);
+            if (createButton instanceof Button button) {
+                button.onPress();
+            } else {
+                showOverlayMessage("Botao vanilla de criar mundo nao encontrado.");
             }
         }
 
         private static void syncWorldCreationOptions(List<AbstractWidget> vanillaWidgets) {
             syncAutomaticCommands(vanillaWidgets);
+        }
+
+        private static boolean pressVanillaButton(List<AbstractWidget> vanillaWidgets, String... labels) {
+            AbstractWidget widget = findButton(vanillaWidgets, labels);
+            if (widget instanceof Button button) {
+                button.onPress();
+                return true;
+            }
+
+            showOverlayMessage("Opcao vanilla nao encontrada nesta tela.");
+            return false;
+        }
+
+        private static void cancelWorldCreation(List<AbstractWidget> vanillaWidgets) {
+            if (!pressVanillaButton(vanillaWidgets, "cancel", "cancelar", "back", "voltar")) {
+                Minecraft.getInstance().setScreen(new net.minecraft.client.gui.screens.worldselection.SelectWorldScreen(new MagicWorldTitleScreen()));
+            }
+        }
+
+        private static void openVanillaAdvancedFallback(CreateWorldScreen screen) {
+            showMagicPanel(screen, false);
+            showOverlayMessage("Fallback vanilla aberto. Use Magic World para voltar.");
+        }
+
+        private static void showOverlayMessage(String message) {
+            Minecraft.getInstance().gui.setOverlayMessage(Component.literal(message), false);
         }
 
         private static void applyMagicWorldUiState(CreateWorldScreen screen) {
@@ -535,7 +594,7 @@ public class ClientEvents {
             if (applyWorldName && !worldName.isEmpty()) {
                 uiState.setName(worldName);
             }
-            uiState.setAllowCheats(true);
+            uiState.setAllowCheats(MagicWorldWorldOptions.isCommandsEnabled());
             uiState.setGameMode(MagicWorldWorldOptions.startingGameMode() == MagicWorldWorldOptions.StartingGameMode.CREATIVE
                     ? WorldCreationUiState.SelectedGameMode.CREATIVE
                     : WorldCreationUiState.SelectedGameMode.SURVIVAL);
@@ -697,6 +756,10 @@ public class ClientEvents {
             return findButton(vanillaWidgets, "allow commands", "allow cheats", "permitir comandos", "permitir cheats");
         }
 
+        private static AbstractWidget findCreateWorldButton(List<AbstractWidget> vanillaWidgets) {
+            return findButton(vanillaWidgets, "create new world", "create world", "criar novo mundo", "criar mundo");
+        }
+
         private static AbstractWidget findButton(List<AbstractWidget> vanillaWidgets, String... labels) {
             for (AbstractWidget widget : vanillaWidgets) {
                 if (messageContainsAny(widget, labels)) {
@@ -728,12 +791,33 @@ public class ClientEvents {
             return Component.literal("PC: " + profiles[index].label());
         }
 
+        private static Component commandsButtonLabel() {
+            if (MagicWorldWorldOptions.hasCommandRequiredOptionEnabled()) {
+                return Component.literal("Comandos: AUTO");
+            }
+            return Component.literal(MagicWorldWorldOptions.isCommandsEnabled() ? "Comandos: ON" : "Comandos: OFF");
+        }
+
         private static Component difficultyButtonLabel() {
             return Component.literal("Dificuldade: " + MagicWorldWorldOptions.startingDifficulty().label());
         }
 
         private static Component gameModeButtonLabel() {
             return Component.literal("Modo: " + MagicWorldWorldOptions.startingGameMode().label());
+        }
+
+        private static void refreshMagicPanelLabels(MagicCreateWorldPanel panel) {
+            if (panel.magicWidgets().size() < 13) {
+                return;
+            }
+            panel.magicWidgets().get(5).setMessage(magicWorldButtonLabel());
+            panel.magicWidgets().get(6).setMessage(castlesButtonLabel());
+            panel.magicWidgets().get(7).setMessage(farmsButtonLabel());
+            panel.magicWidgets().get(8).setMessage(auraButtonLabel());
+            panel.magicWidgets().get(9).setMessage(hardwareButtonLabel());
+            panel.magicWidgets().get(10).setMessage(commandsButtonLabel());
+            panel.magicWidgets().get(11).setMessage(gameModeButtonLabel());
+            panel.magicWidgets().get(12).setMessage(difficultyButtonLabel());
         }
 
         private static void hideMagicPanelIfVanillaTabTookOver(MagicCreateWorldPanel panel) {
@@ -1185,8 +1269,8 @@ public class ClientEvents {
             int top = getY() + 4;
             graphics.drawCenteredString(font, Component.literal("Escolha as opcoes do novo mundo"), centerX + 1, top + 1, 0xAA000000);
             graphics.drawCenteredString(font, Component.literal("Escolha as opcoes do novo mundo"), centerX, top, 0xFFFFE6A6);
-            graphics.drawCenteredString(font, Component.literal("Seed, modo, dificuldade e perfil ficam isolados aqui."), centerX + 1, top + 15, 0xAA000000);
-            graphics.drawCenteredString(font, Component.literal("Seed, modo, dificuldade e perfil ficam isolados aqui."), centerX, top + 14, 0xFFBFD7FF);
+            graphics.drawCenteredString(font, Component.literal("Minecraft vanilla + estruturas Magic World em um unico menu."), centerX + 1, top + 15, 0xAA000000);
+            graphics.drawCenteredString(font, Component.literal("Minecraft vanilla + estruturas Magic World em um unico menu."), centerX, top + 14, 0xFFBFD7FF);
         }
 
         private void drawSectionHeader(GuiGraphics graphics, int x, int y, int width, String text) {

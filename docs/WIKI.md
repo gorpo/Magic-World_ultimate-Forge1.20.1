@@ -1085,7 +1085,7 @@ Validacao e processo:
 - Todas as areas principais da propriedade receberam placas de chao com `ID LOCAL` e nome curto do local.
 - As placas ficam na frente ou na borda de chegada das estruturas, sem ocupar o bloco das portas.
 - O texto foi aplicado nos dois lados da placa para facilitar leitura mesmo quando o jogador chega pelo lado oposto.
-- Cobertura: casas, portais, predios, currais, plantacoes, mina, coven, Santuario, praca e castelo quando ativo.
+- Cobertura: casas, portais, predios, currais, plantacoes, mina, refugio, Santuario, praca e castelo quando ativo.
 - O reparo versionado foi elevado para `24` para aplicar as placas automaticamente em saves ja existentes.
 
 ## Registro 2026-06-06 - nome do mundo, seeds e desempenho de reparo
@@ -1121,7 +1121,96 @@ Validacao e processo:
 ## Registro 2026-06-07 - otimizacao de runtime
 - `StarterPortalEvents` nao executa mais reparo versionado pesado em login de mundo ja criado.
 - A manutencao periodica dos currais saiu do tick; os animais sao criados em menor quantidade na geracao inicial.
-- O suporte do coven deixou de remover monstros e reconfigurar witches por busca de entidade; agora aplica apenas efeitos discretos perto da casa das bruxas.
+- O suporte do refugio deixou de remover monstros e reconfigurar witches por busca de entidade; agora aplica apenas efeitos discretos perto da casa das bruxas.
 - Portais funcionais usam posicoes conhecidas no runtime e evitam busca de superficie por raio a cada checagem.
 - O catalogo completo de itens foi limitado ao Arquivo Medieval da Praca Verde, com cache de itens registrados e sem repetir o catalogo em todos os slots extras.
 - Santuario, portal, rancho, praca verde e currais tiveram entidades decorativas reduzidas para priorizar FPS e estabilidade.
+
+## Registro 2026-06-07 - Santuario ancorado abaixo do castelo
+- O Santuario deixou de depender da coordenada absoluta `X=201 Y=110 Z=13`, que so batia no save usado no print.
+- A nova origem usa o castelo como referencia: centro do Santuario em `castleOrigin(base).offset(-15, 43, -95)`.
+- No save de referencia com base `176 67 128`, isso preserva o mesmo centro visual `201 110 13` da segunda imagem, abaixo do castelo.
+- A area continua fora do footprint do castelo importado, evitando apagar ou sobrepor estruturas internas do castelo.
+- Escada oeste, plataforma 8x8, conteudo interno e reducoes de entidades/desempenho foram preservados.
+- Reparo/migracao de save antigo continua desligado por regra de performance; validacao deve ser feita em mapa novo.
+
+## Registro 2026-06-07 - primeiro all-in-one distribuivel
+- A pasta `pacote_distribuivel/.minecraft` foi alimentada com o primeiro pacote all-in-one de teste.
+- Conteudo em `mods`: JAR atual do Magic World, Embeddium, Oculus e Distant Horizons.
+- Conteudo em `resourcepacks`: quatro Resource Packs Magic World atuais, com `pack.png` ja atualizado.
+- Conteudo em `shaderpacks`: `MagicWorld_Shaders_Extreme_v1.0_.zip`.
+- Regra local: nao gerar ZIP; o pacote de teste e a propria pasta `pacote_distribuivel/.minecraft`.
+- Shaders e resource packs sao alimentados uma vez e so mudam quando houver atualizacao pedida.
+- Foi criado `pacote_distribuivel/atualizar_apenas_mod_all_in_one.ps1` para copiar somente o JAR novo do mod em `.minecraft/mods`.
+- Entity Culling externo nao deve ser adicionado: o projeto ja possui culling interno via `MagicWorldEntityCulling` e `MagicWorldEntityCullingMixin`.
+- Mods ainda fora do all-in-one inicial: ETF, EMF, Fusion, Forge CIT, ModernFix e FerriteCore. Eles devem ser testados depois em lotes pequenos.
+
+## Registro 2026-06-07 - hotfix loading, spawn e Santuario
+- A tela `InitialLoadNoticeScreen` voltou a ser aberta por pacote de rede durante a geracao inicial.
+- `sendInitialLoadProgress` voltou a enviar progresso real; a tela so recebe `complete=true` depois de todas as estruturas, placas, respawn e teleport final.
+- A tela de loading nao fecha mais com ESC durante a geracao.
+- O atraso final subiu para `160` ticks para manter a tela por mais tempo antes de liberar o jogador.
+- O spawn preferencial da Casa do Ultimo Farol agora usa a posicao conhecida da cama da NBT rotacionada: cama local `[10,3,22]`, rotacao 180, com ponto limpo ao lado dela.
+- Se a busca generica da cama falhar, o mod prepara um bloco interno seguro ao lado da cama, evitando cair no fallback perto de portais.
+- O Santuario foi movido para o alvo exato do print F3: centro `Block 234 113 12`.
+- O all-in-one local foi atualizado apenas com o novo JAR do mod; resource packs e shader pack permaneceram iguais.
+
+## Registro 2026-06-07 - branch e all-in-one gameplay
+- Foi criado o branch `inicio-all-in-one`; Git nao aceita espacos em nome de branch, entao esse e o equivalente tecnico de "inicio all in one".
+- A pasta local `mods/` foi auditada por `META-INF/mods.toml` e dependencias obrigatorias.
+- A pasta `pacote_distribuivel/.minecraft` foi alimentada com o conjunto gameplay; nao gerar ZIP para teste local.
+- Entraram mods de performance/render: Embeddium, Oculus, Distant Horizons, ModernFix `5.27.44`, FerriteCore e ImmediatelyFast.
+- Entraram mods de resource/visual: ETF, EMF, CTM, Fusion, CIT Resewn e BetterFoliage.
+- Entraram mods de gameplay antigo do usuario: JourneyMap, MineColonies, Minecraft Comes Alive, Roughly Enough Items, WorldEdit e Tectonic.
+- Entraram dependencias obrigatorias/uteis: Architectury, Cloth Config, BlockUI, Structurize, Domum Ornamentum, Lithostitched e Framework.
+- Nao entrou `entityculling-forge`, porque o Magic World ja possui culling interno proprio.
+- Nao entrou `modernfix-forge-5.27.22`, porque e duplicado antigo; entrou `5.27.44`.
+- Nao entrou `effortlessbuilding-1.20.1-3.11`, porque faltam `flywheel` e `ponder`, dependencias obrigatorias declaradas no proprio JAR.
+- Controllable permanece fora por decisao do usuario.
+- MineColonies ainda nao teve tela/skin Magic World personalizada; primeiro passo e validar boot/FPS/dependencias do pacote expandido.
+
+## Registro 2026-06-07 - ajuste visual do Santuario e casa NBT limpa
+- O Santuario manteve o centro atual aprovado no print: `Block 234 113 12`.
+- Foram adicionados oito pilares 2x2 abaixo do Santuario, em pontos de canto e meio, descendo ate encontrar terreno solido.
+- Os pilares usam deepslate/polished deepslate com pontos de amethyst e sea lantern para parecerem pes estruturais, sem mover a construcao.
+- A Casa do Ultimo Farol continua sendo reimportada pela NBT `starter_house_1` no mesmo lugar.
+- A rotina que escaneava portas e criava escadas automaticas na casa foi removida, porque podia detectar portas internas e cortar o interior.
+- O spawn preferencial ao lado da cama foi preservado pelo fallback baseado na cama local `[10,3,22]` da NBT rotacionada.
+- Validacao: `./gradlew.bat compileJava --stacktrace`, `./gradlew.bat build --stacktrace` e `git diff --check` passaram.
+- A pasta `pacote_distribuivel/.minecraft/mods` foi atualizada com o novo JAR.
+
+## Registro 2026-06-07 - limpeza leve de drops na geracao
+- A geracao agora remove itens soltos criados pela destruicao de arvores/blocos ao redor das estruturas principais.
+- A limpeza e pontual durante o loading, nao e uma rotina permanente no tick do jogo.
+- Areas cobertas: casa importada inicial, Casa do Ultimo Farol e Santuario no fim da rua.
+- Uma segunda limpeza final roda antes do teleporte do jogador, depois do atraso de loading, para pegar drops tardios de folhas/arvores.
+- A rotina remove apenas `ItemEntity` solta no mundo; nao mexe em baus, inventarios, blocos, mobs ou estruturas.
+- Validacao: `./gradlew.bat compileJava --stacktrace`, `./gradlew.bat build --stacktrace` e `git diff --check` passaram.
+- A pasta `pacote_distribuivel/.minecraft/mods` foi atualizada com o novo JAR.
+
+## Regra fixa - pacote local all-in-one
+- Para testes locais, usar somente `pacote_distribuivel/.minecraft`.
+- Nao gerar ZIP na pasta distribuivel.
+- Em `.minecraft/mods`, manter o JAR all-in-one sempre atualizado e apenas os mods externos que ainda nao puderem entrar nele.
+- `shaderpacks` e `resourcepacks` sao alimentados uma vez e so mudam quando houver atualizacao real.
+- Nome fixo do JAR principal: `Magic_World_Mod_1.20.1-1.0.0.1.jar`.
+
+## Registro 2026-06-07 - hotfix criacao de mundo no launcher local
+- O botao `Criar Mundo` do painel Magic World nao usa mais reflexao para chamar metodo privado da tela vanilla.
+- Agora ele sincroniza as opcoes Magic World e aciona o botao vanilla real `Criar novo mundo`, que funciona melhor no cliente real/TLauncher.
+- A tela vanilla de criacao ganhou uma faixa visual `MAGIC WORLD` mesmo antes de abrir o painel Magic World, para confirmar que a personalizacao carregou.
+- Validacao: `./gradlew.bat compileJava --stacktrace`, `./gradlew.bat build --stacktrace` e `git diff --check` passaram.
+- A pasta `pacote_distribuivel/.minecraft/mods` foi atualizada apenas com o novo JAR.
+
+## Registro 2026-06-07 - menu unico Magic World na criacao de mundo
+- A tela de criacao de mundo agora abre direto no painel Magic World.
+- As abas vanilla ficam ocultas por padrao; o painel Magic World concentra nome, seed, modo, dificuldade, comandos, bau bonus, estruturas, regras, datapacks e opcoes Magic World.
+- `Criar Mundo` continua acionando o botao vanilla real por baixo, mantendo compatibilidade com o fluxo normal do Minecraft.
+- `Regras` e `Data packs` acionam as telas/popup vanilla correspondentes quando elas existem no launcher.
+- `Avancado` existe apenas como fallback tecnico para abrir a interface vanilla original se alguma opcao nao estiver acessivel pelo painel.
+
+## Registro 2026-06-07 - limpeza visual do menu Magic World
+- Removida a faixa informativa extra abaixo do botao `Magic World` nas abas vanilla de criacao.
+- Removidos fundo, bordas e texto dessa faixa em todas as abas.
+- O painel Magic World foi compactado para 4 colunas, 5 linhas e botoes menores.
+- O titulo/descricao interna do painel foi ocultado; ficam apenas campos e botoes uteis.

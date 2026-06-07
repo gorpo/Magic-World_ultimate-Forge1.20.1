@@ -12,4 +12,4 @@ plugins {
     id 'org.gradle.toolchains.foojay-resolver-convention' version '0.7.0'
 }
 
-rootProject.name = 'MagicWorld-MagicWand_Mod'
+rootProject.name = 'Magic_World_Mod'

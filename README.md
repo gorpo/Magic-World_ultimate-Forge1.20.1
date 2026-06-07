@@ -126,11 +126,11 @@ O santuario funciona como centro de conhecimento e preparacao:
 - decoracao arcana, cristais e pontos de energia;
 - ligacao narrativa direta com a Casa do Ultimo Farol.
 
-Na historia, o personagem encontra na casa registros incompletos sobre o santuario. Explorar o salao revela que a propriedade nao foi abandonada por acaso: alguma coisa acordou os portais, alterou a floresta e obrigou antigos moradores a dividir seus segredos entre castelo, mina, santuario e coven.
+Na historia, o personagem encontra na casa registros incompletos sobre o santuario. Explorar o salao revela que a propriedade nao foi abandonada por acaso: alguma coisa acordou os portais, alterou a floresta e obrigou antigos moradores a dividir seus segredos entre castelo, mina, santuario e refugio.
 
-### O Coven das Tres Guardias
+### O Refugio das Tres Guardias
 
-No miolo das arvores vive um pequeno coven de bruxas amigaveis. Elas nao sao inimigas comuns: sao as **Tres Guardias do Bosque Velado**, responsaveis por impedir que a energia dos portais contamine a propriedade.
+No miolo das arvores vive um pequeno refugio de bruxas amigaveis. Elas nao sao inimigas comuns: sao as **Tres Guardias do Bosque Velado**, responsaveis por impedir que a energia dos portais contamine a propriedade.
 
 A casa compacta das bruxas possui:
 
@@ -142,7 +142,7 @@ A casa compacta das bruxas possui:
 - cercado e entrada voltados para a mata;
 - suporte magico discreto ao jogador nas proximidades.
 
-As bruxas circulam pelo coven, mas nao adquirem alvos. Elas representam uma alianca desconfortavel: conhecem a origem do Santuario Violeta, mas entregam respostas somente a quem provar que consegue proteger a propriedade.
+As bruxas circulam pelo refugio, mas nao adquirem alvos. Elas representam uma alianca desconfortavel: conhecem a origem do Santuario Violeta, mas entregam respostas somente a quem provar que consegue proteger a propriedade.
 
 ### O Rancho do Cofre Dourado
 
@@ -171,7 +171,7 @@ A propriedade inicial desta versao Forge e uma regiao conectada, nao um conjunto
 | --- | --- |
 | **Casa do Ultimo Farol** | Residencia inicial do personagem, spawn e ponto de retorno. |
 | **Santuario Violeta do Horizonte Partido** | Centro arcano, preparacao e investigacao dos portais. |
-| **Coven das Tres Guardias** | Aliadas bruxas, alquimia e protecao da mata. |
+| **Refugio das Tres Guardias** | Aliadas bruxas, alquimia e protecao da mata. |
 | **Rancho do Cofre Dourado** | Arquivo de itens, arsenal, forja e tesouro subterraneo. |
 | **Casa principal importada** | Centro comunitario amplo, moradores, armazenamento e conexoes. |
 | **Castelo importado** | Conselho, guardioes, galerias e presenca militar. |
@@ -217,7 +217,7 @@ A expansao foi acompanhada por otimizacoes para evitar que a vida da propriedade
 | Plataforma | NeoForge moderno | Minecraft Forge 47.4.10 para Minecraft 1.20.1 |
 | Inicio | Propriedade inicial original | Spawn ao lado da cama na Casa do Ultimo Farol |
 | Historia | Fantasia geral Magic World | Campanha do Horizonte Partido e locais nomeados |
-| Bruxas | Sem o coven atual | Coven amigavel com tres bruxas moveis |
+| Bruxas | Sem o refugio atual | Refugio amigavel com tres bruxas moveis |
 | Fim da rua | Casa e area de passagem | Residencia do personagem + Santuario Violeta |
 | Rancho | Deposito amplo | Casarao medieval, arquivo total e cofre dourado |
 | Desempenho | Rotinas da versao de origem | Ticks, portais, aura e residentes otimizados |
@@ -256,14 +256,14 @@ O personagem termina a geracao **dentro da Casa do Ultimo Farol, ao lado da cama
 - currais, cuidadores, jardim de alimento animal e guardioes;
 - Praca Verde, casas, jardim comunitario e moradores;
 - Mina do Tesouro com casa de pedra, entrada, galerias e recompensas;
-- Coven das Tres Guardias escondido na mata;
+- Refugio das Tres Guardias escondido na mata;
 - estradas, iluminacao, cerejeiras, placas, jardins e conexoes entre setores.
 
 ### Vida, trabalho e defesa
 
 A propriedade possui aldeoes nomeados, agricultores, cuidadores, moradores, profissionais, guardioes e animais. Trabalhadores recebem casa, cama, centro de trabalho e area de atuacao. Guardioes protegem setores importantes sem exigir varreduras pesadas a cada tick.
 
-As tres bruxas amigaveis do coven usam IA ativa e circulam em sua area, mas nao atacam. Morcegos, aves, gatos, papagaios, allays e outros elementos ambientais completam a sensacao de uma regiao viva.
+As tres bruxas amigaveis do refugio usam IA ativa e circulam em sua area, mas nao atacam. Morcegos, aves, gatos, papagaios, allays e outros elementos ambientais completam a sensacao de uma regiao viva.
 
 ### Armazenamento e progressao
 
@@ -271,7 +271,7 @@ A casa principal, o santuario, o castelo, a mina, o rancho e o Arquivo Medieval 
 
 ### Portais e magia
 
-O portal inicial controla a experiencia premium. A praca funcional oferece estruturas de Nether, End Portal e End Gateway. O Santuario Violeta funciona como centro narrativo da energia dimensional, enquanto o coven oferece suporte magico discreto nas proximidades.
+O portal inicial controla a experiencia premium. A praca funcional oferece estruturas de Nether, End Portal e End Gateway. O Santuario Violeta funciona como centro narrativo da energia dimensional, enquanto o refugio oferece suporte magico discreto nas proximidades.
 
 ### Atualizacao de mundos existentes
 
@@ -288,7 +288,7 @@ A construcao inicial e distribuida em etapas para reduzir picos e informar o pro
 5. castelo;
 6. Casa do Ultimo Farol;
 7. Santuario Violeta;
-8. Coven das Tres Guardias;
+8. Refugio das Tres Guardias;
 9. mina, reparos finais e teleport para a cama.
 
 
@@ -1292,7 +1292,7 @@ O `.exe` disponivel neste port e um binario legado. Antes de distribui-lo, valid
 Os binarios publicados devem corresponder a este port **Minecraft Forge 1.20.1 / Forge 47.4.10**. O artefato gerado atualmente pelo projeto e:
 
 ```text
-build/libs/MagicWorld-MagicWand_Mod_1.20.1-1.0.0.1.jar
+build/libs/Magic_World_Mod_1.20.1-1.0.0.1.jar
 ```
 
 O mod principal nao embute automaticamente os mods opcionais de renderizacao. Para a experiencia visual completa, instale separadamente versoes Forge 1.20.1 compativeis de **Embeddium**, **Oculus** e **Distant Horizons**, alem do Resource Pack e Shader Pack Magic World.

@@ -120,6 +120,11 @@ public final class MagicWorldWorldOptions {
         commandsEnabled = enabled;
     }
 
+    public static boolean toggleCommandsEnabled() {
+        commandsEnabled = !commandsEnabled;
+        return commandsEnabled;
+    }
+
     public static boolean hasCommandRequiredOptionEnabled() {
         return starterEstateEnabled || castlesEnabled || farmsEnabled || auraEnabled;
     }

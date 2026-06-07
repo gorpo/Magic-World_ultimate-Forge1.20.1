@@ -2,6 +2,7 @@ package com.magicworld.event;
 
 import com.magicworld.MagicWorld;
 import com.magicworld.MagicWorldWorldOptions;
+import com.magicworld.network.MagicWorldNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -100,7 +101,7 @@ public class StarterPortalEvents {
 
     private static final int START_DELAY_TICKS = 40;
     private static final int STEP_DELAY_TICKS = 80;
-    private static final int FINAL_DELAY_TICKS = 80;
+    private static final int FINAL_DELAY_TICKS = 160;
     private static final int BREATHING_MARGIN = 8;
     private static final int PORTAL_Z_OFFSET = 70;
     private static final int CASTLE_Z_OFFSET = 90;
@@ -122,7 +123,7 @@ public class StarterPortalEvents {
     private static final int SANCTUARY_WIDTH = 36;
     private static final int SANCTUARY_DEPTH = 17;
     private static final int SANCTUARY_HEIGHT = 10;
-    private static final BlockPos SANCTUARY_TARGET_CENTER = new BlockPos(201, 110, 13);
+    private static final BlockPos SANCTUARY_TARGET_CENTER = new BlockPos(234, 113, 12);
     private static final int GLOBAL_VILLAGER_WORK_RADIUS = 384;
     private static final int PORTAL_CHECK_INTERVAL_TICKS = 10;
     private static final int PORTAL_VISUAL_REPAIR_INTERVAL_TICKS = 20 * 60;
@@ -244,6 +245,7 @@ public class StarterPortalEvents {
                 sendInitialLoadProgress(player, 12, "Carregando casa importada...", false);
                 prepareImportedEstateFoundation(level, task.base);
                 buildImportedHouse(level, task.base);
+                removeLooseDroppedItemsAroundImportedHouse(level, task.base);
                 TASKS.put(player.getUUID(), new EstateTask(task.base, 1, STEP_DELAY_TICKS));
             }
             case 1 -> {
@@ -277,11 +279,13 @@ public class StarterPortalEvents {
             case 5 -> {
                 sendInitialLoadProgress(player, 94, "Carregando casa do fim da rua...", false);
                 buildStarterRoadEndHouse(level, task.base);
+                removeLooseDroppedItemsAroundStarterRoadEndHouse(level, task.base);
                 TASKS.put(player.getUUID(), new EstateTask(task.base, 6, STEP_DELAY_TICKS));
             }
             case 6 -> {
                 sendInitialLoadProgress(player, 97, "Carregando santuario magico do fim da rua...", false);
                 buildRoadEndMagicSanctuary(level, task.base);
+                removeLooseDroppedItemsAroundRoadEndMagicSanctuary(level, task.base);
                 TASKS.put(player.getUUID(), new EstateTask(task.base, 7, STEP_DELAY_TICKS));
             }
             case 7 -> {
@@ -292,6 +296,7 @@ public class StarterPortalEvents {
             default -> {
                 restoreStoneTreasureMineHouse(level, task.base);
                 placeEstateIdentificationSigns(level, task.base);
+                removeInitialGenerationLooseDrops(level, task.base);
                 player.getPersistentData().putBoolean(ESTATE_CREATED_KEY, true);
                 player.getPersistentData().putInt(ESTATE_REPAIR_VERSION_KEY, CURRENT_ESTATE_REPAIR_VERSION);
                 applyMagicWorldServerSettings(player);
@@ -388,11 +393,11 @@ public class StarterPortalEvents {
     }
 
     private static void openInitialLoadNotice(ServerPlayer player) {
-        // O usuario prefere criar mapas novos sem overlay de aviso ao spawnar.
+        MagicWorldNetwork.openInitialLoadNotice(player);
     }
 
     private static void sendInitialLoadProgress(ServerPlayer player, int progress, String message, boolean complete) {
-        // Mantem a geracao silenciosa na tela; a confirmacao final fica no chat.
+        MagicWorldNetwork.sendInitialLoadProgress(player, progress, message, complete);
     }
 
     private static void setBlockIfDifferent(ServerLevel level, BlockPos pos, BlockState state) {
@@ -440,9 +445,42 @@ public class StarterPortalEvents {
                 base.getY() + 36,
                 base.getZ() + IMPORTED_ESTATE_FENCE_MAX_Z + 18
         );
-        for (ItemEntity item : level.getEntitiesOfClass(ItemEntity.class, area)) {
-            item.discard();
-        }
+        removeLooseDroppedItems(level, area);
+    }
+
+    private static void removeLooseDroppedItemsAroundStarterRoadEndHouse(ServerLevel level, BlockPos base) {
+        BlockPos origin = starterRoadEndHouseOrigin(base);
+        Vec3i size = level.getStructureManager().get(STARTER_ROAD_END_HOUSE)
+                .map(StructureTemplate::getSize)
+                .orElse(new Vec3i(32, 24, 32));
+        AABB area = new AABB(
+                origin.getX() - 18,
+                origin.getY() - 14,
+                origin.getZ() - 18,
+                origin.getX() + size.getX() + 18,
+                origin.getY() + size.getY() + 80,
+                origin.getZ() + size.getZ() + 18
+        );
+        removeLooseDroppedItems(level, area);
+    }
+
+    private static void removeLooseDroppedItemsAroundRoadEndMagicSanctuary(ServerLevel level, BlockPos base) {
+        BlockPos origin = roadEndMagicSanctuaryOrigin(base);
+        AABB area = new AABB(
+                origin.getX() - 46,
+                origin.getY() - 104,
+                origin.getZ() - 18,
+                origin.getX() + SANCTUARY_WIDTH + 24,
+                origin.getY() + SANCTUARY_HEIGHT + 48,
+                origin.getZ() + SANCTUARY_DEPTH + 18
+        );
+        removeLooseDroppedItems(level, area);
+    }
+
+    private static void removeInitialGenerationLooseDrops(ServerLevel level, BlockPos base) {
+        removeLooseDroppedItemsAroundImportedHouse(level, base);
+        removeLooseDroppedItemsAroundStarterRoadEndHouse(level, base);
+        removeLooseDroppedItemsAroundRoadEndMagicSanctuary(level, base);
     }
 
     private static void restoreStoneTreasureMineHouse(ServerLevel level, BlockPos base) {
@@ -454,6 +492,10 @@ public class StarterPortalEvents {
 
     private static void removeLooseDroppedItemsAroundMineHouse(ServerLevel level, BlockPos center) {
         AABB area = new AABB(center).inflate(24.0D, 16.0D, 24.0D);
+        removeLooseDroppedItems(level, area);
+    }
+
+    private static void removeLooseDroppedItems(ServerLevel level, AABB area) {
         for (ItemEntity item : level.getEntitiesOfClass(ItemEntity.class, area)) {
             item.discard();
         }
@@ -599,7 +641,6 @@ public class StarterPortalEvents {
                 RandomSource.create(level.getSeed() ^ origin.asLong()),
                 2
         );
-        buildStarterRoadEndHouseDoorAccess(level, origin, size);
     }
 
     private static void prepareStarterRoadEndHouseCleanSupport(ServerLevel level, BlockPos origin, Vec3i size) {
@@ -608,41 +649,6 @@ public class StarterPortalEvents {
                 for (int y = -7; y < 0; y++) {
                     level.setBlock(origin.offset(x, y, z), Blocks.DIRT.defaultBlockState(), 2);
                 }
-            }
-        }
-    }
-
-    private static void buildStarterRoadEndHouseDoorAccess(ServerLevel level, BlockPos origin, Vec3i size) {
-        for (int x = -2; x <= size.getX() + 2; x++) {
-            for (int y = 0; y <= size.getY() + 3; y++) {
-                for (int z = -2; z <= size.getZ() + 2; z++) {
-                    BlockPos door = origin.offset(x, y, z);
-                    BlockState state = level.getBlockState(door);
-                    if (!(state.getBlock() instanceof DoorBlock)
-                            || state.getValue(DoorBlock.HALF) != DoubleBlockHalf.LOWER) {
-                        continue;
-                    }
-                    buildDoorStairAccess(level, door, state.getValue(DoorBlock.FACING), 10);
-                }
-            }
-        }
-    }
-
-    private static void buildDoorStairAccess(ServerLevel level, BlockPos lowerDoor, Direction facing, int length) {
-        for (int step = 1; step <= length; step++) {
-            int drop = Math.min(5, (step - 1) / 2);
-            BlockPos floor = lowerDoor.below().relative(facing, step).below(drop);
-            Direction side = facing.getClockWise();
-            for (int width = -1; width <= 1; width++) {
-                BlockPos path = floor.relative(side, width);
-                for (int support = 1; support <= 4; support++) {
-                    level.setBlock(path.below(support), Blocks.DIRT.defaultBlockState(), 2);
-                }
-                level.setBlock(path, width == 0
-                        ? Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, facing)
-                        : Blocks.SMOOTH_STONE.defaultBlockState(), 2);
-                level.setBlock(path.above(), Blocks.AIR.defaultBlockState(), 2);
-                level.setBlock(path.above(2), Blocks.AIR.defaultBlockState(), 2);
             }
         }
     }
@@ -660,6 +666,7 @@ public class StarterPortalEvents {
 
         forceLoadStructureArea(level, origin, width, depth, 18);
         prepareRoadEndMagicSanctuaryShell(level, origin, width, depth, height, centerZ);
+        buildSanctuarySupportPiers(level, origin, width, depth, centerZ);
         clearRoadEndSanctuaryEntrance(level, origin, width, centerZ);
         buildRoadEndSanctuaryStorage(level, origin, width, depth);
         buildRoadEndSanctuaryStations(level, origin, width, depth);
@@ -714,6 +721,62 @@ public class StarterPortalEvents {
             level.setBlock(origin.offset(x, 4, centerZ), Blocks.REDSTONE_LAMP.defaultBlockState(), 2);
             level.setBlock(origin.offset(x, 5, centerZ), Blocks.SEA_LANTERN.defaultBlockState(), 2);
         }
+    }
+
+    private static void buildSanctuarySupportPiers(ServerLevel level, BlockPos origin, int width, int depth, int centerZ) {
+        int[][] anchors = {
+                {2, 2},
+                {width - 3, 2},
+                {2, depth - 3},
+                {width - 3, depth - 3},
+                {width / 2, 2},
+                {width / 2, depth - 3},
+                {2, centerZ},
+                {width - 3, centerZ}
+        };
+
+        for (int index = 0; index < anchors.length; index++) {
+            buildSanctuarySupportPier(level, origin.offset(anchors[index][0], -1, anchors[index][1]), index);
+        }
+    }
+
+    private static void buildSanctuarySupportPier(ServerLevel level, BlockPos topNorthWest, int salt) {
+        int bottomLimit = Math.max(level.getMinBuildHeight() + 1, topNorthWest.getY() - 96);
+        for (int y = topNorthWest.getY(); y >= bottomLimit; y--) {
+            boolean hitGround = false;
+            for (int dx = 0; dx <= 1; dx++) {
+                for (int dz = 0; dz <= 1; dz++) {
+                    BlockPos pos = new BlockPos(topNorthWest.getX() + dx, y, topNorthWest.getZ() + dz);
+                    if (y < topNorthWest.getY() - 4
+                            && level.getBlockState(pos).isSolid()
+                            && level.getFluidState(pos).isEmpty()) {
+                        hitGround = true;
+                    }
+                }
+            }
+            if (hitGround) {
+                return;
+            }
+
+            for (int dx = 0; dx <= 1; dx++) {
+                for (int dz = 0; dz <= 1; dz++) {
+                    BlockPos pos = new BlockPos(topNorthWest.getX() + dx, y, topNorthWest.getZ() + dz);
+                    level.setBlock(pos, sanctuarySupportBlock(y, salt, dx, dz), 2);
+                }
+            }
+        }
+    }
+
+    private static BlockState sanctuarySupportBlock(int y, int salt, int dx, int dz) {
+        if (Math.floorMod(y + salt + dx + dz, 13) == 0) {
+            return Blocks.AMETHYST_BLOCK.defaultBlockState();
+        }
+        if (dx == 0 && dz == 0 && Math.floorMod(y + salt, 9) == 0) {
+            return Blocks.SEA_LANTERN.defaultBlockState();
+        }
+        return Math.floorMod(y + salt + dx + dz, 3) == 0
+                ? Blocks.DEEPSLATE_BRICKS.defaultBlockState()
+                : Blocks.POLISHED_DEEPSLATE.defaultBlockState();
     }
 
     private static void clearRoadEndSanctuaryEntrance(ServerLevel level, BlockPos origin, int width, int centerZ) {
@@ -4569,6 +4632,11 @@ public class StarterPortalEvents {
             return roadEndHouseSpawn;
         }
 
+        BlockPos preferredRoadEndHouseSpawn = forceRoadEndHouseBedsideSpawn(level, base);
+        if (preferredRoadEndHouseSpawn != null) {
+            return preferredRoadEndHouseSpawn;
+        }
+
         int frontZ = IMPORTED_HOUSE_MAX_Z + 3;
         Vec3i[] offsets = {
                 new Vec3i(0, 0, frontZ),
@@ -4620,6 +4688,50 @@ public class StarterPortalEvents {
             }
         }
         return null;
+    }
+
+    private static BlockPos forceRoadEndHouseBedsideSpawn(ServerLevel level, BlockPos base) {
+        Optional<StructureTemplate> optional = level.getStructureManager().get(STARTER_ROAD_END_HOUSE);
+        if (optional.isEmpty()) {
+            return null;
+        }
+
+        Vec3i size = optional.get().getSize();
+        BlockPos origin = starterRoadEndHouseOrigin(base);
+
+        // starter_house_1.nbt has the yellow bed foot at local [10,3,22].
+        // The house is placed with CLOCKWISE_180 around its center, so the bed
+        // lands near [sizeX - 10, 3, sizeZ - 22]. Use nearby side blocks only.
+        BlockPos bedFoot = origin.offset(size.getX() - 10, 3, size.getZ() - 22);
+        BlockPos bedHead = bedFoot.east();
+        BlockPos[] candidates = {
+                bedFoot.north(), bedFoot.south(), bedHead.north(), bedHead.south(),
+                bedFoot.west(), bedHead.east()
+        };
+
+        for (BlockPos candidate : candidates) {
+            if (prepareForcedIndoorSpawn(level, candidate)) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    private static boolean prepareForcedIndoorSpawn(ServerLevel level, BlockPos spawn) {
+        if (!level.isInWorldBounds(spawn)
+                || !level.isInWorldBounds(spawn.above())
+                || !level.isInWorldBounds(spawn.below())) {
+            return false;
+        }
+
+        BlockState floor = level.getBlockState(spawn.below());
+        if (floor.isAir() || !floor.isSolid() || !level.getFluidState(spawn.below()).isEmpty()) {
+            level.setBlock(spawn.below(), Blocks.OAK_PLANKS.defaultBlockState(), 2);
+        }
+
+        level.setBlock(spawn, Blocks.AIR.defaultBlockState(), 2);
+        level.setBlock(spawn.above(), Blocks.AIR.defaultBlockState(), 2);
+        return level.getFluidState(spawn).isEmpty() && level.getFluidState(spawn.above()).isEmpty();
     }
 
     private static boolean isSafeIndoorSpawn(ServerLevel level, BlockPos spawn) {
