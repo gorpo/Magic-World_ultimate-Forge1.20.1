@@ -1242,3 +1242,11 @@ Validacao e processo:
 - A remocao nao escreve mensagem no chat.
 - O pacote local foi atualizado somente no JAR all-in-one; nao gerar ZIP.
 - Validacao: `./gradlew.bat build` passou.
+
+## Registro 2026-06-07 - pacote local validado por run/mods
+- Fonte validada pelo teste local do usuario: `run/mods`.
+- O pacote `pacote_distribuivel/.minecraft/mods` foi sincronizado com essa lista validada.
+- Ficaram fora: `tl_skin_cape*`, `RoughlyEnoughItems`, `WorldEdit` e qualquer JAR antigo do proprio Magic World vindo de `run/mods`.
+- O JAR principal permanece somente como `Magic_World_Mod_1.20.1-1.0.0.1.jar`, atualizado pelo script oficial.
+- `resourcepacks` e `shaderpacks` nao foram alterados; nao gerar ZIP.
+- README de uso dos mods externos fica pendente para depois da aprovacao final do pacote.

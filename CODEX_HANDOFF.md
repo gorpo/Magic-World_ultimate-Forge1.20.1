@@ -1955,3 +1955,12 @@ Validacao:
 - A escolha envia `confirm(false, false, false)`.
 - `StarterPortalEvents.confirmPremiumPortalOptions` trata ausencia de selecao como desativacao: flags premium visuais ficam falsas, night vision/luck do portal sao removidos e o cliente recebe `applyPremiumPortalVisual(false, false, false)`.
 - Build validada e JAR all-in-one atualizado no pacote local, sem ZIP.
+
+## Handoff 2026-06-07 - sincronizacao dos mods validados
+- Pedido: usar os mods testados no Minecraft pessoal e colocados em `run/mods` para montar o pacote local all-in-one.
+- Regra aplicada: `run/mods` e a fonte validada; `tl_skin_cape*` fica fora por decisao do usuario.
+- Tambem foi ignorado qualquer `Magic_World_Mod_1.20.1-*.jar` dentro de `run/mods`, porque o JAR correto vem de `build/libs` pelo script oficial.
+- Removidos do pacote distribuivel por nao estarem na lista validada atual: `RoughlyEnoughItems-12.1.785-forge.jar` e `worldedit-mod-7.2.15.jar`.
+- Mantidos no pacote: Architectury, BetterFoliage, BlockUI, CIT Resewn, Cloth Config, CTM, Distant Horizons, Domum Ornamentum, Embeddium, EMF, ETF, FerriteCore, Framework, Fusion, ImmediatelyFast, JourneyMap, Lithostitched, MineColonies, MCA, ModernFix, Oculus, Structurize e Tectonic.
+- `resourcepacks` e `shaderpacks` nao foram alterados; nao foi gerado ZIP.
+- Pendente apos APROVADO: atualizar `README.md` com explicacao de uso dos mods usaveis, incluindo JourneyMap, MineColonies, Distant Horizons, shader/resource portal, mods de construcao/visual e como ativar cada um.
