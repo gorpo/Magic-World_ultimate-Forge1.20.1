@@ -1356,14 +1356,11 @@ public class PremiumMenuScreen extends Screen {
         int x =
                 getPanelX();
 
-        int y =
-                getPanelY();
-
         int boxX =
                 x + 16;
 
         int boxY =
-                y + 58;
+                getListTop() + 2;
 
         int iconSize =
                 42;
