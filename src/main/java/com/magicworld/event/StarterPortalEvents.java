@@ -846,8 +846,9 @@ public class StarterPortalEvents {
     }
 
     private static void buildSanctuaryWestEntranceStairs(ServerLevel level, BlockPos origin, int centerZ) {
-        for (int step = 1; step <= 18; step++) {
-            int drop = Math.min(8, (step - 1) / 2);
+        int totalSteps = 28;
+        for (int step = 1; step <= totalSteps; step++) {
+            int drop = Math.min(13, (step - 1) / 2);
             for (int dz = -2; dz <= 2; dz++) {
                 BlockPos floor = origin.offset(-step, -drop, centerZ + dz);
                 for (int support = 1; support <= 4; support++) {
@@ -860,6 +861,51 @@ public class StarterPortalEvents {
                     level.setBlock(floor.above(y), Blocks.AIR.defaultBlockState(), 2);
                 }
             }
+        }
+        buildSanctuaryEntrancePlatform(level, origin, centerZ, totalSteps);
+    }
+
+    private static void buildSanctuaryEntrancePlatform(ServerLevel level, BlockPos origin, int centerZ, int totalSteps) {
+        int drop = Math.min(13, (totalSteps - 1) / 2);
+        BlockPos platformCorner = origin.offset(-totalSteps - 8, -drop, centerZ - 3);
+        for (int x = 0; x < 8; x++) {
+            for (int z = 0; z < 8; z++) {
+                BlockPos floor = platformCorner.offset(x, 0, z);
+                for (int support = 1; support <= 8; support++) {
+                    level.setBlock(floor.below(support), Blocks.DIRT.defaultBlockState(), 2);
+                }
+
+                boolean edge = x == 0 || x == 7 || z == 0 || z == 7;
+                boolean corner = (x == 0 || x == 7) && (z == 0 || z == 7);
+                BlockState floorState = corner
+                        ? Blocks.SEA_LANTERN.defaultBlockState()
+                        : edge
+                        ? Blocks.POLISHED_ANDESITE.defaultBlockState()
+                        : Math.floorMod(x + z, 2) == 0
+                        ? Blocks.STONE_BRICKS.defaultBlockState()
+                        : Blocks.SMOOTH_STONE.defaultBlockState();
+                level.setBlock(floor, floorState, 2);
+                for (int y = 1; y <= 5; y++) {
+                    level.setBlock(floor.above(y), Blocks.AIR.defaultBlockState(), 2);
+                }
+            }
+        }
+
+        for (BlockPos light : new BlockPos[] {
+                platformCorner.offset(0, 1, 0), platformCorner.offset(7, 1, 0),
+                platformCorner.offset(0, 1, 7), platformCorner.offset(7, 1, 7),
+                platformCorner.offset(3, 1, 0), platformCorner.offset(4, 1, 7)
+        }) {
+            level.setBlock(light, Blocks.END_ROD.defaultBlockState(), 2);
+            level.setBlock(light.above(), Blocks.SEA_LANTERN.defaultBlockState(), 2);
+        }
+
+        for (BlockPos bird : new BlockPos[] {
+                platformCorner.offset(1, 1, 1), platformCorner.offset(6, 1, 1),
+                platformCorner.offset(1, 1, 6), platformCorner.offset(6, 1, 6),
+                platformCorner.offset(3, 1, 3), platformCorner.offset(4, 1, 4)
+        }) {
+            spawnNamed(level, EntityType.PARROT, bird, "Ave da Entrada do Santuario " + bird.getX() + "_" + bird.getZ());
         }
     }
 

@@ -1797,3 +1797,9 @@ Validacao:
 - Mesas centrais das casas grandes/areas de profissao foram substituidas por espaco central livre iluminado para evitar aldeoes presos.
 - Todos os nomes customizados de entidades continuam como NBT, mas ficam invisiveis acima da cabeca (`setCustomNameVisible(false)`).
 - Tela visual de progresso/avisos de carregamento foi desativada; mensagem final curta permanece no chat.
+
+## Handoff 2026-06-06 - entrada do Santuario estendida
+- Pedido: escada do Santuario com mais 10 degraus, plataforma reta 8x8 no fim, muita iluminacao e aves na entrada.
+- `buildSanctuaryWestEntranceStairs` passou de 18 para 28 degraus, mantendo a descida para oeste.
+- Foi adicionada `buildSanctuaryEntrancePlatform`, criando plataforma 8x8 de pedra no fim da escada com sea lanterns e end rods.
+- A entrada recebeu 6 parrots nomeados com nome invisivel, usando o helper `spawnNamed` ja configurado para `setCustomNameVisible(false)`.

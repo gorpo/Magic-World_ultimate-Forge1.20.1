@@ -1102,3 +1102,9 @@ Validacao e processo:
 - Mesas centrais de areas grandes foram removidas para liberar circulacao de villagers e animais.
 - Entidades nomeadas do Magic World nao exibem mais nome flutuante acima da cabeca.
 - Avisos visuais de carregamento ao spawn foram silenciados; o chat fica reservado para mensagem final curta.
+
+## Registro 2026-06-06 - plataforma da entrada do Santuario
+- A escada oeste do Santuario foi estendida para 28 degraus.
+- No fim da escada foi criada uma plataforma 8x8 de pedra para marcar claramente a entrada.
+- A plataforma recebeu iluminacao forte com sea lanterns e end rods.
+- Aves decorativas foram adicionadas na plataforma, sem nomes flutuantes.
