@@ -14,6 +14,9 @@ $MagicWorldDataRoot = Join-Path $env:APPDATA "MagicWorldLauncher"
 $MinecraftDir = Join-Path $MagicWorldDataRoot ".minecraft"
 $MagicJavaRoot = Join-Path $MagicWorldDataRoot "runtime\java17"
 $AccountsPath = Join-Path $MagicWorldDataRoot "accounts.json"
+$LaunchLogPath = Join-Path $MagicWorldDataRoot "magicworld-launcher-last-launch.log"
+$LaunchOutLogPath = Join-Path $MagicWorldDataRoot "magicworld-launcher-last-stdout.log"
+$LaunchErrLogPath = Join-Path $MagicWorldDataRoot "magicworld-launcher-last-stderr.log"
 $TLauncherAuthApiUrl = $env:MAGICWORLD_TLAUNCHER_AUTH_API_URL
 $RepoUrl = "https://github.com/gorpo/Magic-World_ultimate-Forge1.20.1"
 $ReleaseUrl = "https://github.com/gorpo/Magic-World_ultimate-Forge1.20.1/releases/tag/installer-upload-manual-forge-1.20.1-v1.0.0.1-main"
@@ -418,6 +421,42 @@ function Invoke-MagicDownload {
     Invoke-WebRequest -Uri $Url -OutFile $Destination -UseBasicParsing
 }
 
+function ConvertTo-MagicCommandLine {
+    param([string[]]$Arguments)
+
+    $quoted = foreach ($argument in $Arguments) {
+        $value = [string]$argument
+        if ($value.Length -eq 0) {
+            '""'
+            continue
+        }
+        if ($value -notmatch '[\s"]') {
+            $value
+            continue
+        }
+
+        '"' + $value.Replace('"', '\"') + '"'
+    }
+    return [string]::Join(" ", $quoted)
+}
+
+function Write-MagicLaunchLog {
+    param(
+        [string]$Java,
+        [string]$Arguments,
+        [string]$WorkingDirectory
+    )
+
+    New-Item -ItemType Directory -Force -Path $MagicWorldDataRoot | Out-Null
+    $content = @(
+        "Time: $(Get-Date -Format o)",
+        "Java: $Java",
+        "WorkingDirectory: $WorkingDirectory",
+        "Arguments: $Arguments"
+    )
+    Set-Content -LiteralPath $LaunchLogPath -Value $content -Encoding UTF8
+}
+
 function Ensure-MagicWorldRuntimeFiles {
     param($VersionJson)
 
@@ -614,7 +653,7 @@ function Start-MagicWorldMinecraft {
         $value
     }
 
-    $java = Get-MagicJavaPath
+    $java = Get-MagicJavaExePath
     if ($DryRun) {
         return [pscustomobject]@{
             java = $java
@@ -628,7 +667,26 @@ function Start-MagicWorldMinecraft {
         }
     }
 
-    Start-Process -FilePath $java -ArgumentList $allArgs -WorkingDirectory $MinecraftDir
+    $argumentLine = ConvertTo-MagicCommandLine -Arguments $allArgs
+    Write-MagicLaunchLog -Java $java -Arguments $argumentLine -WorkingDirectory $MinecraftDir
+    $process = Start-Process -FilePath $java `
+        -ArgumentList $argumentLine `
+        -WorkingDirectory $MinecraftDir `
+        -WindowStyle Hidden `
+        -RedirectStandardOutput $LaunchOutLogPath `
+        -RedirectStandardError $LaunchErrLogPath `
+        -PassThru
+    Start-Sleep -Seconds 5
+    if ($process.HasExited -and $process.ExitCode -ne 0) {
+        $errorText = ""
+        if (Test-Path -LiteralPath $LaunchErrLogPath) {
+            $errorText = (Get-Content -LiteralPath $LaunchErrLogPath -Tail 20 -ErrorAction SilentlyContinue) -join "`n"
+        }
+        if ([string]::IsNullOrWhiteSpace($errorText)) {
+            $errorText = "Processo Java encerrou com codigo $($process.ExitCode). Veja $LaunchErrLogPath."
+        }
+        throw "Minecraft fechou ao iniciar: $errorText"
+    }
     Update-Status "Minecraft Magic World iniciado." 100
 }
 
