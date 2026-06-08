@@ -1639,3 +1639,15 @@ Release local esperado:
 ```text
 launcher/dist/MagicWorldLauncherFullInstaller-Stable V1.0.0.2.exe
 ```
+
+Atualizacao de layout V1.0.0.2:
+
+- titulo da janela: `Magic World Launcher V1.0.0.2`;
+- topo direito com icones de pasta, configuracoes e perfil;
+- perfil salva apenas o usuario local, sem campo de senha;
+- tela principal mantem fundo e logo, sem textos abaixo da logo;
+- loading fica abaixo da logo e o botao principal mostra apenas `Jogar`;
+- servidores ficam para a tela Multiplayer do proprio Minecraft;
+- configuracoes usam dropdown de resolucao e incluem atalhos para pasta do jogo, pasta do launcher e GitHub;
+- creditos exibidos em configuracoes: `GuiPaluch - (Gorpo) - TCXS Project`;
+- instalador registra `Magic World Launcher` em Apps e Recursos do Windows pelo HKCU.

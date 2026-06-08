@@ -20,24 +20,20 @@ Fluxo:
 6. O launcher verifica o que faltar, abre o Minecraft e fica oculto ate o jogo fechar.
 
 Interface:
-- "Login": usuario/senha e opcao de salvar senha.
-- "Servidores": cadastra IP/dominio:porta e gera servers.dat na .minecraft exclusiva.
-- ".minecraft": abre a pasta interna exclusiva do Magic World.
-- "Configuracoes": RAM por slider de 2 GB ate 16 GB, resolucao personalizada e opcao de ocultar o launcher durante o jogo.
-- "Jogar Magic World": instala/verifica automaticamente e abre o Minecraft.
+- Icone de pasta: abre a .minecraft exclusiva do Magic World.
+- Icone de engrenagem: RAM por slider de 2 GB ate 16 GB, resolucao por dropdown, atalhos para pasta do jogo, pasta do launcher e GitHub.
+- Icone de perfil: define apenas o usuario local.
+- Botao "Jogar": instala/verifica automaticamente e abre o Minecraft.
 
 Login:
-- Login online TLauncher depende de API oficial configurada em MAGICWORLD_TLAUNCHER_AUTH_API_URL.
-- Sem API oficial configurada, o launcher salva o usuario em modo offline para manter o jogo funcional.
-- A senha salva fica em %APPDATA%\MagicWorldLauncher\tlauncher-password.xml.
+- O perfil salva apenas o nome de usuario local em modo offline.
+- Nao ha campo de senha nesta versao do launcher.
 
 Servidores:
 - Conta offline entra apenas em servidores que aceitam modo offline/cracked.
 - Servidores premium online-mode=true exigem autenticacao valida.
 - O launcher nao faz bypass de autenticacao premium.
-- Mesmo PC: 127.0.0.1:25565.
-- Outro computador da rede: IP_DA_MAQUINA:25565, por exemplo 192.168.0.25:25565.
-- Servidor de amigo: dominio/IP e porta informados por ele.
+- Use a tela Multiplayer do proprio Minecraft para cadastrar servidores.
 
 Desinstalacao:
 - Use o atalho "Desinstalar Magic World Launcher" na area de trabalho.

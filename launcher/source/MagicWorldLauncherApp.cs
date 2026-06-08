@@ -125,6 +125,7 @@ internal static class MagicWorldLauncherApp
                          "Remove-Item -LiteralPath " + PsQuote(Path.Combine(desktop, "Desinstalar Magic World Launcher.lnk")) + " -Force\r\n" +
                          "Remove-Item -LiteralPath " + PsQuote(Path.Combine(desktop, "Magic World Launcher.cmd")) + " -Force\r\n" +
                          "Remove-Item -LiteralPath " + PsQuote(Path.Combine(desktop, "Uninstall Magic World Launcher.cmd")) + " -Force\r\n" +
+                         "Remove-Item -LiteralPath 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MagicWorldLauncher' -Recurse -Force\r\n" +
                          "Remove-Item -LiteralPath " + PsQuote(dataDir) + " -Recurse -Force\r\n" +
                          "Remove-Item -LiteralPath " + PsQuote(installDir) + " -Recurse -Force\r\n" +
                          "Remove-Item -LiteralPath $PSCommandPath -Force\r\n";

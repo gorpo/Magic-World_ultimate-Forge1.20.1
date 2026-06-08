@@ -2080,3 +2080,11 @@ Validacao:
 - Servidores: conta offline so entra em servidor offline/cracked; servidor premium `online-mode=true` exige autenticacao valida e nao recebe bypass. Local no mesmo PC: `127.0.0.1:25565`; outro PC da LAN: IP da maquina servidora, exemplo `192.168.0.25:25565`; amigo: dominio/IP e porta informados por ele.
 - Docs atualizados: `README.md`, `docs/WIKI.md`, `CODEX_HANDOFF.md` e `launcher/MagicWorldLauncher/README.txt`.
 - Validacoes executadas antes do build final: parse do PowerShell, `-SelfTest`, compilacao C# do installer e compilacao C# do wrapper.
+
+## Handoff 2026-06-08 - layout final do launcher V1.0.0.2
+- Pedido: remover textos abaixo da logo, mover login/.minecraft/configuracoes para icones no topo direito, perfil sem senha, remover botao servidores, botao principal apenas `Jogar`, configuracoes com resolucao em dropdown, atalhos para pastas proprias e GitHub, creditos e registro no desinstalador do Windows.
+- `MagicWorldLauncher.ps1`: janela agora tem titulo `Magic World Launcher V1.0.0.2`; topo direito usa icones de pasta, engrenagem e perfil; hero mantem logo e fundo; loading abaixo da logo; botao `Jogar` abaixo do loading.
+- `MagicWorldLauncher.ps1`: perfil salva apenas usuario local offline e remove campo de senha/API; servidores ficam no Multiplayer do Minecraft, sem botao no launcher.
+- `MagicWorldLauncher.ps1`: configuracoes usam dropdown de resolucao, slider de RAM, atalho para `%APPDATA%\MagicWorldLauncher\.minecraft`, atalho para pasta instalada do launcher, GitHub e creditos `GuiPaluch - (Gorpo) - TCXS Project`.
+- `MagicWorldLauncherFullInstaller.cs`: registra `Magic World Launcher` em `HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\MagicWorldLauncher` para aparecer em Apps e Recursos; atalhos usam o proprio `MagicWorldLauncher.exe` como icone.
+- `MagicWorldLauncherApp.cs`: desinstalador remove a chave HKCU de Apps e Recursos.

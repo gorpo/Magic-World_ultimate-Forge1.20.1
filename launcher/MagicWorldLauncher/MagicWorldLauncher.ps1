@@ -7,6 +7,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+$LauncherVersion = "V1.0.0.2"
 $CurrentScriptPath = $(if ($env:MAGICWORLD_LAUNCHER_SCRIPT_PATH) { $env:MAGICWORLD_LAUNCHER_SCRIPT_PATH } else { $MyInvocation.MyCommand.Path })
 $LauncherRoot = Split-Path -Parent $CurrentScriptPath
 $AssetsRoot = Join-Path $LauncherRoot "assets"
@@ -1006,6 +1007,15 @@ function Open-MagicWorldMinecraftFolder {
     Start-Process -FilePath "explorer.exe" -ArgumentList $MinecraftDir
 }
 
+function Open-MagicWorldLauncherFolder {
+    New-Item -ItemType Directory -Force -Path $LauncherRoot | Out-Null
+    Start-Process -FilePath "explorer.exe" -ArgumentList $LauncherRoot
+}
+
+function Open-Repo {
+    Start-Process $RepoUrl
+}
+
 function Set-MagicWorldFolderIcon {
     param([string]$Path)
 
@@ -1180,9 +1190,9 @@ function Ensure-MagicWorldServerFiles {
 
 function Show-TLauncherApiLoginDialog {
     $dialog = New-Object System.Windows.Window
-    $dialog.Title = "Login TLauncher"
-    $dialog.Width = 460
-    $dialog.Height = 310
+    $dialog.Title = "Perfil Magic World"
+    $dialog.Width = 420
+    $dialog.Height = 230
     $dialog.WindowStartupLocation = "CenterOwner"
     $dialog.ResizeMode = "NoResize"
     $dialog.Background = "#101820"
@@ -1196,13 +1206,11 @@ function Show-TLauncherApiLoginDialog {
     $dialog.Content = $panel
 
     $label = New-Object System.Windows.Controls.TextBlock
-    $label.Text = "Entre com sua conta TLauncher."
+    $label.Text = "Defina o nome de usuario usado pelo Magic World."
     $label.Foreground = "White"
     $label.TextWrapping = "Wrap"
     $label.Margin = "0,0,0,14"
     $panel.Children.Add($label) | Out-Null
-
-    $savedAccount = Get-MagicWorldAccount
 
     $userLabel = New-Object System.Windows.Controls.TextBlock
     $userLabel.Text = "Usuario"
@@ -1215,25 +1223,6 @@ function Show-TLauncherApiLoginDialog {
     $username.Height = 30
     $username.Margin = "0,0,0,10"
     $panel.Children.Add($username) | Out-Null
-
-    $passwordLabel = New-Object System.Windows.Controls.TextBlock
-    $passwordLabel.Text = "Senha"
-    $passwordLabel.Foreground = "#FFDAA520"
-    $passwordLabel.Margin = "0,0,0,4"
-    $panel.Children.Add($passwordLabel) | Out-Null
-
-    $password = New-Object System.Windows.Controls.PasswordBox
-    $password.Password = Get-SavedTLauncherPassword
-    $password.Height = 30
-    $password.Margin = "0,0,0,8"
-    $panel.Children.Add($password) | Out-Null
-
-    $savePassword = New-Object System.Windows.Controls.CheckBox
-    $savePassword.Content = "Salvar senha neste Windows"
-    $savePassword.Foreground = "White"
-    $savePassword.IsChecked = [bool]$savedAccount.savedPassword
-    $savePassword.Margin = "0,0,0,16"
-    $panel.Children.Add($savePassword) | Out-Null
 
     $buttons = New-Object System.Windows.Controls.StackPanel
     $buttons.Orientation = "Horizontal"
@@ -1254,23 +1243,11 @@ function Show-TLauncherApiLoginDialog {
     $ok.Height = 32
     $ok.Add_Click({
         try {
-            $apiUrl = $(if ($savedAccount.authApiUrl) { [string]$savedAccount.authApiUrl } else { $TLauncherAuthApiUrl })
-            if ([string]::IsNullOrWhiteSpace($apiUrl)) {
-                Save-MagicWorldAccount -Username $username.Text -LoginProvider "offline" | Out-Null
-                Remove-SavedTLauncherPassword
-                [System.Windows.MessageBox]::Show("API oficial do TLauncher nao configurada. Usuario salvo em modo offline para manter o jogo funcional.", "Login TLauncher", "OK", "Information") | Out-Null
-                $dialog.DialogResult = $true
-                return
-            }
-            Invoke-TLauncherApiLogin -Username $username.Text -Password $password.Password -ApiUrl $apiUrl | Out-Null
-            if ($savePassword.IsChecked) {
-                Save-TLauncherPassword -Password $password.Password
-            } else {
-                Remove-SavedTLauncherPassword
-            }
+            Save-MagicWorldAccount -Username $username.Text -LoginProvider "offline" | Out-Null
+            Remove-SavedTLauncherPassword
             $dialog.DialogResult = $true
         } catch {
-            [System.Windows.MessageBox]::Show($_.Exception.Message, "Login TLauncher", "OK", "Error") | Out-Null
+            [System.Windows.MessageBox]::Show($_.Exception.Message, "Perfil Magic World", "OK", "Error") | Out-Null
         }
     })
     $buttons.Children.Add($ok) | Out-Null
@@ -1283,7 +1260,7 @@ function Show-MagicWorldSettingsDialog {
     $dialog = New-Object System.Windows.Window
     $dialog.Title = "Configuracoes Magic World"
     $dialog.Width = 560
-    $dialog.Height = 430
+    $dialog.Height = 540
     $dialog.WindowStartupLocation = "CenterOwner"
     $dialog.ResizeMode = "NoResize"
     $dialog.Background = "#101820"
@@ -1334,31 +1311,36 @@ function Show-MagicWorldSettingsDialog {
     $ramSlider.Add_ValueChanged({ $ramValue.Text = "$([int]$ramSlider.Value) GB" })
     $panel.Children.Add($ramSlider) | Out-Null
 
-    $resolutionBox = New-Object System.Windows.Controls.CheckBox
-    $resolutionBox.Content = "Resolucao personalizada"
-    $resolutionBox.Foreground = "White"
-    $resolutionBox.IsChecked = [bool]$settings.customResolution
-    $resolutionBox.Margin = "0,0,0,10"
-    $panel.Children.Add($resolutionBox) | Out-Null
+    $resolutionLabel = New-Object System.Windows.Controls.TextBlock
+    $resolutionLabel.Text = "Resolucao"
+    $resolutionLabel.Foreground = "#FFDAA520"
+    $resolutionLabel.FontSize = 15
+    $resolutionLabel.Margin = "0,0,0,6"
+    $panel.Children.Add($resolutionLabel) | Out-Null
 
-    $resolutionPanel = New-Object System.Windows.Controls.StackPanel
-    $resolutionPanel.Orientation = "Horizontal"
-    $resolutionPanel.Margin = "0,0,0,18"
-    $panel.Children.Add($resolutionPanel) | Out-Null
-
-    $widthBox = New-Object System.Windows.Controls.TextBox
-    $widthBox.Text = [string]$settings.resolutionWidth
-    $widthBox.Width = 90
-    $widthBox.Height = 30
-    $widthBox.Margin = "0,0,8,0"
-    $resolutionPanel.Children.Add($widthBox) | Out-Null
-
-    $heightBox = New-Object System.Windows.Controls.TextBox
-    $heightBox.Text = [string]$settings.resolutionHeight
-    $heightBox.Width = 90
-    $heightBox.Height = 30
-    $heightBox.Margin = "0,0,12,0"
-    $resolutionPanel.Children.Add($heightBox) | Out-Null
+    $resolutionDropdown = New-Object System.Windows.Controls.ComboBox
+    $resolutionDropdown.Height = 32
+    $resolutionDropdown.Margin = "0,0,0,18"
+    $resolutionOptions = @(
+        "Padrao do Minecraft",
+        "1280x720",
+        "1366x768",
+        "1600x900",
+        "1920x1080",
+        "2560x1440",
+        "3840x2160"
+    )
+    foreach ($option in $resolutionOptions) {
+        $resolutionDropdown.Items.Add($option) | Out-Null
+    }
+    $currentResolution = $(if ([bool]$settings.customResolution) { "$($settings.resolutionWidth)x$($settings.resolutionHeight)" } else { "Padrao do Minecraft" })
+    if ($resolutionOptions -contains $currentResolution) {
+        $resolutionDropdown.SelectedItem = $currentResolution
+    } else {
+        $resolutionDropdown.Items.Add($currentResolution) | Out-Null
+        $resolutionDropdown.SelectedItem = $currentResolution
+    }
+    $panel.Children.Add($resolutionDropdown) | Out-Null
 
     $hideLauncherBox = New-Object System.Windows.Controls.CheckBox
     $hideLauncherBox.Content = "Ocultar launcher enquanto o Minecraft roda"
@@ -1367,12 +1349,41 @@ function Show-MagicWorldSettingsDialog {
     $hideLauncherBox.Margin = "0,0,0,14"
     $panel.Children.Add($hideLauncherBox) | Out-Null
 
-    $folder = New-Object System.Windows.Controls.TextBlock
-    $folder.Text = "Pasta isolada: $MinecraftDir"
-    $folder.Foreground = "#D0D8E8"
-    $folder.TextWrapping = "Wrap"
-    $folder.Margin = "0,0,0,22"
-    $panel.Children.Add($folder) | Out-Null
+    $shortcutPanel = New-Object System.Windows.Controls.WrapPanel
+    $shortcutPanel.Margin = "0,0,0,16"
+    $panel.Children.Add($shortcutPanel) | Out-Null
+
+    function New-MagicSettingsButton {
+        param([string]$Text)
+        $button = New-Object System.Windows.Controls.Button
+        $button.Content = $Text
+        $button.Width = 154
+        $button.Height = 32
+        $button.Margin = "0,0,8,8"
+        $button.Foreground = "White"
+        $button.Background = "#CC101820"
+        $button.BorderBrush = "#FFDAA520"
+        return $button
+    }
+
+    $internalFolderButton = New-MagicSettingsButton "Pasta do jogo"
+    $internalFolderButton.Add_Click({ Open-MagicWorldMinecraftFolder })
+    $shortcutPanel.Children.Add($internalFolderButton) | Out-Null
+
+    $launcherFolderButton = New-MagicSettingsButton "Pasta do launcher"
+    $launcherFolderButton.Add_Click({ Open-MagicWorldLauncherFolder })
+    $shortcutPanel.Children.Add($launcherFolderButton) | Out-Null
+
+    $repoButton = New-MagicSettingsButton "GitHub"
+    $repoButton.Add_Click({ Open-Repo })
+    $shortcutPanel.Children.Add($repoButton) | Out-Null
+
+    $credits = New-Object System.Windows.Controls.TextBlock
+    $credits.Text = "Creditos: GuiPaluch - (Gorpo) - TCXS Project"
+    $credits.Foreground = "#D0D8E8"
+    $credits.TextWrapping = "Wrap"
+    $credits.Margin = "0,0,0,18"
+    $panel.Children.Add($credits) | Out-Null
 
     $buttons = New-Object System.Windows.Controls.StackPanel
     $buttons.Orientation = "Horizontal"
@@ -1393,12 +1404,20 @@ function Show-MagicWorldSettingsDialog {
     $save.Height = 34
     $save.Add_Click({
         try {
+            $selectedResolution = [string]$resolutionDropdown.SelectedItem
+            $customResolution = $selectedResolution -match '^(\d+)x(\d+)$'
+            $resolutionWidth = 1280
+            $resolutionHeight = 720
+            if ($customResolution) {
+                $resolutionWidth = [int]$Matches[1]
+                $resolutionHeight = [int]$Matches[2]
+            }
             Save-MagicWorldSettings `
                 -MinMemoryGb 2 `
                 -MaxMemoryGb ([int]$ramSlider.Value) `
-                -CustomResolution ([bool]$resolutionBox.IsChecked) `
-                -ResolutionWidth ([int]$widthBox.Text) `
-                -ResolutionHeight ([int]$heightBox.Text) `
+                -CustomResolution ([bool]$customResolution) `
+                -ResolutionWidth $resolutionWidth `
+                -ResolutionHeight $resolutionHeight `
                 -MinimizeLauncherOnPlay ([bool]$hideLauncherBox.IsChecked) | Out-Null
             $dialog.DialogResult = $true
         } catch {
@@ -1584,7 +1603,7 @@ public static class MagicWorldTaskbar {
 [MagicWorldTaskbar]::SetCurrentProcessExplicitAppUserModelID("MagicWorld.Launcher") | Out-Null
 
 $window = New-Object System.Windows.Window
-$window.Title = "Magic World Launcher"
+$window.Title = "Magic World Launcher $LauncherVersion"
 $window.Width = 980
 $window.Height = 620
 $window.WindowStartupLocation = "CenterScreen"
@@ -1651,77 +1670,80 @@ function New-MagicBitmapImage {
     return $bitmap
 }
 
-$footer = New-Object System.Windows.Controls.Border
-$footer.Background = "#D0101820"
-$footer.BorderBrush = "#66DAA520"
-$footer.BorderThickness = "1"
-$footer.Padding = "14,10,14,10"
-$footer.Margin = "0,14,0,0"
-[System.Windows.Controls.DockPanel]::SetDock($footer, "Bottom")
-$layout.Children.Add($footer) | Out-Null
+$topBar = New-Object System.Windows.Controls.DockPanel
+$topBar.Height = 46
+$topBar.LastChildFill = $false
+[System.Windows.Controls.DockPanel]::SetDock($topBar, "Top")
+$layout.Children.Add($topBar) | Out-Null
 
-$footerPanel = New-Object System.Windows.Controls.DockPanel
-$footerPanel.LastChildFill = $false
-$footer.Child = $footerPanel
+$topButtons = New-Object System.Windows.Controls.StackPanel
+$topButtons.Orientation = "Horizontal"
+$topButtons.HorizontalAlignment = "Right"
+$topButtons.VerticalAlignment = "Top"
+[System.Windows.Controls.DockPanel]::SetDock($topButtons, "Right")
+$topBar.Children.Add($topButtons) | Out-Null
 
-$accountPanel = New-Object System.Windows.Controls.StackPanel
-$accountPanel.VerticalAlignment = "Center"
-[System.Windows.Controls.DockPanel]::SetDock($accountPanel, "Left")
-$footerPanel.Children.Add($accountPanel) | Out-Null
+function New-MagicIconButton {
+    param(
+        [string]$Glyph,
+        [string]$Tooltip
+    )
+    $text = New-Object System.Windows.Controls.TextBlock
+    $text.Text = $Glyph
+    $text.FontFamily = "Segoe MDL2 Assets"
+    $text.FontSize = 18
+    $text.Foreground = "White"
+    $text.HorizontalAlignment = "Center"
+    $text.VerticalAlignment = "Center"
 
-$accountCaption = New-Object System.Windows.Controls.TextBlock
-$accountCaption.Text = "Conta"
-$accountCaption.Foreground = "#FFDAA520"
-$accountCaption.FontSize = 12
-$accountPanel.Children.Add($accountCaption) | Out-Null
-
-$script:AccountText = New-Object System.Windows.Controls.TextBlock
-$script:AccountText.Foreground = "White"
-$script:AccountText.FontSize = 15
-$script:AccountText.FontWeight = "SemiBold"
-$accountPanel.Children.Add($script:AccountText) | Out-Null
-
-function Update-MagicAccountFooter {
-    $accountInfo = Get-MagicWorldAccount
-    if ($script:AccountText) {
-        $script:AccountText.Text = "$($accountInfo.username) [$($accountInfo.loginProvider)]"
-    }
+    $button = New-Object System.Windows.Controls.Button
+    $button.Content = $text
+    $button.Width = 34
+    $button.Height = 34
+    $button.Margin = "5,0,0,0"
+    $button.ToolTip = $Tooltip
+    $button.Background = "#CC101820"
+    $button.BorderBrush = "#99DAA520"
+    $button.BorderThickness = "1"
+    return $button
 }
 
-$footerButtons = New-Object System.Windows.Controls.StackPanel
-$footerButtons.Orientation = "Horizontal"
-$footerButtons.HorizontalAlignment = "Right"
-$footerButtons.VerticalAlignment = "Center"
-[System.Windows.Controls.DockPanel]::SetDock($footerButtons, "Right")
-$footerPanel.Children.Add($footerButtons) | Out-Null
+$folderButton = New-MagicIconButton ([string][char]0xE8B7) "Abrir .minecraft do Magic World"
+$settingsButton = New-MagicIconButton ([string][char]0xE713) "Configuracoes"
+$loginButton = New-MagicIconButton ([string][char]0xE77B) "Perfil"
 
-$loginButton = New-MagicButton "Login" 84 38
-$serversButton = New-MagicButton "Servidores" 108 38
-$folderButton = New-MagicButton ".minecraft" 108 38
-$settingsButton = New-MagicButton "Configuracoes" 126 38
-$playButton = New-MagicButton "Jogar Magic World" 194 48 -Primary
-
-$footerButtons.Children.Add($loginButton) | Out-Null
-$footerButtons.Children.Add($serversButton) | Out-Null
-$footerButtons.Children.Add($folderButton) | Out-Null
-$footerButtons.Children.Add($settingsButton) | Out-Null
-$footerButtons.Children.Add($playButton) | Out-Null
-
-$progressPanel = New-Object System.Windows.Controls.StackPanel
-$progressPanel.Width = 720
-$progressPanel.HorizontalAlignment = "Center"
-$progressPanel.Margin = "0,0,0,4"
-[System.Windows.Controls.DockPanel]::SetDock($progressPanel, "Bottom")
-$layout.Children.Add($progressPanel) | Out-Null
+$topButtons.Children.Add($folderButton) | Out-Null
+$topButtons.Children.Add($settingsButton) | Out-Null
+$topButtons.Children.Add($loginButton) | Out-Null
 
 $script:StatusText = New-Object System.Windows.Controls.TextBlock
-$script:StatusText.Text = "Pronto para jogar. O Minecraft do Magic World usa uma pasta exclusiva."
-$script:StatusText.FontSize = 16
-$script:StatusText.Foreground = "White"
-$script:StatusText.TextAlignment = "Center"
-$script:StatusText.TextWrapping = "Wrap"
-$script:StatusText.Margin = "0,0,0,8"
-$progressPanel.Children.Add($script:StatusText) | Out-Null
+$script:StatusText.Visibility = "Collapsed"
+
+function Update-MagicAccountFooter {
+}
+
+$hero = New-Object System.Windows.Controls.StackPanel
+$hero.Width = 720
+$hero.HorizontalAlignment = "Center"
+$hero.VerticalAlignment = "Center"
+$hero.Margin = "0,-28,0,0"
+$layout.Children.Add($hero) | Out-Null
+
+if (Test-Path -LiteralPath $LogoPath) {
+    $logo = New-Object System.Windows.Controls.Image
+    $logo.Source = New-MagicBitmapImage -Path $LogoPath
+    $logo.Width = 610
+    $logo.Height = 205
+    $logo.Stretch = "Uniform"
+    $logo.Margin = "0,0,0,24"
+    $hero.Children.Add($logo) | Out-Null
+}
+
+$progressPanel = New-Object System.Windows.Controls.StackPanel
+$progressPanel.Width = 600
+$progressPanel.HorizontalAlignment = "Center"
+$progressPanel.Margin = "0,0,0,0"
+$hero.Children.Add($progressPanel) | Out-Null
 
 $progressRow = New-Object System.Windows.Controls.DockPanel
 $progressRow.LastChildFill = $true
@@ -1746,45 +1768,14 @@ $script:ProgressBar.Height = 16
 $script:ProgressBar.Margin = "0,0,10,0"
 $progressRow.Children.Add($script:ProgressBar) | Out-Null
 
-$hero = New-Object System.Windows.Controls.StackPanel
-$hero.Width = 720
-$hero.HorizontalAlignment = "Center"
-$hero.VerticalAlignment = "Center"
-$layout.Children.Add($hero) | Out-Null
-
-if (Test-Path -LiteralPath $LogoPath) {
-    $logo = New-Object System.Windows.Controls.Image
-    $logo.Source = New-MagicBitmapImage -Path $LogoPath
-    $logo.Width = 610
-    $logo.Height = 205
-    $logo.Stretch = "Uniform"
-    $logo.Margin = "0,0,0,10"
-    $hero.Children.Add($logo) | Out-Null
-}
-
-$title = New-Object System.Windows.Controls.TextBlock
-$title.Text = "Magic World Forge 1.20.1"
-$title.FontSize = 32
-$title.FontWeight = "Bold"
-$title.Foreground = "White"
-$title.TextAlignment = "Center"
-$title.Margin = "0,0,0,8"
-$hero.Children.Add($title) | Out-Null
-
-$subtitle = New-Object System.Windows.Controls.TextBlock
-$subtitle.Text = "Launcher completo, Forge e pacote Magic World em ambiente separado."
-$subtitle.FontSize = 16
-$subtitle.Foreground = "#E9EEF7"
-$subtitle.TextAlignment = "Center"
-$subtitle.TextWrapping = "Wrap"
-$hero.Children.Add($subtitle) | Out-Null
+$playButton = New-MagicButton "Jogar" 220 50 -Primary
+$playButton.HorizontalAlignment = "Center"
+$playButton.Margin = "0,20,0,0"
+$hero.Children.Add($playButton) | Out-Null
 
 Update-MagicAccountFooter
 
 $folderButton.Add_Click({ Open-MagicWorldMinecraftFolder })
-$serversButton.Add_Click({
-    Show-MagicWorldServersDialog | Out-Null
-})
 $settingsButton.Add_Click({
     if (Show-MagicWorldSettingsDialog) {
         Update-Status "Configuracoes salvas." 0

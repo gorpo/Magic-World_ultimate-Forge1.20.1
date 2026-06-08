@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Collections.Concurrent;
+using Microsoft.Win32;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -105,6 +106,8 @@ internal static class MagicWorldLauncherFullInstaller
                     SetProgress(status, progress, 94, "Criando atalhos com icones...");
 
                     CreateDesktopShortcuts(installDir);
+                    RegisterWindowsUninstallEntry(installDir);
+                    NotifyShellChanged();
 
                     SetProgress(status, progress, 100, "Magic World Launcher instalado. Abra pelo atalho da area de trabalho.");
                     canClose = true;
@@ -332,7 +335,7 @@ internal static class MagicWorldLauncherFullInstaller
     {
         string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
         string launcherExe = Path.Combine(installDir, "MagicWorldLauncher.exe");
-        string icon = LauncherIconPath(installDir);
+        string icon = File.Exists(launcherExe) ? launcherExe : LauncherIconPath(installDir);
         DeleteOldShortcut(Path.Combine(desktop, "Magic World Launcher.lnk"));
         DeleteOldShortcut(Path.Combine(desktop, "Desinstalar Magic World Launcher.lnk"));
         CreateShortcut(
@@ -353,6 +356,44 @@ internal static class MagicWorldLauncherFullInstaller
         );
         DeleteOldCmdShortcut(desktop, "Magic World Launcher.cmd");
         DeleteOldCmdShortcut(desktop, "Uninstall Magic World Launcher.cmd");
+    }
+
+    private static void RegisterWindowsUninstallEntry(string installDir)
+    {
+        string launcherExe = Path.Combine(installDir, "MagicWorldLauncher.exe");
+        using (RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall\MagicWorldLauncher"))
+        {
+            key.SetValue("DisplayName", "Magic World Launcher");
+            key.SetValue("DisplayVersion", "V1.0.0.2");
+            key.SetValue("Publisher", "GuiPaluch - (Gorpo) - TCXS Project");
+            key.SetValue("InstallLocation", installDir);
+            key.SetValue("DisplayIcon", launcherExe + ",0");
+            key.SetValue("UninstallString", Quote(launcherExe) + " --uninstall");
+            key.SetValue("QuietUninstallString", Quote(launcherExe) + " --uninstall");
+            key.SetValue("NoModify", 1, RegistryValueKind.DWord);
+            key.SetValue("NoRepair", 1, RegistryValueKind.DWord);
+            key.SetValue("EstimatedSize", EstimateDirectorySizeKb(installDir), RegistryValueKind.DWord);
+            key.SetValue("InstallDate", DateTime.Now.ToString("yyyyMMdd"));
+        }
+    }
+
+    private static int EstimateDirectorySizeKb(string installDir)
+    {
+        try
+        {
+            long total = Directory.EnumerateFiles(installDir, "*", SearchOption.AllDirectories)
+                .Sum(path => new FileInfo(path).Length);
+            return (int)Math.Min(int.MaxValue, Math.Max(1, total / 1024));
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
+    private static void NotifyShellChanged()
+    {
+        SHChangeNotify(0x08000000, 0x0000, IntPtr.Zero, IntPtr.Zero);
     }
 
     private static void DeleteOldShortcut(string path)
@@ -464,4 +505,7 @@ internal static class MagicWorldLauncherFullInstaller
         void SaveCompleted([MarshalAs(UnmanagedType.LPWStr)] string pszFileName);
         void GetCurFile([MarshalAs(UnmanagedType.LPWStr)] out string ppszFileName);
     }
+
+    [DllImport("shell32.dll")]
+    private static extern void SHChangeNotify(int wEventId, uint uFlags, IntPtr dwItem1, IntPtr dwItem2);
 }

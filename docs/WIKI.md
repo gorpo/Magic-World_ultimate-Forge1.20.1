@@ -1362,3 +1362,12 @@ Validacao e processo:
 - Botao `Servidores` cadastra IP/dominio:porta, salva `%APPDATA%\MagicWorldLauncher\servidores.json` e gera `servers.dat` na `.minecraft` exclusiva.
 - Exemplos documentados: mesmo PC `127.0.0.1:25565`, outro PC da rede `192.168.0.25:25565`, amigo por dominio/IP e porta informados.
 - Artefato local de release esperado: `launcher/dist/MagicWorldLauncherFullInstaller-Stable V1.0.0.2.exe`.
+
+## Registro 2026-06-08 - layout final launcher V1.0.0.2
+- Titulo da janela passa a `Magic World Launcher V1.0.0.2`.
+- Tela principal mantem fundo/logo, remove textos abaixo da logo, sobe o loading e deixa apenas o botao `Jogar`.
+- Acoes de pasta, configuracoes e perfil foram movidas para icones no topo direito.
+- Perfil agora pede somente usuario local; sem senha e sem API na tela.
+- Botao `Servidores` saiu da tela; servidores devem ser cadastrados no Multiplayer do proprio Minecraft.
+- Configuracoes usam dropdown de resolucao, slider de RAM, atalhos para pasta do jogo, pasta do launcher e GitHub, e creditos `GuiPaluch - (Gorpo) - TCXS Project`.
+- Instalador registra `Magic World Launcher` em Apps e Recursos do Windows via HKCU e o desinstalador remove essa entrada.
