@@ -67,19 +67,28 @@ internal static class MagicWorldLauncherApp
 
     private static int RunPowerShellInProcess(string script)
     {
+        string previousScriptPath = Environment.GetEnvironmentVariable("MAGICWORLD_LAUNCHER_SCRIPT_PATH");
+        Environment.SetEnvironmentVariable("MAGICWORLD_LAUNCHER_SCRIPT_PATH", script);
         using (PowerShell shell = PowerShell.Create())
         {
-            shell.AddCommand(script);
-            shell.Invoke();
-            if (shell.HadErrors)
+            try
             {
-                StringBuilder errors = new StringBuilder();
-                foreach (ErrorRecord error in shell.Streams.Error)
+                shell.AddScript(File.ReadAllText(script, Encoding.UTF8));
+                shell.Invoke();
+                if (shell.HadErrors)
                 {
-                    errors.AppendLine(error.ToString());
+                    StringBuilder errors = new StringBuilder();
+                    foreach (ErrorRecord error in shell.Streams.Error)
+                    {
+                        errors.AppendLine(error.ToString());
+                    }
+                    MessageBox.Show(errors.ToString(), "Magic World Launcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return 1;
                 }
-                MessageBox.Show(errors.ToString(), "Magic World Launcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return 1;
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("MAGICWORLD_LAUNCHER_SCRIPT_PATH", previousScriptPath);
             }
         }
         return 0;

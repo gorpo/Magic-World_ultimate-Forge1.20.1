@@ -7,7 +7,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$LauncherRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$CurrentScriptPath = $(if ($env:MAGICWORLD_LAUNCHER_SCRIPT_PATH) { $env:MAGICWORLD_LAUNCHER_SCRIPT_PATH } else { $MyInvocation.MyCommand.Path })
+$LauncherRoot = Split-Path -Parent $CurrentScriptPath
 $AssetsRoot = Join-Path $LauncherRoot "assets"
 $BackgroundPath = Join-Path $AssetsRoot "title_background_static.png"
 $LogoPath = Join-Path $AssetsRoot "title_logo.png"
