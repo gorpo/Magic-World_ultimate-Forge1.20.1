@@ -12,6 +12,11 @@ $payloadZip = Join-Path $dist "MagicWorldLauncherPayload.zip"
 $stub = Join-Path $dist "MagicWorldLauncherFullInstaller.stub.exe"
 $out = Join-Path $dist "MagicWorldLauncherFullInstaller.exe"
 $source = Join-Path $ProjectRoot "launcher\source\MagicWorldLauncherFullInstaller.cs"
+$launcherAppSource = Join-Path $ProjectRoot "launcher\source\MagicWorldLauncherApp.cs"
+$icon = Join-Path $ProjectRoot "launcher\MagicWorldLauncher\assets\magicworld.ico"
+if (!(Test-Path -LiteralPath $icon)) {
+    $icon = Join-Path $ProjectRoot "installer\MagicWorldInstaller.ico"
+}
 $csc = Join-Path $env:WINDIR "Microsoft.NET\Framework64\v4.0.30319\csc.exe"
 $marker = [Text.Encoding]::ASCII.GetBytes("MAGICWORLD_LAUNCHER_PAYLOAD_V1")
 
@@ -35,12 +40,44 @@ if (Test-Path -LiteralPath $out) { Remove-Item -LiteralPath $out -Force }
 if (Test-Path -LiteralPath $staging) { Remove-Item -LiteralPath $staging -Recurse -Force }
 New-Item -ItemType Directory -Force -Path $staging | Out-Null
 
-& $csc /nologo /target:winexe /out:$stub /reference:System.Windows.Forms.dll /reference:System.Drawing.dll /reference:System.IO.Compression.dll /reference:System.IO.Compression.FileSystem.dll $source
+$installerArgs = @(
+    "/nologo",
+    "/target:winexe",
+    "/out:$stub",
+    "/reference:System.Windows.Forms.dll",
+    "/reference:System.Drawing.dll",
+    "/reference:System.IO.Compression.dll",
+    "/reference:System.IO.Compression.FileSystem.dll"
+)
+if (Test-Path -LiteralPath $icon) {
+    $installerArgs += "/win32icon:$icon"
+}
+$installerArgs += $source
+& $csc @installerArgs
 if ($LASTEXITCODE -ne 0) {
     throw "Falha ao compilar installer."
 }
 
 Copy-Item -Path (Join-Path $launcherSource "*") -Destination $staging -Recurse -Force
+Get-ChildItem -LiteralPath $staging -Filter "*.cmd" -File -ErrorAction SilentlyContinue | Remove-Item -Force
+if (Test-Path -LiteralPath $icon) {
+    Copy-Item -LiteralPath $icon -Destination (Join-Path $staging "MagicWorldLauncher.ico") -Force
+}
+$launcherExe = Join-Path $staging "MagicWorldLauncher.exe"
+$launcherArgs = @(
+    "/nologo",
+    "/target:winexe",
+    "/out:$launcherExe",
+    "/reference:System.Windows.Forms.dll",
+    $launcherAppSource
+)
+if (Test-Path -LiteralPath $icon) {
+    $launcherArgs += "/win32icon:$icon"
+}
+& $csc @launcherArgs
+if ($LASTEXITCODE -ne 0) {
+    throw "Falha ao compilar MagicWorldLauncher.exe."
+}
 Copy-Item -LiteralPath $BundledInstallerPath -Destination (Join-Path $staging "MagicWorldInstaller.exe") -Force
 Compress-Archive -Path (Join-Path $staging "*") -DestinationPath $payloadZip -CompressionLevel Optimal
 

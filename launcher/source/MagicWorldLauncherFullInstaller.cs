@@ -1,8 +1,10 @@
 using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 
@@ -28,6 +30,7 @@ internal static class MagicWorldLauncherFullInstaller
             form.FormBorderStyle = FormBorderStyle.FixedDialog;
             form.MaximizeBox = false;
             form.BackColor = System.Drawing.Color.FromArgb(12, 18, 30);
+            form.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
 
             status.Left = 24;
             status.Top = 24;
@@ -74,24 +77,33 @@ internal static class MagicWorldLauncherFullInstaller
                     }
                     Directory.CreateDirectory(installDir);
                     ExtractPayloadZip(installDir);
+                    ConfigureFolderIcon(installDir);
 
-                    status.Text = "Criando atalhos de abertura e desinstalacao...";
-                    progress.Value = 80;
+                    status.Text = "Instalando Minecraft, Forge e pacote Magic World...";
+                    progress.Value = 55;
+                    Application.DoEvents();
+
+                    RunInternalInstall(installDir);
+
+                    status.Text = "Criando atalhos com icones...";
+                    progress.Value = 90;
                     Application.DoEvents();
 
                     CreateDesktopShortcuts(installDir);
 
                     progress.Value = 100;
-                    status.Text = "Magic World Launcher instalado. Abra pelo atalho da area de trabalho e clique em Instalar Magic World.";
+                    status.Text = "Magic World Launcher instalado. Abra pelo atalho da area de trabalho e clique em Jogar Magic World.";
                     close.Enabled = true;
 
-                    string launcherCmd = Path.Combine(installDir, "Abrir Magic World Launcher.cmd");
-                    if (File.Exists(launcherCmd))
+                    string launcherExe = Path.Combine(installDir, "MagicWorldLauncher.exe");
+                    if (File.Exists(launcherExe))
                     {
                         Process.Start(new ProcessStartInfo
                         {
-                            FileName = launcherCmd,
+                            FileName = launcherExe,
                             WorkingDirectory = installDir,
+                            CreateNoWindow = true,
+                            WindowStyle = ProcessWindowStyle.Hidden,
                             UseShellExecute = true
                         });
                     }
@@ -165,23 +177,170 @@ internal static class MagicWorldLauncherFullInstaller
         }
     }
 
+    private static void RunInternalInstall(string installDir)
+    {
+        string launcherExe = Path.Combine(installDir, "MagicWorldLauncher.exe");
+        string script = Path.Combine(installDir, "MagicWorldLauncher.ps1");
+        ProcessStartInfo start;
+        if (File.Exists(launcherExe))
+        {
+            start = new ProcessStartInfo
+            {
+                FileName = launcherExe,
+                Arguments = "--install-only",
+                WorkingDirectory = installDir,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden
+            };
+        }
+        else
+        {
+            start = new ProcessStartInfo
+            {
+                FileName = "powershell.exe",
+                Arguments = "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File " + Quote(script) + " -InstallOnly",
+                WorkingDirectory = installDir,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden
+            };
+        }
+
+        using (Process process = Process.Start(start))
+        {
+            process.WaitForExit();
+            if (process.ExitCode != 0)
+            {
+                throw new InvalidOperationException("Falha ao instalar Minecraft/Forge pelo launcher interno. Codigo: " + process.ExitCode);
+            }
+        }
+    }
+
     private static void CreateDesktopShortcuts(string installDir)
     {
         string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-        string launcherShortcut = Path.Combine(desktop, "Magic World Launcher.cmd");
-        string launcher = Path.Combine(installDir, "Abrir Magic World Launcher.cmd");
-        File.WriteAllText(
-            launcherShortcut,
-            "@echo off\r\ncd /d \"" + installDir + "\"\r\ncall \"" + launcher + "\"\r\n",
-            Encoding.ASCII
+        string launcherExe = Path.Combine(installDir, "MagicWorldLauncher.exe");
+        string icon = LauncherIconPath(installDir);
+        CreateShortcut(
+            Path.Combine(desktop, "Magic World Launcher.lnk"),
+            launcherExe,
+            "",
+            installDir,
+            icon,
+            "Abrir Magic World Launcher"
         );
+        CreateShortcut(
+            Path.Combine(desktop, "Desinstalar Magic World Launcher.lnk"),
+            launcherExe,
+            "--uninstall",
+            installDir,
+            icon,
+            "Remover Magic World Launcher"
+        );
+        DeleteOldCmdShortcut(desktop, "Magic World Launcher.cmd");
+        DeleteOldCmdShortcut(desktop, "Uninstall Magic World Launcher.cmd");
+    }
 
-        string uninstallShortcut = Path.Combine(desktop, "Uninstall Magic World Launcher.cmd");
-        string uninstaller = Path.Combine(installDir, "Uninstall Magic World Launcher.cmd");
+    private static void DeleteOldCmdShortcut(string desktop, string name)
+    {
+        string path = Path.Combine(desktop, name);
+        if (File.Exists(path))
+        {
+            File.Delete(path);
+        }
+    }
+
+    private static void ConfigureFolderIcon(string installDir)
+    {
+        string icon = LauncherIconPath(installDir);
+        if (!File.Exists(icon))
+        {
+            return;
+        }
+
+        string desktopIni = Path.Combine(installDir, "desktop.ini");
         File.WriteAllText(
-            uninstallShortcut,
-            "@echo off\r\ncd /d \"" + installDir + "\"\r\ncall \"" + uninstaller + "\"\r\n",
+            desktopIni,
+            "[.ShellClassInfo]\r\nIconResource=MagicWorldLauncher.ico,0\r\n",
             Encoding.ASCII
         );
+        File.SetAttributes(desktopIni, FileAttributes.Hidden | FileAttributes.System);
+        File.SetAttributes(installDir, File.GetAttributes(installDir) | FileAttributes.System);
+    }
+
+    private static string LauncherIconPath(string installDir)
+    {
+        string icon = Path.Combine(installDir, "MagicWorldLauncher.ico");
+        if (File.Exists(icon))
+        {
+            return icon;
+        }
+        return Path.Combine(installDir, "assets", "magicworld.ico");
+    }
+
+    private static string Quote(string value)
+    {
+        return "\"" + value.Replace("\"", "\\\"") + "\"";
+    }
+
+    private static void CreateShortcut(string shortcutPath, string targetPath, string arguments, string workingDirectory, string iconPath, string description)
+    {
+        IShellLinkW link = (IShellLinkW)new CShellLink();
+        link.SetPath(targetPath);
+        link.SetArguments(arguments);
+        link.SetWorkingDirectory(workingDirectory);
+        link.SetDescription(description);
+        if (File.Exists(iconPath))
+        {
+            link.SetIconLocation(iconPath, 0);
+        }
+
+        IPersistFile file = (IPersistFile)link;
+        file.Save(shortcutPath, true);
+    }
+
+    [ComImport]
+    [Guid("00021401-0000-0000-C000-000000000046")]
+    private class CShellLink
+    {
+    }
+
+    [ComImport]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    [Guid("000214F9-0000-0000-C000-000000000046")]
+    private interface IShellLinkW
+    {
+        void GetPath([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszFile, int cchMaxPath, IntPtr pfd, uint fFlags);
+        void GetIDList(out IntPtr ppidl);
+        void SetIDList(IntPtr pidl);
+        void GetDescription([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszName, int cchMaxName);
+        void SetDescription([MarshalAs(UnmanagedType.LPWStr)] string pszName);
+        void GetWorkingDirectory([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszDir, int cchMaxPath);
+        void SetWorkingDirectory([MarshalAs(UnmanagedType.LPWStr)] string pszDir);
+        void GetArguments([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszArgs, int cchMaxPath);
+        void SetArguments([MarshalAs(UnmanagedType.LPWStr)] string pszArgs);
+        void GetHotkey(out short pwHotkey);
+        void SetHotkey(short wHotkey);
+        void GetShowCmd(out int piShowCmd);
+        void SetShowCmd(int iShowCmd);
+        void GetIconLocation([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszIconPath, int cchIconPath, out int piIcon);
+        void SetIconLocation([MarshalAs(UnmanagedType.LPWStr)] string pszIconPath, int iIcon);
+        void SetRelativePath([MarshalAs(UnmanagedType.LPWStr)] string pszPathRel, uint dwReserved);
+        void Resolve(IntPtr hwnd, uint fFlags);
+        void SetPath([MarshalAs(UnmanagedType.LPWStr)] string pszFile);
+    }
+
+    [ComImport]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    [Guid("0000010b-0000-0000-C000-000000000046")]
+    private interface IPersistFile
+    {
+        void GetClassID(out Guid pClassID);
+        void IsDirty();
+        void Load([MarshalAs(UnmanagedType.LPWStr)] string pszFileName, uint dwMode);
+        void Save([MarshalAs(UnmanagedType.LPWStr)] string pszFileName, bool fRemember);
+        void SaveCompleted([MarshalAs(UnmanagedType.LPWStr)] string pszFileName);
+        void GetCurFile([MarshalAs(UnmanagedType.LPWStr)] out string ppszFileName);
     }
 }

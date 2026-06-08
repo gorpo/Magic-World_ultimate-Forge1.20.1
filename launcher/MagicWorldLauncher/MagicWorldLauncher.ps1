@@ -1,6 +1,8 @@
 param(
     [switch]$SelfTest,
-    [switch]$LaunchDryRun
+    [switch]$LaunchDryRun,
+    [switch]$InstallOnly,
+    [switch]$LaunchOnly
 )
 
 $ErrorActionPreference = "Stop"
@@ -9,11 +11,17 @@ $LauncherRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $AssetsRoot = Join-Path $LauncherRoot "assets"
 $BackgroundPath = Join-Path $AssetsRoot "title_background_static.png"
 $LogoPath = Join-Path $AssetsRoot "title_logo.png"
+$WindowIconPath = Join-Path $AssetsRoot "magicworld.ico"
+if (!(Test-Path -LiteralPath $WindowIconPath)) {
+    $WindowIconPath = Join-Path $LauncherRoot "MagicWorldLauncher.ico"
+}
 $InstallerScriptPath = Join-Path $LauncherRoot "install-magicworld-forge.ps1"
 $MagicWorldDataRoot = Join-Path $env:APPDATA "MagicWorldLauncher"
 $MinecraftDir = Join-Path $MagicWorldDataRoot ".minecraft"
 $MagicJavaRoot = Join-Path $MagicWorldDataRoot "runtime\java17"
 $AccountsPath = Join-Path $MagicWorldDataRoot "accounts.json"
+$SettingsPath = Join-Path $MagicWorldDataRoot "settings.json"
+$SavedPasswordPath = Join-Path $MagicWorldDataRoot "tlauncher-password.xml"
 $LaunchLogPath = Join-Path $MagicWorldDataRoot "magicworld-launcher-last-launch.log"
 $LaunchOutLogPath = Join-Path $MagicWorldDataRoot "magicworld-launcher-last-stdout.log"
 $LaunchErrLogPath = Join-Path $MagicWorldDataRoot "magicworld-launcher-last-stderr.log"
@@ -30,6 +38,60 @@ function Get-MagicWorldAccountName {
     return $account.username
 }
 
+function Get-MagicWorldSettings {
+    $defaults = [ordered]@{
+        minMemoryGb = 2
+        maxMemoryGb = 8
+        customResolution = $false
+        resolutionWidth = 1280
+        resolutionHeight = 720
+        minimizeLauncherOnPlay = $true
+    }
+
+    if (!(Test-Path -LiteralPath $SettingsPath)) {
+        return [pscustomobject]$defaults
+    }
+
+    try {
+        $json = Get-Content -LiteralPath $SettingsPath -Raw | ConvertFrom-Json
+        foreach ($key in @($defaults.Keys)) {
+            if ($json.PSObject.Properties.Name -notcontains $key) {
+                $json | Add-Member -NotePropertyName $key -NotePropertyValue $defaults[$key]
+            }
+        }
+        return $json
+    } catch {
+        return [pscustomobject]$defaults
+    }
+}
+
+function Save-MagicWorldSettings {
+    param(
+        [int]$MinMemoryGb,
+        [int]$MaxMemoryGb,
+        [bool]$CustomResolution,
+        [int]$ResolutionWidth,
+        [int]$ResolutionHeight,
+        [bool]$MinimizeLauncherOnPlay
+    )
+
+    $settings = [ordered]@{
+        minMemoryGb = [Math]::Max(1, [Math]::Min(32, $MinMemoryGb))
+        maxMemoryGb = [Math]::Max(2, [Math]::Min(64, $MaxMemoryGb))
+        customResolution = $CustomResolution
+        resolutionWidth = [Math]::Max(640, [Math]::Min(7680, $ResolutionWidth))
+        resolutionHeight = [Math]::Max(480, [Math]::Min(4320, $ResolutionHeight))
+        minimizeLauncherOnPlay = $MinimizeLauncherOnPlay
+    }
+    if ($settings.maxMemoryGb -lt $settings.minMemoryGb) {
+        $settings.maxMemoryGb = $settings.minMemoryGb
+    }
+
+    New-Item -ItemType Directory -Force -Path $MagicWorldDataRoot | Out-Null
+    $settings | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath $SettingsPath -Encoding UTF8
+    return [pscustomobject]$settings
+}
+
 function Get-MagicWorldAccount {
     if (!(Test-Path -LiteralPath $AccountsPath)) {
         return [pscustomobject]@{
@@ -38,6 +100,8 @@ function Get-MagicWorldAccount {
             accessToken = "0"
             userType = "legacy"
             loginProvider = "offline"
+            authApiUrl = $TLauncherAuthApiUrl
+            savedPassword = $false
         }
     }
 
@@ -50,6 +114,8 @@ function Get-MagicWorldAccount {
                 accessToken = $(if ($json.accessToken) { [string]$json.accessToken } else { "0" })
                 userType = $(if ($json.userType) { [string]$json.userType } else { "legacy" })
                 loginProvider = $(if ($json.loginProvider) { [string]$json.loginProvider } else { "offline" })
+                authApiUrl = $(if ($json.authApiUrl) { [string]$json.authApiUrl } else { $TLauncherAuthApiUrl })
+                savedPassword = Test-Path -LiteralPath $SavedPasswordPath
             }
         }
     } catch {
@@ -60,6 +126,8 @@ function Get-MagicWorldAccount {
         accessToken = "0"
         userType = "legacy"
         loginProvider = "offline"
+        authApiUrl = $TLauncherAuthApiUrl
+        savedPassword = $false
     }
 }
 
@@ -69,7 +137,8 @@ function Save-MagicWorldAccount {
         [string]$Uuid = "",
         [string]$AccessToken = "0",
         [string]$UserType = "legacy",
-        [string]$LoginProvider = "TLauncher API"
+        [string]$LoginProvider = "TLauncher API",
+        [string]$AuthApiUrl = ""
     )
 
     $clean = ([string]$Username).Trim()
@@ -87,20 +156,51 @@ function Save-MagicWorldAccount {
         accessToken = $AccessToken
         userType = $UserType
         loginProvider = $LoginProvider
+        authApiUrl = $AuthApiUrl
         updatedAt = (Get-Date).ToString("o")
     }
     $data | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath $AccountsPath -Encoding UTF8
     return $clean
 }
 
+function Save-TLauncherPassword {
+    param([string]$Password)
+
+    New-Item -ItemType Directory -Force -Path $MagicWorldDataRoot | Out-Null
+    ConvertTo-SecureString -String $Password -AsPlainText -Force |
+        Export-Clixml -LiteralPath $SavedPasswordPath
+}
+
+function Get-SavedTLauncherPassword {
+    if (!(Test-Path -LiteralPath $SavedPasswordPath)) {
+        return ""
+    }
+
+    try {
+        $secure = Import-Clixml -LiteralPath $SavedPasswordPath
+        $credential = New-Object System.Management.Automation.PSCredential("tlauncher", $secure)
+        return $credential.GetNetworkCredential().Password
+    } catch {
+        return ""
+    }
+}
+
+function Remove-SavedTLauncherPassword {
+    Remove-Item -LiteralPath $SavedPasswordPath -Force -ErrorAction SilentlyContinue
+}
+
 function Invoke-TLauncherApiLogin {
     param(
         [string]$Username,
-        [string]$Password
+        [string]$Password,
+        [string]$ApiUrl
     )
 
-    if ([string]::IsNullOrWhiteSpace($TLauncherAuthApiUrl)) {
-        throw "API de login do TLauncher nao configurada. Defina MAGICWORLD_TLAUNCHER_AUTH_API_URL com o endpoint oficial de login."
+    if ([string]::IsNullOrWhiteSpace($ApiUrl)) {
+        $ApiUrl = (Get-MagicWorldAccount).authApiUrl
+    }
+    if ([string]::IsNullOrWhiteSpace($ApiUrl)) {
+        throw "Informe a URL oficial da API de login do TLauncher."
     }
     if ([string]::IsNullOrWhiteSpace($Username) -or [string]::IsNullOrWhiteSpace($Password)) {
         throw "Informe login e senha."
@@ -113,7 +213,7 @@ function Invoke-TLauncherApiLogin {
         game = "Minecraft"
     } | ConvertTo-Json -Depth 4
 
-    $response = Invoke-RestMethod -Uri $TLauncherAuthApiUrl -Method Post -Body $body -ContentType "application/json" -Headers @{ "User-Agent" = "MagicWorldLauncher/1.0" }
+    $response = Invoke-RestMethod -Uri $ApiUrl -Method Post -Body $body -ContentType "application/json" -Headers @{ "User-Agent" = "MagicWorldLauncher/1.0" }
     $token = $(if ($response.accessToken) { $response.accessToken } elseif ($response.token) { $response.token } else { "" })
     $displayName = $(if ($response.displayName) { $response.displayName } elseif ($response.username) { $response.username } elseif ($response.login) { $response.login } elseif ($response.profile -and $response.profile.name) { $response.profile.name } else { $Username })
     $uuid = $(if ($response.uuid) { $response.uuid } elseif ($response.id) { $response.id } elseif ($response.profile -and $response.profile.id) { $response.profile.id } else { "" })
@@ -122,7 +222,7 @@ function Invoke-TLauncherApiLogin {
         throw "A API de login respondeu sem accessToken/token. Verifique o endpoint oficial configurado."
     }
 
-    Save-MagicWorldAccount -Username $displayName -Uuid $uuid -AccessToken $token -UserType "tlauncher" -LoginProvider "TLauncher API" | Out-Null
+    Save-MagicWorldAccount -Username $displayName -Uuid $uuid -AccessToken $token -UserType "tlauncher" -LoginProvider "TLauncher API" -AuthApiUrl $ApiUrl | Out-Null
     return Get-MagicWorldAccount
 }
 
@@ -193,7 +293,7 @@ function Test-MagicRuleMatches {
         foreach ($property in $Rule.features.PSObject.Properties) {
             $expected = [bool]$property.Value
             $actual = switch ([string]$property.Name) {
-                "has_custom_resolution" { $false }
+                "has_custom_resolution" { [bool](Get-MagicWorldSettings).customResolution }
                 "is_demo_user" { $false }
                 "has_quick_plays_support" { $false }
                 "is_quick_play_singleplayer" { $false }
@@ -337,6 +437,7 @@ function Get-MagicWorldVersionJson {
     if (!$child.inheritsFrom) {
         Add-MagicMember -Object $child -Name "magicVersionJsonPath" -Value $VersionJsonPath
         Add-MagicMember -Object $child -Name "magicClientVersionId" -Value $child.id
+        Add-MagicMember -Object $child -Name "magicInheritedProfile" -Value $false
         return $child
     }
 
@@ -355,6 +456,7 @@ function Get-MagicWorldVersionJson {
         }
         magicVersionJsonPath = $VersionJsonPath
         magicClientVersionId = $child.inheritsFrom
+        magicInheritedProfile = $true
     }
 
     $merged.libraries = @($parent.libraries) + @($child.libraries)
@@ -631,7 +733,7 @@ function Start-MagicWorldMinecraft {
 
     $clientVersionId = $(if ($version.magicClientVersionId) { $version.magicClientVersionId } else { $version.id })
     $clientJar = Join-Path (Join-Path $MinecraftDir ("versions\" + $clientVersionId)) ($clientVersionId + ".jar")
-    if (Test-Path -LiteralPath $clientJar) {
+    if (!$version.magicInheritedProfile -and (Test-Path -LiteralPath $clientJar)) {
         $classpathItems.Add($clientJar)
     }
     $classpath = [string]::Join(";", $classpathItems)
@@ -645,6 +747,7 @@ function Start-MagicWorldMinecraft {
         $uuid = (New-Object Guid -ArgumentList (, $md5)).ToString()
     }
 
+    $settings = Get-MagicWorldSettings
     $replacements = @{
         '${natives_directory}' = $nativesDir
         '${launcher_name}' = 'MagicWorldLauncher'
@@ -663,11 +766,13 @@ function Start-MagicWorldMinecraft {
         '${auth_xuid}' = '0'
         '${user_type}' = $account.userType
         '${version_type}' = 'Magic World'
+        '${resolution_width}' = [string]$settings.resolutionWidth
+        '${resolution_height}' = [string]$settings.resolutionHeight
     }
 
     $jvmArgs = New-Object System.Collections.ArrayList
-    [void]$jvmArgs.Add("-Xms2G")
-    [void]$jvmArgs.Add("-Xmx8G")
+    [void]$jvmArgs.Add("-Xms$($settings.minMemoryGb)G")
+    [void]$jvmArgs.Add("-Xmx$($settings.maxMemoryGb)G")
     Add-MagicArguments -Target $jvmArgs -Items $version.arguments.jvm
     [void]$jvmArgs.Add($version.mainClass)
 
@@ -877,18 +982,17 @@ function Open-Repo {
 }
 
 function Show-TLauncherApiLoginDialog {
-    if ([string]::IsNullOrWhiteSpace($TLauncherAuthApiUrl)) {
-        throw "API de login do TLauncher nao configurada. Defina MAGICWORLD_TLAUNCHER_AUTH_API_URL com o endpoint oficial de login antes de usar este botao."
-    }
-
     $dialog = New-Object System.Windows.Window
     $dialog.Title = "Login TLauncher"
-    $dialog.Width = 420
-    $dialog.Height = 250
+    $dialog.Width = 520
+    $dialog.Height = 350
     $dialog.WindowStartupLocation = "CenterOwner"
     $dialog.ResizeMode = "NoResize"
     $dialog.Background = "#101820"
     $dialog.Owner = $window
+    if (Test-Path -LiteralPath $WindowIconPath) {
+        $dialog.Icon = [System.Windows.Media.Imaging.BitmapImage]::new([Uri]$WindowIconPath)
+    }
 
     $panel = New-Object System.Windows.Controls.StackPanel
     $panel.Margin = "24"
@@ -901,16 +1005,49 @@ function Show-TLauncherApiLoginDialog {
     $label.Margin = "0,0,0,14"
     $panel.Children.Add($label) | Out-Null
 
+    $apiLabel = New-Object System.Windows.Controls.TextBlock
+    $apiLabel.Text = "URL da API oficial TLauncher"
+    $apiLabel.Foreground = "#FFDAA520"
+    $apiLabel.Margin = "0,0,0,4"
+    $panel.Children.Add($apiLabel) | Out-Null
+
+    $apiUrl = New-Object System.Windows.Controls.TextBox
+    $savedAccount = Get-MagicWorldAccount
+    $apiUrl.Text = $savedAccount.authApiUrl
+    $apiUrl.Height = 30
+    $apiUrl.Margin = "0,0,0,10"
+    $panel.Children.Add($apiUrl) | Out-Null
+
+    $userLabel = New-Object System.Windows.Controls.TextBlock
+    $userLabel.Text = "Usuario"
+    $userLabel.Foreground = "#FFDAA520"
+    $userLabel.Margin = "0,0,0,4"
+    $panel.Children.Add($userLabel) | Out-Null
+
     $username = New-Object System.Windows.Controls.TextBox
     $username.Text = Get-MagicWorldAccountName
     $username.Height = 30
     $username.Margin = "0,0,0,10"
     $panel.Children.Add($username) | Out-Null
 
+    $passwordLabel = New-Object System.Windows.Controls.TextBlock
+    $passwordLabel.Text = "Senha"
+    $passwordLabel.Foreground = "#FFDAA520"
+    $passwordLabel.Margin = "0,0,0,4"
+    $panel.Children.Add($passwordLabel) | Out-Null
+
     $password = New-Object System.Windows.Controls.PasswordBox
+    $password.Password = Get-SavedTLauncherPassword
     $password.Height = 30
-    $password.Margin = "0,0,0,16"
+    $password.Margin = "0,0,0,8"
     $panel.Children.Add($password) | Out-Null
+
+    $savePassword = New-Object System.Windows.Controls.CheckBox
+    $savePassword.Content = "Salvar senha neste Windows"
+    $savePassword.Foreground = "White"
+    $savePassword.IsChecked = [bool]$savedAccount.savedPassword
+    $savePassword.Margin = "0,0,0,16"
+    $panel.Children.Add($savePassword) | Out-Null
 
     $buttons = New-Object System.Windows.Controls.StackPanel
     $buttons.Orientation = "Horizontal"
@@ -931,7 +1068,12 @@ function Show-TLauncherApiLoginDialog {
     $ok.Height = 32
     $ok.Add_Click({
         try {
-            Invoke-TLauncherApiLogin -Username $username.Text -Password $password.Password | Out-Null
+            Invoke-TLauncherApiLogin -Username $username.Text -Password $password.Password -ApiUrl $apiUrl.Text | Out-Null
+            if ($savePassword.IsChecked) {
+                Save-TLauncherPassword -Password $password.Password
+            } else {
+                Remove-SavedTLauncherPassword
+            }
             $dialog.DialogResult = $true
         } catch {
             [System.Windows.MessageBox]::Show($_.Exception.Message, "Login TLauncher", "OK", "Error") | Out-Null
@@ -975,8 +1117,27 @@ if ($LaunchDryRun) {
     exit 0
 }
 
+if ($InstallOnly) {
+    Invoke-MagicWorldInstaller
+    exit 0
+}
+
+if ($LaunchOnly) {
+    Start-MagicWorldMinecraft
+    exit 0
+}
+
 Add-Type -AssemblyName PresentationFramework
 Add-Type -AssemblyName System.Windows.Forms
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+public static class MagicWorldTaskbar {
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+    public static extern int SetCurrentProcessExplicitAppUserModelID(string appID);
+}
+"@
+[MagicWorldTaskbar]::SetCurrentProcessExplicitAppUserModelID("MagicWorld.Launcher") | Out-Null
 
 $window = New-Object System.Windows.Window
 $window.Title = "Magic World Launcher"
@@ -984,6 +1145,9 @@ $window.Width = 980
 $window.Height = 620
 $window.WindowStartupLocation = "CenterScreen"
 $window.ResizeMode = "CanMinimize"
+if (Test-Path -LiteralPath $WindowIconPath) {
+    $window.Icon = [System.Windows.Media.Imaging.BitmapImage]::new([Uri]$WindowIconPath)
+}
 
 $grid = New-Object System.Windows.Controls.Grid
 $window.Content = $grid
@@ -1042,6 +1206,68 @@ $account.TextAlignment = "Center"
 $account.Margin = "0,0,0,24"
 $stack.Children.Add($account) | Out-Null
 
+$currentSettings = Get-MagicWorldSettings
+$settingsPanel = New-Object System.Windows.Controls.WrapPanel
+$settingsPanel.HorizontalAlignment = "Center"
+$settingsPanel.Margin = "0,0,0,18"
+$stack.Children.Add($settingsPanel) | Out-Null
+
+function New-MagicSmallLabel {
+    param([string]$Text)
+    $label = New-Object System.Windows.Controls.TextBlock
+    $label.Text = $Text
+    $label.Foreground = "#FFDAA520"
+    $label.VerticalAlignment = "Center"
+    $label.Margin = "8,0,4,0"
+    return $label
+}
+
+function New-MagicSmallTextBox {
+    param([string]$Text, [int]$Width = 54)
+    $box = New-Object System.Windows.Controls.TextBox
+    $box.Text = $Text
+    $box.Width = $Width
+    $box.Height = 26
+    $box.Margin = "0,0,4,0"
+    return $box
+}
+
+$settingsPanel.Children.Add((New-MagicSmallLabel "RAM min")) | Out-Null
+$minMemoryBox = New-MagicSmallTextBox ([string]$currentSettings.minMemoryGb)
+$settingsPanel.Children.Add($minMemoryBox) | Out-Null
+$settingsPanel.Children.Add((New-MagicSmallLabel "RAM max")) | Out-Null
+$maxMemoryBox = New-MagicSmallTextBox ([string]$currentSettings.maxMemoryGb)
+$settingsPanel.Children.Add($maxMemoryBox) | Out-Null
+$customResolutionBox = New-Object System.Windows.Controls.CheckBox
+$customResolutionBox.Content = "Resolucao"
+$customResolutionBox.Foreground = "White"
+$customResolutionBox.IsChecked = [bool]$currentSettings.customResolution
+$customResolutionBox.VerticalAlignment = "Center"
+$customResolutionBox.Margin = "12,0,4,0"
+$settingsPanel.Children.Add($customResolutionBox) | Out-Null
+$widthBox = New-MagicSmallTextBox ([string]$currentSettings.resolutionWidth)
+$settingsPanel.Children.Add($widthBox) | Out-Null
+$settingsPanel.Children.Add((New-MagicSmallLabel "x")) | Out-Null
+$heightBox = New-MagicSmallTextBox ([string]$currentSettings.resolutionHeight)
+$settingsPanel.Children.Add($heightBox) | Out-Null
+$minimizeBox = New-Object System.Windows.Controls.CheckBox
+$minimizeBox.Content = "Minimizar ao jogar"
+$minimizeBox.Foreground = "White"
+$minimizeBox.IsChecked = [bool]$currentSettings.minimizeLauncherOnPlay
+$minimizeBox.VerticalAlignment = "Center"
+$minimizeBox.Margin = "12,0,0,0"
+$settingsPanel.Children.Add($minimizeBox) | Out-Null
+
+function Save-LauncherSettingsFromUi {
+    Save-MagicWorldSettings `
+        -MinMemoryGb ([int]$minMemoryBox.Text) `
+        -MaxMemoryGb ([int]$maxMemoryBox.Text) `
+        -CustomResolution ([bool]$customResolutionBox.IsChecked) `
+        -ResolutionWidth ([int]$widthBox.Text) `
+        -ResolutionHeight ([int]$heightBox.Text) `
+        -MinimizeLauncherOnPlay ([bool]$minimizeBox.IsChecked) | Out-Null
+}
+
 $script:StatusText = New-Object System.Windows.Controls.TextBlock
 $script:StatusText.Text = "Instale uma vez. Depois clique em Jogar Magic World para abrir o Minecraft direto por este launcher."
 $script:StatusText.FontSize = 16
@@ -1095,6 +1321,7 @@ $buttonPanel.Children.Add($repoButton) | Out-Null
 $installButton.Add_Click({
     $installButton.IsEnabled = $false
     try {
+        Save-LauncherSettingsFromUi
         Invoke-MagicWorldInstaller
         [System.Windows.MessageBox]::Show("Tudo instalado. Clique em Jogar Magic World para abrir o Minecraft direto por este launcher.", "Magic World Launcher", "OK", "Information") | Out-Null
     } catch {
@@ -1121,8 +1348,14 @@ $loginButton.Add_Click({
 $playButton.Add_Click({
     $playButton.IsEnabled = $false
     try {
+        Save-LauncherSettingsFromUi
+        if ((Get-MagicWorldSettings).minimizeLauncherOnPlay) {
+            $window.WindowState = "Minimized"
+        }
         Start-MagicWorldMinecraft
     } catch {
+        $window.WindowState = "Normal"
+        $window.Activate() | Out-Null
         Update-Status "Erro: $($_.Exception.Message)" 0
         [System.Windows.MessageBox]::Show($_.Exception.Message, "Magic World Launcher", "OK", "Error") | Out-Null
     } finally {
