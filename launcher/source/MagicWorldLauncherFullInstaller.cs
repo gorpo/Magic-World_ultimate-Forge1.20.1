@@ -25,6 +25,7 @@ internal static class MagicWorldLauncherFullInstaller
         using (ProgressBar progress = new ProgressBar())
         using (Button close = new Button())
         {
+            bool canClose = false;
             form.Text = "Magic World Launcher FULL";
             form.Width = 560;
             form.Height = 240;
@@ -55,10 +56,28 @@ internal static class MagicWorldLauncherFullInstaller
             close.Top = 158;
             close.Width = 150;
             close.Height = 34;
-            close.Text = "Fechar";
-            close.Enabled = false;
-            close.Click += delegate { form.Close(); };
+            close.Text = "Aguarde";
+            close.Enabled = true;
+            close.ForeColor = System.Drawing.Color.White;
+            close.BackColor = System.Drawing.Color.FromArgb(16, 24, 38);
+            close.FlatStyle = FlatStyle.Flat;
+            close.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(218, 165, 32);
+            close.FlatAppearance.BorderSize = 1;
+            close.Click += delegate
+            {
+                if (canClose)
+                {
+                    form.Close();
+                }
+            };
             form.Controls.Add(close);
+            form.FormClosing += delegate(object sender, FormClosingEventArgs e)
+            {
+                if (!canClose)
+                {
+                    e.Cancel = true;
+                }
+            };
 
             form.Shown += delegate
             {
@@ -88,7 +107,8 @@ internal static class MagicWorldLauncherFullInstaller
                     CreateDesktopShortcuts(installDir);
 
                     SetProgress(status, progress, 100, "Magic World Launcher instalado. Abra pelo atalho da area de trabalho.");
-                    close.Enabled = true;
+                    canClose = true;
+                    close.Text = "Fechar";
 
                     string launcherExe = Path.Combine(installDir, "MagicWorldLauncher.exe");
                     if (File.Exists(launcherExe))
@@ -107,7 +127,8 @@ internal static class MagicWorldLauncherFullInstaller
                 {
                     progress.Value = 0;
                     status.Text = "Erro: " + ex.Message;
-                    close.Enabled = true;
+                    canClose = true;
+                    close.Text = "Fechar";
                     MessageBox.Show(form, ex.ToString(), "Erro no installer", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             };
