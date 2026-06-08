@@ -536,14 +536,11 @@ function Start-MagicWorldMinecraft {
         throw "Forge 1.20.1 nao foi encontrado apos a instalacao."
     }
 
-    $version = Get-MagicWorldVersionJson -VersionJsonPath $versionJsonPath
-    Ensure-MagicWorldRuntimeFiles -VersionJson $version
+    $version = Ensure-MagicWorldClientInstall -VersionJsonPath $versionJsonPath
 
     Update-Status "Abrindo Minecraft Magic World..." 80
     $versionDir = Split-Path -Parent $versionJsonPath
     $nativesDir = Join-Path $versionDir "natives"
-    New-Item -ItemType Directory -Force -Path $nativesDir | Out-Null
-    Ensure-MagicWorldNatives -VersionJson $version -NativesDir $nativesDir
 
     $classpathItems = New-Object System.Collections.Generic.List[string]
     foreach ($library in $version.libraries) {
@@ -635,6 +632,25 @@ function Start-MagicWorldMinecraft {
     Update-Status "Minecraft Magic World iniciado." 100
 }
 
+function Ensure-MagicWorldClientInstall {
+    param([string]$VersionJsonPath)
+
+    if ([string]::IsNullOrWhiteSpace($VersionJsonPath) -or !(Test-Path -LiteralPath $VersionJsonPath)) {
+        throw "Forge 1.20.1 nao foi encontrado para preparar o cliente Minecraft."
+    }
+
+    Ensure-MagicJavaRuntime | Out-Null
+    $version = Get-MagicWorldVersionJson -VersionJsonPath $VersionJsonPath
+    Ensure-MagicWorldRuntimeFiles -VersionJson $version
+
+    $versionDir = Split-Path -Parent $VersionJsonPath
+    $nativesDir = Join-Path $versionDir "natives"
+    New-Item -ItemType Directory -Force -Path $nativesDir | Out-Null
+    Ensure-MagicWorldNatives -VersionJson $version -NativesDir $nativesDir
+
+    return $version
+}
+
 function Invoke-MagicWorldInstaller {
     $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "MagicWorldLauncher"
     $extractRoot = Join-Path $tempRoot "full-payload"
@@ -698,6 +714,13 @@ function Invoke-MagicWorldInstaller {
     } finally {
         $env:JAVA_HOME = $oldJavaHome
     }
+
+    Update-Status "Baixando cliente Minecraft, assets e bibliotecas..." 86
+    $versionJsonPath = Get-MagicWorldVersionJsonPath
+    if (!$versionJsonPath) {
+        throw "Forge 1.20.1 nao foi encontrado apos a instalacao."
+    }
+    Ensure-MagicWorldClientInstall -VersionJsonPath $versionJsonPath | Out-Null
 
     Update-Status "Instalacao concluida. Pronto para jogar." 100
 }
