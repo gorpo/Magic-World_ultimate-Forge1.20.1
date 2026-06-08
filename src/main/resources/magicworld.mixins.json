@@ -15,6 +15,7 @@
     "EmbeddiumVideoOptionsScreenMagicWorldMixin",
     "MagicWorldCreateWorldScreenBackgroundMixin",
     "MagicWorldEntityCullingMixin",
+    "MagicWorldMcaDestinyScreenMixin",
     "MagicWorldMcaPlayerModelMixin",
     "MagicWorldSelectWorldScreenBackgroundMixin",
     "MagicWorldScreenBackgroundMixin",
