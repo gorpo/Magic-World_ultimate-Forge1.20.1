@@ -34,6 +34,8 @@ forge*changelog.txt
 /installer/
 /screenshots/
 /run/
+/launcher/dist/
+/launcher/MagicWorldLauncher/MagicWorldInstaller.exe
 
 # local reference assets copied from NeoForge/support mods
 /src/main/resources/assets/distanthorizons/

@@ -1188,6 +1188,11 @@ public class ClientEvents {
         }
 
         private static void renderExternalMagicWorldButtons(ScreenEvent.Render.Post event) {
+            String screenName = event.getScreen().getClass().getName().toLowerCase();
+            if (screenName.contains(".net.mca") || screenName.contains("minecraftcomesalive")) {
+                return;
+            }
+
             for (GuiEventListener listener : event.getScreen().children()) {
                 if (!(listener instanceof AbstractWidget widget)
                         || widget instanceof EditBox

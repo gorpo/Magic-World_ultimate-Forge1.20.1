@@ -51,7 +51,10 @@ public final class MagicWorldScreenBackgrounds {
             return false;
         }
         String className = screen.getClass().getName().toLowerCase();
-        return className.contains("fabric.net.mca")
+        return className.contains(".net.mca")
+                || className.contains("fabric.net.mca")
+                || className.contains("forge.net.mca")
+                || className.contains("quilt.net.mca")
                 || className.contains("minecraftcomesalive")
                 || className.contains("minecolonies");
     }

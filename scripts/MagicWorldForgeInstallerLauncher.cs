@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 internal static class MagicWorldForgeInstallerLauncher
 {
-    private const string ScriptName = "install-magicworld-forge-tlauncher.ps1";
+    private const string ScriptName = "install-magicworld-forge.ps1";
     private const string ForgeInstallerName = "forge-1.20.1-47.4.10-installer.jar";
     private static readonly byte[] FullPayloadMarker = Encoding.ASCII.GetBytes("MAGICWORLD_FULL_PAYLOAD_V1");
 
