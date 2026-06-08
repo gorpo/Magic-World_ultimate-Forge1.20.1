@@ -19,7 +19,7 @@ $RepoUrl = "https://github.com/gorpo/Magic-World_ultimate-Forge1.20.1"
 $ReleaseUrl = "https://github.com/gorpo/Magic-World_ultimate-Forge1.20.1/releases/tag/installer-upload-manual-forge-1.20.1-v1.0.0.1-main"
 $ReleaseApi = "https://api.github.com/repos/gorpo/Magic-World_ultimate-Forge1.20.1/releases/tags/installer-upload-manual-forge-1.20.1-v1.0.0.1-main"
 $FallbackInstallerUrl = "https://github.com/gorpo/Magic-World_ultimate-Forge1.20.1/releases/download/installer-upload-manual-forge-1.20.1-v1.0.0.1-main/MagicWorldInstaller.exe"
-$InstallerSha256 = "5cafd886fe3cd7e2d9f84e93e79f4110eb1250f08313ebc4172391b5ee3e48d3"
+$InstallerSha256 = "dfed9ff0a8b6c316ad5c133b1389b612a707947b5586befa1f61ca1dd6a1468e"
 $BundledInstallerPath = Join-Path $LauncherRoot "MagicWorldInstaller.exe"
 
 function Get-MagicWorldAccountName {
