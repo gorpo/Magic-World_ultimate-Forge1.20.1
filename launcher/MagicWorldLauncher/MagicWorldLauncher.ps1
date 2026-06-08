@@ -171,15 +171,44 @@ function Test-MagicRuleAllows {
 
     $allowed = $false
     foreach ($rule in $Rules) {
-        $matches = $true
-        if ($rule.os -and $rule.os.name) {
-            $matches = $rule.os.name -eq "windows"
-        }
-        if ($matches) {
+        if (Test-MagicRuleMatches $rule) {
             $allowed = $rule.action -eq "allow"
         }
     }
     return $allowed
+}
+
+function Test-MagicRuleMatches {
+    param($Rule)
+
+    if ($null -eq $Rule) {
+        return $false
+    }
+
+    if ($Rule.os -and $Rule.os.name -and [string]$Rule.os.name -ne "windows") {
+        return $false
+    }
+
+    if ($Rule.features) {
+        foreach ($property in $Rule.features.PSObject.Properties) {
+            $expected = [bool]$property.Value
+            $actual = switch ([string]$property.Name) {
+                "has_custom_resolution" { $false }
+                "is_demo_user" { $false }
+                "has_quick_plays_support" { $false }
+                "is_quick_play_singleplayer" { $false }
+                "is_quick_play_multiplayer" { $false }
+                "is_quick_play_realms" { $false }
+                default { $false }
+            }
+
+            if ($actual -ne $expected) {
+                return $false
+            }
+        }
+    }
+
+    return $true
 }
 
 function Test-MagicLibraryIsNative {
@@ -655,6 +684,7 @@ function Start-MagicWorldMinecraft {
 
     $java = Get-MagicJavaExePath
     if ($DryRun) {
+        $unresolvedArguments = @($allArgs | Where-Object { [string]$_ -match '\$\{[^}]+\}' })
         return [pscustomobject]@{
             java = $java
             workingDirectory = $MinecraftDir
@@ -663,6 +693,7 @@ function Start-MagicWorldMinecraft {
             clientVersion = $clientVersionId
             classpathEntries = $classpathItems.Count
             argumentCount = $allArgs.Count
+            unresolvedArgumentCount = $unresolvedArguments.Count
             opensTLauncher = $false
         }
     }
