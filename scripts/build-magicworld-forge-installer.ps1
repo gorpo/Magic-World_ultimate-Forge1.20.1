@@ -44,7 +44,7 @@ $out = Join-Path $installerDir "MagicWorldInstaller.exe"
 $stubOut = Join-Path $tmpDir "MagicWorldInstaller.stub.exe"
 $compileOut = if ($NoFullPayload) { $out } else { $stubOut }
 $source = Join-Path $root "scripts\MagicWorldForgeInstallerLauncher.cs"
-$script = Join-Path $root "scripts\install-magicworld-forge-tlauncher.ps1"
+$script = Join-Path $root "scripts\install-magicworld-forge.ps1"
 $banner = Join-Path $root "screenshots\banner_installer.png"
 $args = @(
     "/nologo",
@@ -55,7 +55,7 @@ $args = @(
     "/reference:System.Drawing.dll",
     "/reference:System.IO.Compression.dll",
     "/reference:System.IO.Compression.FileSystem.dll",
-    "/resource:$script,install-magicworld-forge-tlauncher.ps1"
+    "/resource:$script,install-magicworld-forge.ps1"
 )
 
 if ($NoFullPayload) {

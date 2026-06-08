@@ -68,14 +68,18 @@ internal static class MagicWorldLauncherFullInstaller
                     progress.Value = 20;
                     Application.DoEvents();
 
+                    if (Directory.Exists(installDir))
+                    {
+                        Directory.Delete(installDir, true);
+                    }
                     Directory.CreateDirectory(installDir);
                     ExtractPayloadZip(installDir);
 
-                    status.Text = "Criando atalho de abertura...";
+                    status.Text = "Criando atalhos de abertura e desinstalacao...";
                     progress.Value = 80;
                     Application.DoEvents();
 
-                    CreateDesktopShortcut(installDir);
+                    CreateDesktopShortcuts(installDir);
 
                     progress.Value = 100;
                     status.Text = "Magic World Launcher instalado. Abra pelo atalho da area de trabalho e clique em Instalar Magic World.";
@@ -161,14 +165,22 @@ internal static class MagicWorldLauncherFullInstaller
         }
     }
 
-    private static void CreateDesktopShortcut(string installDir)
+    private static void CreateDesktopShortcuts(string installDir)
     {
         string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-        string shortcut = Path.Combine(desktop, "Magic World Launcher.cmd");
+        string launcherShortcut = Path.Combine(desktop, "Magic World Launcher.cmd");
         string launcher = Path.Combine(installDir, "Abrir Magic World Launcher.cmd");
         File.WriteAllText(
-            shortcut,
+            launcherShortcut,
             "@echo off\r\ncd /d \"" + installDir + "\"\r\ncall \"" + launcher + "\"\r\n",
+            Encoding.ASCII
+        );
+
+        string uninstallShortcut = Path.Combine(desktop, "Uninstall Magic World Launcher.cmd");
+        string uninstaller = Path.Combine(installDir, "Uninstall Magic World Launcher.cmd");
+        File.WriteAllText(
+            uninstallShortcut,
+            "@echo off\r\ncd /d \"" + installDir + "\"\r\ncall \"" + uninstaller + "\"\r\n",
             Encoding.ASCII
         );
     }

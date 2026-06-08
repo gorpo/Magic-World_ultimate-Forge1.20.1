@@ -34,10 +34,8 @@ function Find-MinecraftDir {
     }
 
     $candidates = @(
-        (Join-Path $env:APPDATA ".minecraft"),
-        (Join-Path $env:APPDATA "TLauncher\.minecraft"),
-        (Join-Path $env:APPDATA ".tlauncher\.minecraft"),
-        (Join-Path $env:USERPROFILE "AppData\Roaming\.minecraft")
+        (Join-Path $env:APPDATA "MagicWorldLauncher\.minecraft"),
+        (Join-Path $env:USERPROFILE "AppData\Roaming\MagicWorldLauncher\.minecraft")
     ) | Select-Object -Unique
 
     foreach ($candidate in $candidates) {
@@ -46,7 +44,7 @@ function Find-MinecraftDir {
         }
     }
 
-    return [System.IO.Path]::GetFullPath((Join-Path $env:APPDATA ".minecraft"))
+    return [System.IO.Path]::GetFullPath((Join-Path $env:APPDATA "MagicWorldLauncher\.minecraft"))
 }
 
 function Find-PackageMinecraftDir {
@@ -190,6 +188,32 @@ function Ensure-OculusShaderConfig {
     Write-Log "Oculus/Iris configurado para shader: $($shader.Name)"
 }
 
+function Ensure-MinecraftLauncherProfile {
+    param([string]$TargetMinecraftDir)
+
+    New-Item -ItemType Directory -Path $TargetMinecraftDir -Force | Out-Null
+    $profilesFile = Join-Path $TargetMinecraftDir "launcher_profiles.json"
+    if (Test-Path -LiteralPath $profilesFile) {
+        return
+    }
+
+    $clientToken = [guid]::NewGuid().ToString()
+    $profiles = @"
+{
+  "profiles": {},
+  "selectedProfile": "",
+  "clientToken": "$clientToken",
+  "authenticationDatabase": {},
+  "launcherVersion": {
+    "name": "Magic World Launcher",
+    "format": 21
+  }
+}
+"@
+    Set-Content -LiteralPath $profilesFile -Value $profiles -Encoding UTF8
+    Write-Log "launcher_profiles.json criado para instalacao Forge em pasta propria."
+}
+
 function Find-Java {
     if (-not [string]::IsNullOrWhiteSpace($env:JAVA_HOME)) {
         $javaFromHome = Join-Path $env:JAVA_HOME "bin\java.exe"
@@ -238,7 +262,7 @@ function Install-ForgeClient {
     Write-Log "Java: $java"
     Write-Log "Forge installer: $installer"
 
-    & $java -jar $installer --install-client $TargetMinecraftDir 2>&1 | ForEach-Object { Write-Log "Forge: $_" }
+    & $java -jar $installer --installClient $TargetMinecraftDir 2>&1 | ForEach-Object { Write-Log "Forge: $_" }
     if ($LASTEXITCODE -ne 0) {
         throw "Forge installer retornou codigo $LASTEXITCODE. Veja $LogFile."
     }
@@ -262,6 +286,7 @@ Copy-DirectoryContents -Source (Join-Path $packageMinecraft "defaultconfigs") -D
 Copy-FileIfExists -Source (Join-Path $packageMinecraft "options.txt") -Destination (Join-Path $targetMinecraft "options.txt")
 Ensure-JourneyMap3DWaypointsHidden -TargetMinecraftDir $targetMinecraft
 Ensure-OculusShaderConfig -TargetMinecraftDir $targetMinecraft
+Ensure-MinecraftLauncherProfile -TargetMinecraftDir $targetMinecraft
 
 $modJar = Join-Path $targetMinecraft ("mods\" + $ModJarName)
 if (-not (Test-Path -LiteralPath $modJar)) {
@@ -269,4 +294,4 @@ if (-not (Test-Path -LiteralPath $modJar)) {
 }
 
 Install-ForgeClient -TargetMinecraftDir $targetMinecraft
-Write-Log "Instalacao local concluida. No TLauncher, selecione Forge $MinecraftVersion-$ForgeVersion e use: $targetMinecraft"
+Write-Log "Instalacao local concluida para o Magic World Launcher em: $targetMinecraft"
