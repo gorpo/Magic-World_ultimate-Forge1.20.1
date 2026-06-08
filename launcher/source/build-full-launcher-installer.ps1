@@ -1,6 +1,7 @@
 param(
     [string]$ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path,
-    [string]$BundledInstallerPath
+    [string]$BundledInstallerPath,
+    [string]$OutputName = "MagicWorldLauncherFullInstaller-Stable V1.0.0.2.exe"
 )
 
 $ErrorActionPreference = "Stop"
@@ -8,9 +9,10 @@ $ErrorActionPreference = "Stop"
 $launcherSource = Join-Path $ProjectRoot "launcher\MagicWorldLauncher"
 $dist = Join-Path $ProjectRoot "launcher\dist"
 $staging = Join-Path $ProjectRoot "tmp\launcher-full-payload"
-$payloadZip = Join-Path $dist "MagicWorldLauncherPayload.zip"
-$stub = Join-Path $dist "MagicWorldLauncherFullInstaller.stub.exe"
-$out = Join-Path $dist "MagicWorldLauncherFullInstaller.exe"
+$buildTemp = Join-Path $ProjectRoot "tmp\launcher-full-build"
+$payloadZip = Join-Path $buildTemp "MagicWorldLauncherPayload.zip"
+$stub = Join-Path $buildTemp "MagicWorldLauncherFullInstaller.stub.exe"
+$out = Join-Path $dist $OutputName
 $source = Join-Path $ProjectRoot "launcher\source\MagicWorldLauncherFullInstaller.cs"
 $launcherAppSource = Join-Path $ProjectRoot "launcher\source\MagicWorldLauncherApp.cs"
 $icon = Join-Path $ProjectRoot "launcher\MagicWorldLauncher\assets\magicworld.ico"
@@ -42,6 +44,14 @@ if (!(Test-Path -LiteralPath $BundledInstallerPath)) {
 }
 
 New-Item -ItemType Directory -Force -Path $dist | Out-Null
+if (Test-Path -LiteralPath $buildTemp) { Remove-Item -LiteralPath $buildTemp -Recurse -Force }
+New-Item -ItemType Directory -Force -Path $buildTemp | Out-Null
+Get-ChildItem -LiteralPath $dist -File -ErrorAction SilentlyContinue |
+    Where-Object {
+        $_.Name -like "MagicWorldLauncherFullInstaller*.exe" -or
+        $_.Name -eq "MagicWorldLauncherPayload.zip"
+    } |
+    Remove-Item -Force
 if (Test-Path -LiteralPath $payloadZip) { Remove-Item -LiteralPath $payloadZip -Force }
 if (Test-Path -LiteralPath $stub) { Remove-Item -LiteralPath $stub -Force }
 if (Test-Path -LiteralPath $out) { Remove-Item -LiteralPath $out -Force }
