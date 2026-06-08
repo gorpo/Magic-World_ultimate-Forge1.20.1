@@ -2062,3 +2062,21 @@ Validacao:
 - `-NoFullPayload` ainda gera a versao leve antiga se necessario.
 - EXE local FULL gerado em `installer/MagicWorldInstaller.exe`; tamanho aproximado 1.78 GiB / 1.91 GB.
 - Validacao: marcador do payload OK, entries do JAR principal, shader e Forge installer presentes no ZIP interno.
+
+## Handoff 2026-06-08 - launcher FULL Stable V1.0.0.2
+- Pedido do usuario: deixar launcher premium, sem terminal cmd/PowerShell visivel, com icones em atalhos/pastas/janelas, progresso real em porcentagem, configuracoes separadas, RAM em slider ate 16 GB, launcher oculto durante o Minecraft e release local `Stable V1.0.0.2`.
+- Pastas exclusivas confirmadas e documentadas: instalacao em `%LOCALAPPDATA%\MagicWorldLauncher`; Minecraft interno em `%APPDATA%\MagicWorldLauncher\.minecraft`; contas/configuracoes em `%APPDATA%\MagicWorldLauncher`.
+- Isso permite instalar TLauncher e outros launchers em paralelo sem misturar mods, assets, versoes ou saves do Magic World.
+- `MagicWorldLauncher.ps1`: tela principal remodelada com rodape tipo launcher, sem botoes `Instalar`/`Repositorio`; adicionados botoes `Login`, `.minecraft`, `Configuracoes` e `Jogar Magic World`.
+- `MagicWorldLauncher.ps1`: RAM/resolucao foram movidas para janela `Configuracoes`; RAM usa slider 2-16 GB; opcao de ocultar launcher durante o jogo fica nessa tela.
+- `MagicWorldLauncher.ps1`: `Start-MagicWorldMinecraft` retorna o processo Java; botao `Jogar` oculta a janela enquanto o processo roda e mostra novamente quando fechar.
+- `MagicWorldLauncher.ps1`: `Update-Status` escreve `PROGRESS:<percent>:<texto>` em modo `-InstallOnly` para o instalador FULL acompanhar porcentagem.
+- `MagicWorldLauncher.ps1`: botao `Servidores` cria/edita favoritos em `%APPDATA%\MagicWorldLauncher\servidores.json` e gera `servers.dat` na `.minecraft` exclusiva via NBT simples.
+- Login TLauncher: tela pede usuario/senha e caixa `Salvar senha`; online depende de `MAGICWORLD_TLAUNCHER_AUTH_API_URL`. Sem API oficial configurada, salva usuario offline para manter o jogo funcional.
+- `MagicWorldLauncherFullInstaller.cs`: instalador mostra porcentagem textual, barra de progresso e pulso durante instalacao interna; chama PowerShell escondido com `-Sta`; recria atalhos `.lnk` apagando antigos antes.
+- `MagicWorldLauncherApp.cs`: janela principal roda dentro do `MagicWorldLauncher.exe` via `System.Management.Automation` para melhorar icone da taskbar; modos `--install-only`, `--launch-only` e `--uninstall` usam PowerShell escondido.
+- Atalhos esperados na area de trabalho: `Magic World Launcher.lnk` e `Desinstalar Magic World Launcher.lnk`, ambos apontando para `MagicWorldLauncher.exe` com `MagicWorldLauncher.ico`.
+- O instalador pode ser apagado apos instalar; o desinstalador remove `%LOCALAPPDATA%\MagicWorldLauncher`, `%APPDATA%\MagicWorldLauncher` e atalhos Magic World, sem tocar em TLauncher nem na `.minecraft` global.
+- Servidores: conta offline so entra em servidor offline/cracked; servidor premium `online-mode=true` exige autenticacao valida e nao recebe bypass. Local no mesmo PC: `127.0.0.1:25565`; outro PC da LAN: IP da maquina servidora, exemplo `192.168.0.25:25565`; amigo: dominio/IP e porta informados por ele.
+- Docs atualizados: `README.md`, `docs/WIKI.md`, `CODEX_HANDOFF.md` e `launcher/MagicWorldLauncher/README.txt`.
+- Validacoes executadas antes do build final: parse do PowerShell, `-SelfTest`, compilacao C# do installer e compilacao C# do wrapper.

@@ -1589,3 +1589,53 @@ Regra atual: o instalador FULL embute `pacote_distribuivel/.minecraft` dentro do
 Ele instala/atualiza Forge `1.20.1-47.4.10`, extrai e copia `mods`, `resourcepacks`, `shaderpacks`, `journeymap`, configs opcionais, remove conflitos conhecidos, configura JourneyMap sem waypoints 3D e tenta selecionar o shader Magic World no Oculus/Iris.
 
 Para gerar uma versao leve antiga, use `scripts/build-magicworld-forge-installer.ps1 -NoFullPayload`.
+
+## Launcher FULL Stable V1.0.0.2
+
+O launcher FULL instala um ambiente proprio do Magic World, separado de TLauncher, launcher oficial e qualquer outro Minecraft instalado no Windows.
+
+Pastas usadas:
+
+- Instalacao do launcher: `%LOCALAPPDATA%\MagicWorldLauncher`
+- Minecraft interno do Magic World: `%APPDATA%\MagicWorldLauncher\.minecraft`
+- Contas/configuracoes: `%APPDATA%\MagicWorldLauncher`
+
+Com isso, TLauncher e outros launchers podem ficar instalados em paralelo sem misturar mods, versoes, assets ou saves do Magic World com a `.minecraft` global.
+
+Comportamento do instalador/launcher:
+
+- o instalador FULL embute launcher, Minecraft/Forge, pacote Magic World e icones;
+- depois de instalado, o `MagicWorldLauncherFullInstaller.exe` pode ser apagado;
+- a area de trabalho recebe atalhos `.lnk` com icone do Magic World para abrir e desinstalar;
+- a pasta instalada recebe `desktop.ini` e `MagicWorldLauncher.ico` para aparecer com icone proprio no Explorer;
+- a janela principal roda pelo `MagicWorldLauncher.exe`, com icone proprio na taskbar;
+- rotinas internas de instalacao/desinstalacao usam PowerShell escondido, sem janela de cmd/PowerShell visivel;
+- o instalador mostra porcentagem textual e barra de progresso durante extracao, instalacao interna e criacao de atalhos;
+- a tela principal nao mostra botao de repositorio nem botao manual de instalar;
+- `Jogar Magic World` verifica/instala o que faltar e inicia o Minecraft;
+- enquanto o Minecraft roda, o launcher fica oculto e volta quando o jogo fecha;
+- RAM e resolucao ficam em `Configuracoes`, com slider de RAM de 2 GB ate 16 GB;
+- o botao `.minecraft` abre a pasta interna exclusiva do Magic World;
+- o botao `Servidores` cadastra favoritos e gera `servers.dat` na `.minecraft` exclusiva.
+
+Login:
+
+- a tela de login pede usuario, senha e possui caixa `Salvar senha`;
+- a senha salva usa armazenamento local do Windows em `%APPDATA%\MagicWorldLauncher\tlauncher-password.xml`;
+- login online TLauncher depende de endpoint oficial configurado em `MAGICWORLD_TLAUNCHER_AUTH_API_URL`;
+- se a API oficial nao estiver configurada, o launcher salva o usuario em modo offline para manter o jogo funcional.
+
+Servidores:
+
+- conta offline consegue entrar apenas em servidores que aceitam modo offline/cracked;
+- servidores premium com `online-mode=true` exigem autenticacao Microsoft/TLauncher valida;
+- o launcher nao implementa bypass de autenticacao premium.
+- servidor local no mesmo PC usa `127.0.0.1:25565`;
+- servidor em outro computador da rede usa o IP desse computador, por exemplo `192.168.0.25:25565`;
+- servidor de amigo usa o dominio/IP e a porta que ele informar.
+
+Release local esperado:
+
+```text
+launcher/dist/MagicWorldLauncherFullInstaller-Stable V1.0.0.2.exe
+```

@@ -21,6 +21,9 @@ $MinecraftDir = Join-Path $MagicWorldDataRoot ".minecraft"
 $MagicJavaRoot = Join-Path $MagicWorldDataRoot "runtime\java17"
 $AccountsPath = Join-Path $MagicWorldDataRoot "accounts.json"
 $SettingsPath = Join-Path $MagicWorldDataRoot "settings.json"
+$ServerFavoritesPath = Join-Path $MagicWorldDataRoot "servidores.json"
+$ServerHelpPath = Join-Path $MagicWorldDataRoot "servidores-magicworld.txt"
+$MinecraftServerListPath = Join-Path $MinecraftDir "servers.dat"
 $SavedPasswordPath = Join-Path $MagicWorldDataRoot "tlauncher-password.xml"
 $LaunchLogPath = Join-Path $MagicWorldDataRoot "magicworld-launcher-last-launch.log"
 $LaunchOutLogPath = Join-Path $MagicWorldDataRoot "magicworld-launcher-last-stdout.log"
@@ -76,8 +79,8 @@ function Save-MagicWorldSettings {
     )
 
     $settings = [ordered]@{
-        minMemoryGb = [Math]::Max(1, [Math]::Min(32, $MinMemoryGb))
-        maxMemoryGb = [Math]::Max(2, [Math]::Min(64, $MaxMemoryGb))
+        minMemoryGb = [Math]::Max(1, [Math]::Min(16, $MinMemoryGb))
+        maxMemoryGb = [Math]::Max(2, [Math]::Min(16, $MaxMemoryGb))
         customResolution = $CustomResolution
         resolutionWidth = [Math]::Max(640, [Math]::Min(7680, $ResolutionWidth))
         resolutionHeight = [Math]::Max(480, [Math]::Min(4320, $ResolutionHeight))
@@ -244,14 +247,29 @@ function Update-Status {
         [int]$Percent = -1
     )
 
+    $boundedPercent = -1
+    if ($Percent -ge 0) {
+        $boundedPercent = [Math]::Min(100, [Math]::Max(0, $Percent))
+    }
+
     if ($script:StatusText) {
         $script:StatusText.Text = $Text
     }
-    if ($script:ProgressBar -and $Percent -ge 0) {
-        $script:ProgressBar.Value = [Math]::Min(100, [Math]::Max(0, $Percent))
+    if ($script:ProgressBar -and $boundedPercent -ge 0) {
+        $script:ProgressBar.Value = $boundedPercent
+    }
+    if ($script:ProgressPercentText -and $boundedPercent -ge 0) {
+        $script:ProgressPercentText.Text = "$boundedPercent%"
     }
     if ($script:StatusText) {
         [System.Windows.Forms.Application]::DoEvents()
+    }
+    if ($InstallOnly -or $LaunchOnly) {
+        if ($boundedPercent -ge 0) {
+            Write-Output ("PROGRESS:{0}:{1}" -f $boundedPercent, $Text)
+        } else {
+            Write-Output ("STATUS:{0}" -f $Text)
+        }
     }
 }
 
@@ -824,6 +842,7 @@ function Start-MagicWorldMinecraft {
         throw "Minecraft fechou ao iniciar: $errorText"
     }
     Update-Status "Minecraft Magic World iniciado." 100
+    return $process
 }
 
 function Ensure-MagicWorldClientInstall {
@@ -915,6 +934,9 @@ function Invoke-MagicWorldInstaller {
         throw "Forge 1.20.1 nao foi encontrado apos a instalacao."
     }
     Ensure-MagicWorldClientInstall -VersionJsonPath $versionJsonPath | Out-Null
+    Set-MagicWorldFolderIcon -Path $MagicWorldDataRoot
+    Set-MagicWorldFolderIcon -Path $MinecraftDir
+    Ensure-MagicWorldServerFiles
 
     Update-Status "Instalacao concluida. Pronto para jogar." 100
 }
@@ -977,15 +999,189 @@ function Expand-MagicWorldFullPayload {
     Expand-Archive -LiteralPath $zipPath -DestinationPath $DestinationRoot -Force
 }
 
-function Open-Repo {
-    Start-Process $RepoUrl
+function Open-MagicWorldMinecraftFolder {
+    New-Item -ItemType Directory -Force -Path $MinecraftDir | Out-Null
+    Set-MagicWorldFolderIcon -Path $MinecraftDir
+    Start-Process -FilePath "explorer.exe" -ArgumentList $MinecraftDir
+}
+
+function Set-MagicWorldFolderIcon {
+    param([string]$Path)
+
+    if ([string]::IsNullOrWhiteSpace($Path) -or !(Test-Path -LiteralPath $Path) -or !(Test-Path -LiteralPath $WindowIconPath)) {
+        return
+    }
+
+    try {
+        $targetIcon = Join-Path $Path "MagicWorldLauncher.ico"
+        Copy-Item -LiteralPath $WindowIconPath -Destination $targetIcon -Force
+        $desktopIni = Join-Path $Path "desktop.ini"
+        Set-Content -LiteralPath $desktopIni -Encoding ASCII -Value "[.ShellClassInfo]`r`nIconResource=MagicWorldLauncher.ico,0`r`n"
+        $iniItem = Get-Item -LiteralPath $desktopIni
+        $iniItem.Attributes = [System.IO.FileAttributes]::Hidden -bor [System.IO.FileAttributes]::System
+        $folderItem = Get-Item -LiteralPath $Path
+        $folderItem.Attributes = $folderItem.Attributes -bor [System.IO.FileAttributes]::System
+    } catch {
+    }
+}
+
+function Write-MagicNbtShort {
+    param(
+        [System.IO.BinaryWriter]$Writer,
+        [int]$Value
+    )
+    $Writer.Write([byte](($Value -shr 8) -band 0xff))
+    $Writer.Write([byte]($Value -band 0xff))
+}
+
+function Write-MagicNbtInt {
+    param(
+        [System.IO.BinaryWriter]$Writer,
+        [int]$Value
+    )
+    $Writer.Write([byte](($Value -shr 24) -band 0xff))
+    $Writer.Write([byte](($Value -shr 16) -band 0xff))
+    $Writer.Write([byte](($Value -shr 8) -band 0xff))
+    $Writer.Write([byte]($Value -band 0xff))
+}
+
+function Write-MagicNbtStringPayload {
+    param(
+        [System.IO.BinaryWriter]$Writer,
+        [string]$Value
+    )
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes([string]$Value)
+    Write-MagicNbtShort -Writer $Writer -Value $bytes.Length
+    $Writer.Write($bytes)
+}
+
+function Write-MagicNbtNamedString {
+    param(
+        [System.IO.BinaryWriter]$Writer,
+        [string]$Name,
+        [string]$Value
+    )
+    $Writer.Write([byte]8)
+    Write-MagicNbtStringPayload -Writer $Writer -Value $Name
+    Write-MagicNbtStringPayload -Writer $Writer -Value $Value
+}
+
+function Save-MagicWorldServersDat {
+    param($Servers)
+
+    New-Item -ItemType Directory -Force -Path $MinecraftDir | Out-Null
+    $stream = [System.IO.File]::Create($MinecraftServerListPath)
+    try {
+        $writer = New-Object System.IO.BinaryWriter($stream)
+        try {
+            $serverItems = @($Servers | Where-Object { $_.name -and $_.ip })
+            $writer.Write([byte]10)
+            Write-MagicNbtStringPayload -Writer $writer -Value ""
+            $writer.Write([byte]9)
+            Write-MagicNbtStringPayload -Writer $writer -Value "servers"
+            $writer.Write([byte]10)
+            Write-MagicNbtInt -Writer $writer -Value $serverItems.Count
+            foreach ($server in $serverItems) {
+                Write-MagicNbtNamedString -Writer $writer -Name "name" -Value ([string]$server.name)
+                Write-MagicNbtNamedString -Writer $writer -Name "ip" -Value ([string]$server.ip)
+                $writer.Write([byte]0)
+            }
+            $writer.Write([byte]0)
+        } finally {
+            $writer.Dispose()
+        }
+    } finally {
+        $stream.Dispose()
+    }
+}
+
+function Get-MagicWorldServerFavorites {
+    if (!(Test-Path -LiteralPath $ServerFavoritesPath)) {
+        return @()
+    }
+
+    try {
+        $json = Get-Content -LiteralPath $ServerFavoritesPath -Raw | ConvertFrom-Json
+        return @($json | Where-Object { $_.name -and $_.ip })
+    } catch {
+        return @()
+    }
+}
+
+function Save-MagicWorldServerFavorites {
+    param($Servers)
+
+    New-Item -ItemType Directory -Force -Path $MagicWorldDataRoot | Out-Null
+    $clean = @($Servers | Where-Object { $_.name -and $_.ip } | ForEach-Object {
+        [pscustomobject]@{
+            name = ([string]$_.name).Trim()
+            ip = ([string]$_.ip).Trim()
+        }
+    })
+    $clean | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $ServerFavoritesPath -Encoding UTF8
+    Save-MagicWorldServersDat -Servers $clean
+    Save-MagicWorldServerHelp
+}
+
+function Add-MagicWorldServerFavorite {
+    param(
+        [string]$Name,
+        [string]$Address
+    )
+
+    $cleanName = ([string]$Name).Trim()
+    $cleanAddress = ([string]$Address).Trim()
+    if ([string]::IsNullOrWhiteSpace($cleanName)) {
+        $cleanName = "Servidor Magic World"
+    }
+    if ([string]::IsNullOrWhiteSpace($cleanAddress)) {
+        throw "Informe o endereco do servidor, por exemplo 192.168.0.25:25565."
+    }
+    if ($cleanAddress -notmatch '^[A-Za-z0-9_\.\-:]+$') {
+        throw "Endereco invalido. Use IP/dominio e porta, por exemplo 192.168.0.25:25565."
+    }
+
+    $servers = New-Object System.Collections.ArrayList
+    foreach ($server in Get-MagicWorldServerFavorites) {
+        if ([string]$server.ip -ne $cleanAddress) {
+            [void]$servers.Add($server)
+        }
+    }
+    [void]$servers.Add([pscustomobject]@{ name = $cleanName; ip = $cleanAddress })
+    Save-MagicWorldServerFavorites -Servers $servers
+}
+
+function Save-MagicWorldServerHelp {
+    New-Item -ItemType Directory -Force -Path $MagicWorldDataRoot | Out-Null
+    $content = @(
+        "Servidores Magic World",
+        "",
+        "Pasta exclusiva do jogo: $MinecraftDir",
+        "Lista lida pelo Minecraft: $MinecraftServerListPath",
+        "",
+        "Servidor local no mesmo PC: 127.0.0.1:25565",
+        "Servidor em outro computador da rede: IP_DA_MAQUINA:25565, por exemplo 192.168.0.25:25565",
+        "Servidor de amigo: dominio-ou-ip:porta",
+        "",
+        "Conta offline entra apenas em servidores que aceitam offline/cracked.",
+        "Servidor premium com online-mode=true exige autenticacao Microsoft/TLauncher valida."
+    )
+    Set-Content -LiteralPath $ServerHelpPath -Value $content -Encoding UTF8
+}
+
+function Ensure-MagicWorldServerFiles {
+    Save-MagicWorldServerHelp
+    $servers = Get-MagicWorldServerFavorites
+    if ($servers.Count -gt 0) {
+        Save-MagicWorldServersDat -Servers $servers
+    }
 }
 
 function Show-TLauncherApiLoginDialog {
     $dialog = New-Object System.Windows.Window
     $dialog.Title = "Login TLauncher"
-    $dialog.Width = 520
-    $dialog.Height = 350
+    $dialog.Width = 460
+    $dialog.Height = 310
     $dialog.WindowStartupLocation = "CenterOwner"
     $dialog.ResizeMode = "NoResize"
     $dialog.Background = "#101820"
@@ -999,24 +1195,13 @@ function Show-TLauncherApiLoginDialog {
     $dialog.Content = $panel
 
     $label = New-Object System.Windows.Controls.TextBlock
-    $label.Text = "Entre com sua conta TLauncher. A senha nao sera salva; o launcher guarda apenas o token retornado pela API."
+    $label.Text = "Entre com sua conta TLauncher."
     $label.Foreground = "White"
     $label.TextWrapping = "Wrap"
     $label.Margin = "0,0,0,14"
     $panel.Children.Add($label) | Out-Null
 
-    $apiLabel = New-Object System.Windows.Controls.TextBlock
-    $apiLabel.Text = "URL da API oficial TLauncher"
-    $apiLabel.Foreground = "#FFDAA520"
-    $apiLabel.Margin = "0,0,0,4"
-    $panel.Children.Add($apiLabel) | Out-Null
-
-    $apiUrl = New-Object System.Windows.Controls.TextBox
     $savedAccount = Get-MagicWorldAccount
-    $apiUrl.Text = $savedAccount.authApiUrl
-    $apiUrl.Height = 30
-    $apiUrl.Margin = "0,0,0,10"
-    $panel.Children.Add($apiUrl) | Out-Null
 
     $userLabel = New-Object System.Windows.Controls.TextBlock
     $userLabel.Text = "Usuario"
@@ -1068,7 +1253,15 @@ function Show-TLauncherApiLoginDialog {
     $ok.Height = 32
     $ok.Add_Click({
         try {
-            Invoke-TLauncherApiLogin -Username $username.Text -Password $password.Password -ApiUrl $apiUrl.Text | Out-Null
+            $apiUrl = $(if ($savedAccount.authApiUrl) { [string]$savedAccount.authApiUrl } else { $TLauncherAuthApiUrl })
+            if ([string]::IsNullOrWhiteSpace($apiUrl)) {
+                Save-MagicWorldAccount -Username $username.Text -LoginProvider "offline" | Out-Null
+                Remove-SavedTLauncherPassword
+                [System.Windows.MessageBox]::Show("API oficial do TLauncher nao configurada. Usuario salvo em modo offline para manter o jogo funcional.", "Login TLauncher", "OK", "Information") | Out-Null
+                $dialog.DialogResult = $true
+                return
+            }
+            Invoke-TLauncherApiLogin -Username $username.Text -Password $password.Password -ApiUrl $apiUrl | Out-Null
             if ($savePassword.IsChecked) {
                 Save-TLauncherPassword -Password $password.Password
             } else {
@@ -1081,6 +1274,254 @@ function Show-TLauncherApiLoginDialog {
     })
     $buttons.Children.Add($ok) | Out-Null
 
+    return $dialog.ShowDialog()
+}
+
+function Show-MagicWorldSettingsDialog {
+    $settings = Get-MagicWorldSettings
+    $dialog = New-Object System.Windows.Window
+    $dialog.Title = "Configuracoes Magic World"
+    $dialog.Width = 560
+    $dialog.Height = 430
+    $dialog.WindowStartupLocation = "CenterOwner"
+    $dialog.ResizeMode = "NoResize"
+    $dialog.Background = "#101820"
+    $dialog.Owner = $window
+    if (Test-Path -LiteralPath $WindowIconPath) {
+        $dialog.Icon = [System.Windows.Media.Imaging.BitmapImage]::new([Uri]$WindowIconPath)
+    }
+
+    $panel = New-Object System.Windows.Controls.StackPanel
+    $panel.Margin = "26"
+    $dialog.Content = $panel
+
+    $title = New-Object System.Windows.Controls.TextBlock
+    $title.Text = "Configuracoes"
+    $title.FontSize = 24
+    $title.FontWeight = "Bold"
+    $title.Foreground = "White"
+    $title.Margin = "0,0,0,18"
+    $panel.Children.Add($title) | Out-Null
+
+    $ramHeader = New-Object System.Windows.Controls.DockPanel
+    $ramHeader.Margin = "0,0,0,6"
+    $panel.Children.Add($ramHeader) | Out-Null
+
+    $ramLabel = New-Object System.Windows.Controls.TextBlock
+    $ramLabel.Text = "Memoria RAM"
+    $ramLabel.Foreground = "#FFDAA520"
+    $ramLabel.FontSize = 15
+    [System.Windows.Controls.DockPanel]::SetDock($ramLabel, "Left")
+    $ramHeader.Children.Add($ramLabel) | Out-Null
+
+    $ramValue = New-Object System.Windows.Controls.TextBlock
+    $ramValue.Foreground = "White"
+    $ramValue.FontSize = 15
+    $ramValue.HorizontalAlignment = "Right"
+    [System.Windows.Controls.DockPanel]::SetDock($ramValue, "Right")
+    $ramHeader.Children.Add($ramValue) | Out-Null
+
+    $ramSlider = New-Object System.Windows.Controls.Slider
+    $ramSlider.Minimum = 2
+    $ramSlider.Maximum = 16
+    $ramSlider.Value = [Math]::Max(2, [Math]::Min(16, [int]$settings.maxMemoryGb))
+    $ramSlider.TickFrequency = 1
+    $ramSlider.IsSnapToTickEnabled = $true
+    $ramSlider.TickPlacement = "BottomRight"
+    $ramSlider.Margin = "0,0,0,22"
+    $ramValue.Text = "$([int]$ramSlider.Value) GB"
+    $ramSlider.Add_ValueChanged({ $ramValue.Text = "$([int]$ramSlider.Value) GB" })
+    $panel.Children.Add($ramSlider) | Out-Null
+
+    $resolutionBox = New-Object System.Windows.Controls.CheckBox
+    $resolutionBox.Content = "Resolucao personalizada"
+    $resolutionBox.Foreground = "White"
+    $resolutionBox.IsChecked = [bool]$settings.customResolution
+    $resolutionBox.Margin = "0,0,0,10"
+    $panel.Children.Add($resolutionBox) | Out-Null
+
+    $resolutionPanel = New-Object System.Windows.Controls.StackPanel
+    $resolutionPanel.Orientation = "Horizontal"
+    $resolutionPanel.Margin = "0,0,0,18"
+    $panel.Children.Add($resolutionPanel) | Out-Null
+
+    $widthBox = New-Object System.Windows.Controls.TextBox
+    $widthBox.Text = [string]$settings.resolutionWidth
+    $widthBox.Width = 90
+    $widthBox.Height = 30
+    $widthBox.Margin = "0,0,8,0"
+    $resolutionPanel.Children.Add($widthBox) | Out-Null
+
+    $heightBox = New-Object System.Windows.Controls.TextBox
+    $heightBox.Text = [string]$settings.resolutionHeight
+    $heightBox.Width = 90
+    $heightBox.Height = 30
+    $heightBox.Margin = "0,0,12,0"
+    $resolutionPanel.Children.Add($heightBox) | Out-Null
+
+    $hideLauncherBox = New-Object System.Windows.Controls.CheckBox
+    $hideLauncherBox.Content = "Ocultar launcher enquanto o Minecraft roda"
+    $hideLauncherBox.Foreground = "White"
+    $hideLauncherBox.IsChecked = [bool]$settings.minimizeLauncherOnPlay
+    $hideLauncherBox.Margin = "0,0,0,14"
+    $panel.Children.Add($hideLauncherBox) | Out-Null
+
+    $folder = New-Object System.Windows.Controls.TextBlock
+    $folder.Text = "Pasta isolada: $MinecraftDir"
+    $folder.Foreground = "#D0D8E8"
+    $folder.TextWrapping = "Wrap"
+    $folder.Margin = "0,0,0,22"
+    $panel.Children.Add($folder) | Out-Null
+
+    $buttons = New-Object System.Windows.Controls.StackPanel
+    $buttons.Orientation = "Horizontal"
+    $buttons.HorizontalAlignment = "Right"
+    $panel.Children.Add($buttons) | Out-Null
+
+    $cancel = New-Object System.Windows.Controls.Button
+    $cancel.Content = "Cancelar"
+    $cancel.Width = 100
+    $cancel.Height = 34
+    $cancel.Margin = "0,0,8,0"
+    $cancel.Add_Click({ $dialog.DialogResult = $false })
+    $buttons.Children.Add($cancel) | Out-Null
+
+    $save = New-Object System.Windows.Controls.Button
+    $save.Content = "Salvar"
+    $save.Width = 100
+    $save.Height = 34
+    $save.Add_Click({
+        try {
+            Save-MagicWorldSettings `
+                -MinMemoryGb 2 `
+                -MaxMemoryGb ([int]$ramSlider.Value) `
+                -CustomResolution ([bool]$resolutionBox.IsChecked) `
+                -ResolutionWidth ([int]$widthBox.Text) `
+                -ResolutionHeight ([int]$heightBox.Text) `
+                -MinimizeLauncherOnPlay ([bool]$hideLauncherBox.IsChecked) | Out-Null
+            $dialog.DialogResult = $true
+        } catch {
+            [System.Windows.MessageBox]::Show($_.Exception.Message, "Configuracoes Magic World", "OK", "Error") | Out-Null
+        }
+    })
+    $buttons.Children.Add($save) | Out-Null
+
+    return $dialog.ShowDialog()
+}
+
+function Show-MagicWorldServersDialog {
+    Ensure-MagicWorldServerFiles
+
+    $dialog = New-Object System.Windows.Window
+    $dialog.Title = "Servidores Magic World"
+    $dialog.Width = 600
+    $dialog.Height = 450
+    $dialog.WindowStartupLocation = "CenterOwner"
+    $dialog.ResizeMode = "NoResize"
+    $dialog.Background = "#101820"
+    $dialog.Owner = $window
+    if (Test-Path -LiteralPath $WindowIconPath) {
+        $dialog.Icon = [System.Windows.Media.Imaging.BitmapImage]::new([Uri]$WindowIconPath)
+    }
+
+    $panel = New-Object System.Windows.Controls.StackPanel
+    $panel.Margin = "26"
+    $dialog.Content = $panel
+
+    $title = New-Object System.Windows.Controls.TextBlock
+    $title.Text = "Servidores"
+    $title.FontSize = 24
+    $title.FontWeight = "Bold"
+    $title.Foreground = "White"
+    $title.Margin = "0,0,0,10"
+    $panel.Children.Add($title) | Out-Null
+
+    $hint = New-Object System.Windows.Controls.TextBlock
+    $hint.Text = "Use IP:porta. Local no mesmo PC: 127.0.0.1:25565. Outro PC da rede: IP_DA_MAQUINA:25565."
+    $hint.Foreground = "#D0D8E8"
+    $hint.TextWrapping = "Wrap"
+    $hint.Margin = "0,0,0,14"
+    $panel.Children.Add($hint) | Out-Null
+
+    $list = New-Object System.Windows.Controls.ListBox
+    $list.Height = 120
+    $list.Margin = "0,0,0,16"
+    $panel.Children.Add($list) | Out-Null
+
+    function Refresh-ServerListBox {
+        $list.Items.Clear()
+        foreach ($server in Get-MagicWorldServerFavorites) {
+            $list.Items.Add("$($server.name) - $($server.ip)") | Out-Null
+        }
+        if ($list.Items.Count -eq 0) {
+            $list.Items.Add("Nenhum servidor salvo ainda.") | Out-Null
+        }
+    }
+
+    $nameLabel = New-Object System.Windows.Controls.TextBlock
+    $nameLabel.Text = "Nome"
+    $nameLabel.Foreground = "#FFDAA520"
+    $nameLabel.Margin = "0,0,0,4"
+    $panel.Children.Add($nameLabel) | Out-Null
+
+    $nameBox = New-Object System.Windows.Controls.TextBox
+    $nameBox.Text = "Servidor Magic World"
+    $nameBox.Height = 30
+    $nameBox.Margin = "0,0,0,10"
+    $panel.Children.Add($nameBox) | Out-Null
+
+    $addressLabel = New-Object System.Windows.Controls.TextBlock
+    $addressLabel.Text = "Endereco"
+    $addressLabel.Foreground = "#FFDAA520"
+    $addressLabel.Margin = "0,0,0,4"
+    $panel.Children.Add($addressLabel) | Out-Null
+
+    $addressBox = New-Object System.Windows.Controls.TextBox
+    $addressBox.Text = "192.168.0.25:25565"
+    $addressBox.Height = 30
+    $addressBox.Margin = "0,0,0,16"
+    $panel.Children.Add($addressBox) | Out-Null
+
+    $buttons = New-Object System.Windows.Controls.StackPanel
+    $buttons.Orientation = "Horizontal"
+    $buttons.HorizontalAlignment = "Right"
+    $panel.Children.Add($buttons) | Out-Null
+
+    $openFolder = New-Object System.Windows.Controls.Button
+    $openFolder.Content = "Abrir pasta"
+    $openFolder.Width = 105
+    $openFolder.Height = 34
+    $openFolder.Margin = "0,0,8,0"
+    $openFolder.Add_Click({
+        Ensure-MagicWorldServerFiles
+        Open-MagicWorldMinecraftFolder
+    })
+    $buttons.Children.Add($openFolder) | Out-Null
+
+    $add = New-Object System.Windows.Controls.Button
+    $add.Content = "Adicionar"
+    $add.Width = 105
+    $add.Height = 34
+    $add.Margin = "0,0,8,0"
+    $add.Add_Click({
+        try {
+            Add-MagicWorldServerFavorite -Name $nameBox.Text -Address $addressBox.Text
+            Refresh-ServerListBox
+            Update-Status "Servidor salvo em servers.dat da pasta exclusiva." 0
+        } catch {
+            [System.Windows.MessageBox]::Show($_.Exception.Message, "Servidores Magic World", "OK", "Error") | Out-Null
+        }
+    })
+    $buttons.Children.Add($add) | Out-Null
+
+    $close = New-Object System.Windows.Controls.Button
+    $close.Content = "Fechar"
+    $close.Width = 95
+    $close.Height = 34
+    $close.Add_Click({ $dialog.DialogResult = $true })
+    $buttons.Children.Add($close) | Out-Null
+
+    Refresh-ServerListBox
     return $dialog.ShowDialog()
 }
 
@@ -1100,6 +1541,8 @@ if ($SelfTest) {
         bundledInstallerExists = Test-Path -LiteralPath $BundledInstallerPath
         magicWorldDataRoot = $MagicWorldDataRoot
         minecraftDir = $MinecraftDir
+        serverFavorites = $ServerFavoritesPath
+        minecraftServerList = $MinecraftServerListPath
         accountName = Get-MagicWorldAccountName
         accountProvider = (Get-MagicWorldAccount).loginProvider
         tLauncherAuthApiConfigured = ![string]::IsNullOrWhiteSpace($TLauncherAuthApiUrl)
@@ -1123,7 +1566,7 @@ if ($InstallOnly) {
 }
 
 if ($LaunchOnly) {
-    Start-MagicWorldMinecraft
+    Start-MagicWorldMinecraft | Out-Null
     exit 0
 }
 
@@ -1171,174 +1614,186 @@ $overlay = New-Object System.Windows.Controls.Border
 $overlay.Background = "#99000000"
 $grid.Children.Add($overlay) | Out-Null
 
-$stack = New-Object System.Windows.Controls.StackPanel
-$stack.Width = 700
-$stack.HorizontalAlignment = "Center"
-$stack.VerticalAlignment = "Center"
-$stack.Margin = "0,20,0,20"
-$grid.Children.Add($stack) | Out-Null
+$layout = New-Object System.Windows.Controls.DockPanel
+$layout.Margin = "30"
+$layout.LastChildFill = $true
+$grid.Children.Add($layout) | Out-Null
 
-if (Test-Path -LiteralPath $LogoPath) {
-    $logo = New-Object System.Windows.Controls.Image
-    $logo.Source = $LogoPath
-    $logo.Width = 560
-    $logo.Height = 185
-    $logo.Stretch = "Uniform"
-    $logo.Margin = "0,0,0,12"
-    $stack.Children.Add($logo) | Out-Null
+function New-MagicButton {
+    param(
+        [string]$Text,
+        [int]$Width = 150,
+        [int]$Height = 40,
+        [switch]$Primary
+    )
+    $button = New-Object System.Windows.Controls.Button
+    $button.Content = $Text
+    $button.Width = $Width
+    $button.Height = $Height
+    $button.Margin = "6"
+    $button.FontSize = $(if ($Primary) { 17 } else { 13 })
+    $button.FontWeight = "SemiBold"
+    $button.Foreground = "White"
+    $button.Background = $(if ($Primary) { "#D4A520" } else { "#D0101820" })
+    $button.BorderBrush = $(if ($Primary) { "#FFF1C85B" } else { "#B0DAA520" })
+    $button.BorderThickness = "1.5"
+    return $button
 }
 
-$title = New-Object System.Windows.Controls.TextBlock
-$title.Text = "Magic World Forge 1.20.1"
-$title.FontSize = 30
-$title.FontWeight = "Bold"
-$title.Foreground = "White"
-$title.TextAlignment = "Center"
-$title.Margin = "0,0,0,8"
-$stack.Children.Add($title) | Out-Null
-
-$account = New-Object System.Windows.Controls.TextBlock
-$accountInfo = Get-MagicWorldAccount
-$account.Text = "Login: $($accountInfo.username) [$($accountInfo.loginProvider)]"
-$account.FontSize = 16
-$account.Foreground = "#FFDAA520"
-$account.TextAlignment = "Center"
-$account.Margin = "0,0,0,24"
-$stack.Children.Add($account) | Out-Null
-
-$currentSettings = Get-MagicWorldSettings
-$settingsPanel = New-Object System.Windows.Controls.WrapPanel
-$settingsPanel.HorizontalAlignment = "Center"
-$settingsPanel.Margin = "0,0,0,18"
-$stack.Children.Add($settingsPanel) | Out-Null
-
-function New-MagicSmallLabel {
-    param([string]$Text)
-    $label = New-Object System.Windows.Controls.TextBlock
-    $label.Text = $Text
-    $label.Foreground = "#FFDAA520"
-    $label.VerticalAlignment = "Center"
-    $label.Margin = "8,0,4,0"
-    return $label
+function New-MagicBitmapImage {
+    param([string]$Path)
+    $bitmap = New-Object System.Windows.Media.Imaging.BitmapImage
+    $bitmap.BeginInit()
+    $bitmap.UriSource = New-Object System.Uri($Path)
+    $bitmap.CacheOption = [System.Windows.Media.Imaging.BitmapCacheOption]::OnLoad
+    $bitmap.EndInit()
+    return $bitmap
 }
 
-function New-MagicSmallTextBox {
-    param([string]$Text, [int]$Width = 54)
-    $box = New-Object System.Windows.Controls.TextBox
-    $box.Text = $Text
-    $box.Width = $Width
-    $box.Height = 26
-    $box.Margin = "0,0,4,0"
-    return $box
+$footer = New-Object System.Windows.Controls.Border
+$footer.Background = "#D0101820"
+$footer.BorderBrush = "#66DAA520"
+$footer.BorderThickness = "1"
+$footer.Padding = "14,10,14,10"
+$footer.Margin = "0,14,0,0"
+[System.Windows.Controls.DockPanel]::SetDock($footer, "Bottom")
+$layout.Children.Add($footer) | Out-Null
+
+$footerPanel = New-Object System.Windows.Controls.DockPanel
+$footerPanel.LastChildFill = $false
+$footer.Child = $footerPanel
+
+$accountPanel = New-Object System.Windows.Controls.StackPanel
+$accountPanel.VerticalAlignment = "Center"
+[System.Windows.Controls.DockPanel]::SetDock($accountPanel, "Left")
+$footerPanel.Children.Add($accountPanel) | Out-Null
+
+$accountCaption = New-Object System.Windows.Controls.TextBlock
+$accountCaption.Text = "Conta"
+$accountCaption.Foreground = "#FFDAA520"
+$accountCaption.FontSize = 12
+$accountPanel.Children.Add($accountCaption) | Out-Null
+
+$script:AccountText = New-Object System.Windows.Controls.TextBlock
+$script:AccountText.Foreground = "White"
+$script:AccountText.FontSize = 15
+$script:AccountText.FontWeight = "SemiBold"
+$accountPanel.Children.Add($script:AccountText) | Out-Null
+
+function Update-MagicAccountFooter {
+    $accountInfo = Get-MagicWorldAccount
+    if ($script:AccountText) {
+        $script:AccountText.Text = "$($accountInfo.username) [$($accountInfo.loginProvider)]"
+    }
 }
 
-$settingsPanel.Children.Add((New-MagicSmallLabel "RAM min")) | Out-Null
-$minMemoryBox = New-MagicSmallTextBox ([string]$currentSettings.minMemoryGb)
-$settingsPanel.Children.Add($minMemoryBox) | Out-Null
-$settingsPanel.Children.Add((New-MagicSmallLabel "RAM max")) | Out-Null
-$maxMemoryBox = New-MagicSmallTextBox ([string]$currentSettings.maxMemoryGb)
-$settingsPanel.Children.Add($maxMemoryBox) | Out-Null
-$customResolutionBox = New-Object System.Windows.Controls.CheckBox
-$customResolutionBox.Content = "Resolucao"
-$customResolutionBox.Foreground = "White"
-$customResolutionBox.IsChecked = [bool]$currentSettings.customResolution
-$customResolutionBox.VerticalAlignment = "Center"
-$customResolutionBox.Margin = "12,0,4,0"
-$settingsPanel.Children.Add($customResolutionBox) | Out-Null
-$widthBox = New-MagicSmallTextBox ([string]$currentSettings.resolutionWidth)
-$settingsPanel.Children.Add($widthBox) | Out-Null
-$settingsPanel.Children.Add((New-MagicSmallLabel "x")) | Out-Null
-$heightBox = New-MagicSmallTextBox ([string]$currentSettings.resolutionHeight)
-$settingsPanel.Children.Add($heightBox) | Out-Null
-$minimizeBox = New-Object System.Windows.Controls.CheckBox
-$minimizeBox.Content = "Minimizar ao jogar"
-$minimizeBox.Foreground = "White"
-$minimizeBox.IsChecked = [bool]$currentSettings.minimizeLauncherOnPlay
-$minimizeBox.VerticalAlignment = "Center"
-$minimizeBox.Margin = "12,0,0,0"
-$settingsPanel.Children.Add($minimizeBox) | Out-Null
+$footerButtons = New-Object System.Windows.Controls.StackPanel
+$footerButtons.Orientation = "Horizontal"
+$footerButtons.HorizontalAlignment = "Right"
+$footerButtons.VerticalAlignment = "Center"
+[System.Windows.Controls.DockPanel]::SetDock($footerButtons, "Right")
+$footerPanel.Children.Add($footerButtons) | Out-Null
 
-function Save-LauncherSettingsFromUi {
-    Save-MagicWorldSettings `
-        -MinMemoryGb ([int]$minMemoryBox.Text) `
-        -MaxMemoryGb ([int]$maxMemoryBox.Text) `
-        -CustomResolution ([bool]$customResolutionBox.IsChecked) `
-        -ResolutionWidth ([int]$widthBox.Text) `
-        -ResolutionHeight ([int]$heightBox.Text) `
-        -MinimizeLauncherOnPlay ([bool]$minimizeBox.IsChecked) | Out-Null
-}
+$loginButton = New-MagicButton "Login" 84 38
+$serversButton = New-MagicButton "Servidores" 108 38
+$folderButton = New-MagicButton ".minecraft" 108 38
+$settingsButton = New-MagicButton "Configuracoes" 126 38
+$playButton = New-MagicButton "Jogar Magic World" 194 48 -Primary
+
+$footerButtons.Children.Add($loginButton) | Out-Null
+$footerButtons.Children.Add($serversButton) | Out-Null
+$footerButtons.Children.Add($folderButton) | Out-Null
+$footerButtons.Children.Add($settingsButton) | Out-Null
+$footerButtons.Children.Add($playButton) | Out-Null
+
+$progressPanel = New-Object System.Windows.Controls.StackPanel
+$progressPanel.Width = 720
+$progressPanel.HorizontalAlignment = "Center"
+$progressPanel.Margin = "0,0,0,4"
+[System.Windows.Controls.DockPanel]::SetDock($progressPanel, "Bottom")
+$layout.Children.Add($progressPanel) | Out-Null
 
 $script:StatusText = New-Object System.Windows.Controls.TextBlock
-$script:StatusText.Text = "Instale uma vez. Depois clique em Jogar Magic World para abrir o Minecraft direto por este launcher."
+$script:StatusText.Text = "Pronto para jogar. O Minecraft do Magic World usa uma pasta exclusiva."
 $script:StatusText.FontSize = 16
 $script:StatusText.Foreground = "White"
 $script:StatusText.TextAlignment = "Center"
 $script:StatusText.TextWrapping = "Wrap"
-$script:StatusText.Margin = "0,0,0,12"
-$stack.Children.Add($script:StatusText) | Out-Null
+$script:StatusText.Margin = "0,0,0,8"
+$progressPanel.Children.Add($script:StatusText) | Out-Null
+
+$progressRow = New-Object System.Windows.Controls.DockPanel
+$progressRow.LastChildFill = $true
+$progressPanel.Children.Add($progressRow) | Out-Null
+
+$script:ProgressPercentText = New-Object System.Windows.Controls.TextBlock
+$script:ProgressPercentText.Text = "0%"
+$script:ProgressPercentText.Width = 54
+$script:ProgressPercentText.Foreground = "#FFDAA520"
+$script:ProgressPercentText.FontSize = 15
+$script:ProgressPercentText.FontWeight = "Bold"
+$script:ProgressPercentText.TextAlignment = "Right"
+$script:ProgressPercentText.VerticalAlignment = "Center"
+[System.Windows.Controls.DockPanel]::SetDock($script:ProgressPercentText, "Right")
+$progressRow.Children.Add($script:ProgressPercentText) | Out-Null
 
 $script:ProgressBar = New-Object System.Windows.Controls.ProgressBar
 $script:ProgressBar.Minimum = 0
 $script:ProgressBar.Maximum = 100
 $script:ProgressBar.Value = 0
-$script:ProgressBar.Height = 18
-$script:ProgressBar.Margin = "50,0,50,26"
-$stack.Children.Add($script:ProgressBar) | Out-Null
+$script:ProgressBar.Height = 16
+$script:ProgressBar.Margin = "0,0,10,0"
+$progressRow.Children.Add($script:ProgressBar) | Out-Null
 
-$buttonPanel = New-Object System.Windows.Controls.WrapPanel
-$buttonPanel.HorizontalAlignment = "Center"
-$stack.Children.Add($buttonPanel) | Out-Null
+$hero = New-Object System.Windows.Controls.StackPanel
+$hero.Width = 720
+$hero.HorizontalAlignment = "Center"
+$hero.VerticalAlignment = "Center"
+$layout.Children.Add($hero) | Out-Null
 
-function New-MagicButton {
-    param(
-        [string]$Text,
-        [int]$Width = 210
-    )
-    $button = New-Object System.Windows.Controls.Button
-    $button.Content = $Text
-    $button.Width = $Width
-    $button.Height = 44
-    $button.Margin = "8"
-    $button.FontSize = 15
-    $button.FontWeight = "SemiBold"
-    $button.Foreground = "White"
-    $button.Background = "#CC101820"
-    $button.BorderBrush = "#FFDAA520"
-    $button.BorderThickness = "2"
-    return $button
+if (Test-Path -LiteralPath $LogoPath) {
+    $logo = New-Object System.Windows.Controls.Image
+    $logo.Source = New-MagicBitmapImage -Path $LogoPath
+    $logo.Width = 610
+    $logo.Height = 205
+    $logo.Stretch = "Uniform"
+    $logo.Margin = "0,0,0,10"
+    $hero.Children.Add($logo) | Out-Null
 }
 
-$installButton = New-MagicButton "Instalar Magic World" 230
-$playButton = New-MagicButton "Jogar Magic World" 190
-$loginButton = New-MagicButton "Login TLauncher API" 190
-$repoButton = New-MagicButton "Repositorio" 150
+$title = New-Object System.Windows.Controls.TextBlock
+$title.Text = "Magic World Forge 1.20.1"
+$title.FontSize = 32
+$title.FontWeight = "Bold"
+$title.Foreground = "White"
+$title.TextAlignment = "Center"
+$title.Margin = "0,0,0,8"
+$hero.Children.Add($title) | Out-Null
 
-$buttonPanel.Children.Add($installButton) | Out-Null
-$buttonPanel.Children.Add($playButton) | Out-Null
-$buttonPanel.Children.Add($loginButton) | Out-Null
-$buttonPanel.Children.Add($repoButton) | Out-Null
+$subtitle = New-Object System.Windows.Controls.TextBlock
+$subtitle.Text = "Launcher completo, Forge e pacote Magic World em ambiente separado."
+$subtitle.FontSize = 16
+$subtitle.Foreground = "#E9EEF7"
+$subtitle.TextAlignment = "Center"
+$subtitle.TextWrapping = "Wrap"
+$hero.Children.Add($subtitle) | Out-Null
 
-$installButton.Add_Click({
-    $installButton.IsEnabled = $false
-    try {
-        Save-LauncherSettingsFromUi
-        Invoke-MagicWorldInstaller
-        [System.Windows.MessageBox]::Show("Tudo instalado. Clique em Jogar Magic World para abrir o Minecraft direto por este launcher.", "Magic World Launcher", "OK", "Information") | Out-Null
-    } catch {
-        Update-Status "Erro: $($_.Exception.Message)" 0
-        [System.Windows.MessageBox]::Show($_.Exception.Message, "Magic World Launcher", "OK", "Error") | Out-Null
-    } finally {
-        $installButton.IsEnabled = $true
+Update-MagicAccountFooter
+
+$folderButton.Add_Click({ Open-MagicWorldMinecraftFolder })
+$serversButton.Add_Click({
+    Show-MagicWorldServersDialog | Out-Null
+})
+$settingsButton.Add_Click({
+    if (Show-MagicWorldSettingsDialog) {
+        Update-Status "Configuracoes salvas." 0
     }
 })
-
-$repoButton.Add_Click({ Open-Repo })
 $loginButton.Add_Click({
     try {
         if (Show-TLauncherApiLoginDialog) {
-            $accountInfo = Get-MagicWorldAccount
-            $account.Text = "Login: $($accountInfo.username) [$($accountInfo.loginProvider)]"
-            Update-Status "Login TLauncher API salvo. Pronto para jogar." 0
+            Update-MagicAccountFooter
+            Update-Status "Conta salva. Pronto para jogar." 0
         }
     } catch {
         Update-Status "Erro: $($_.Exception.Message)" 0
@@ -1348,12 +1803,27 @@ $loginButton.Add_Click({
 $playButton.Add_Click({
     $playButton.IsEnabled = $false
     try {
-        Save-LauncherSettingsFromUi
-        if ((Get-MagicWorldSettings).minimizeLauncherOnPlay) {
-            $window.WindowState = "Minimized"
+        $process = Start-MagicWorldMinecraft
+        $settings = Get-MagicWorldSettings
+        if ($process -and !$process.HasExited) {
+            if ($settings.minimizeLauncherOnPlay) {
+                $window.Hide()
+            }
+            while (!$process.HasExited) {
+                [System.Windows.Forms.Application]::DoEvents()
+                Start-Sleep -Milliseconds 500
+            }
+            if (!$window.IsVisible) {
+                $window.Show()
+            }
+            $window.WindowState = "Normal"
+            $window.Activate() | Out-Null
+            Update-Status "Minecraft fechado. Pronto para jogar novamente." 100
         }
-        Start-MagicWorldMinecraft
     } catch {
+        if (!$window.IsVisible) {
+            $window.Show()
+        }
         $window.WindowState = "Normal"
         $window.Activate() | Out-Null
         Update-Status "Erro: $($_.Exception.Message)" 0

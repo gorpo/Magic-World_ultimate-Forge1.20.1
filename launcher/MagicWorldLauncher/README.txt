@@ -1,30 +1,48 @@
 Magic World Launcher proprio
 
-Este launcher NAO depende do TLauncher instalado localmente.
-O login TLauncher deve ser feito pelo botao "Login TLauncher API", usando o endpoint oficial configurado em:
-MAGICWORLD_TLAUNCHER_AUTH_API_URL
-O launcher nao salva senha; ele guarda apenas usuario/token retornados pela API em %APPDATA%\MagicWorldLauncher\accounts.json.
-O Minecraft do Magic World roda em pasta propria:
-%APPDATA%\MagicWorldLauncher\.minecraft
+Este launcher instala e executa o Magic World em pastas exclusivas.
+Ele NAO depende da instalacao local do TLauncher, do launcher oficial ou da .minecraft global.
+
+Pastas usadas:
+- Instalacao do launcher: %LOCALAPPDATA%\MagicWorldLauncher
+- Minecraft interno do Magic World: %APPDATA%\MagicWorldLauncher\.minecraft
+- Contas e configuracoes: %APPDATA%\MagicWorldLauncher
+
+Assim, voce pode manter TLauncher, launcher oficial e outros launchers instalados em paralelo.
+Eles nao misturam mods, versoes, assets, saves ou configuracoes com o Magic World.
 
 Fluxo:
-1. Abra "Abrir Magic World Launcher.cmd".
-2. Se precisar entrar/trocar conta, configure a API oficial e clique em "Login TLauncher API".
-3. Clique em "Instalar Magic World".
-4. O launcher usa o pacote FULL local ou baixa o MagicWorldInstaller.exe do release oficial do repositorio.
-5. O EXE e salvo em uma pasta temporaria.
-6. O launcher extrai o payload FULL embutido no EXE sem abrir a tela do installer.
-7. O script de instalacao roda em modo -NoGui e instala Forge 1.20.1, mods, resourcepacks e shaderpacks na pasta propria do Magic World.
-8. O launcher cria/verifica as pastas necessarias, baixa Java 17 proprio se precisar, e baixa bibliotecas/assets faltantes.
-9. Ao final, clique em "Jogar Magic World" para abrir o Minecraft direto por este launcher.
+1. Execute MagicWorldLauncherFullInstaller.exe.
+2. O instalador extrai o launcher, instala/verifica Forge, Minecraft, mods, resourcepacks, shaderpacks e Java proprio.
+3. Depois da instalacao, voce pode apagar o instalador.
+4. Abra "Magic World Launcher" pela area de trabalho.
+5. Clique em "Jogar Magic World".
+6. O launcher verifica o que faltar, abre o Minecraft e fica oculto ate o jogo fechar.
+
+Interface:
+- "Login": usuario/senha e opcao de salvar senha.
+- "Servidores": cadastra IP/dominio:porta e gera servers.dat na .minecraft exclusiva.
+- ".minecraft": abre a pasta interna exclusiva do Magic World.
+- "Configuracoes": RAM por slider de 2 GB ate 16 GB, resolucao personalizada e opcao de ocultar o launcher durante o jogo.
+- "Jogar Magic World": instala/verifica automaticamente e abre o Minecraft.
+
+Login:
+- Login online TLauncher depende de API oficial configurada em MAGICWORLD_TLAUNCHER_AUTH_API_URL.
+- Sem API oficial configurada, o launcher salva o usuario em modo offline para manter o jogo funcional.
+- A senha salva fica em %APPDATA%\MagicWorldLauncher\tlauncher-password.xml.
+
+Servidores:
+- Conta offline entra apenas em servidores que aceitam modo offline/cracked.
+- Servidores premium online-mode=true exigem autenticacao valida.
+- O launcher nao faz bypass de autenticacao premium.
+- Mesmo PC: 127.0.0.1:25565.
+- Outro computador da rede: IP_DA_MAQUINA:25565, por exemplo 192.168.0.25:25565.
+- Servidor de amigo: dominio/IP e porta informados por ele.
 
 Desinstalacao:
-Abra "Uninstall Magic World Launcher.cmd".
-Ele remove %LOCALAPPDATA%\MagicWorldLauncher, %APPDATA%\MagicWorldLauncher e os atalhos do Magic World Launcher na area de trabalho.
-Ele NAO remove o TLauncher nem a .minecraft original, se existirem.
+- Use o atalho "Desinstalar Magic World Launcher" na area de trabalho.
+- Ele remove %LOCALAPPDATA%\MagicWorldLauncher, %APPDATA%\MagicWorldLauncher e atalhos Magic World.
+- Ele NAO remove TLauncher, launcher oficial nem a .minecraft global.
 
-Release usado:
-https://github.com/gorpo/Magic-World_ultimate-Forge1.20.1/releases/tag/installer-upload-manual-forge-1.20.1-v1.0.0.1-main
-
-Repositorio:
-https://github.com/gorpo/Magic-World_ultimate-Forge1.20.1
+Release:
+MagicWorldLauncherFullInstaller-Stable V1.0.0.2.exe

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Windows.Forms;
+using System.Management.Automation;
 
 internal static class MagicWorldLauncherApp
 {
@@ -25,22 +26,33 @@ internal static class MagicWorldLauncherApp
             }
 
             string scriptSwitch = "";
-            bool wait = false;
             if (args.Length > 0 && string.Equals(args[0], "--install-only", StringComparison.OrdinalIgnoreCase))
             {
                 scriptSwitch = " -InstallOnly";
-                wait = true;
+                return RunPowerShellProcess(script, installDir, scriptSwitch);
             }
             else if (args.Length > 0 && string.Equals(args[0], "--launch-only", StringComparison.OrdinalIgnoreCase))
             {
                 scriptSwitch = " -LaunchOnly";
-                wait = true;
+                return RunPowerShellProcess(script, installDir, scriptSwitch);
             }
 
+            Directory.SetCurrentDirectory(installDir);
+            return RunPowerShellInProcess(script);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.ToString(), "Magic World Launcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return 1;
+        }
+    }
+
+    private static int RunPowerShellProcess(string script, string installDir, string scriptSwitch)
+    {
             ProcessStartInfo start = new ProcessStartInfo
             {
                 FileName = "powershell.exe",
-                Arguments = "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File " + Quote(script) + scriptSwitch,
+                Arguments = "-NoProfile -Sta -ExecutionPolicy Bypass -WindowStyle Hidden -File " + Quote(script) + scriptSwitch,
                 WorkingDirectory = installDir,
                 UseShellExecute = false,
                 CreateNoWindow = true,
@@ -48,19 +60,29 @@ internal static class MagicWorldLauncherApp
             };
             using (Process process = Process.Start(start))
             {
-                if (wait)
-                {
-                    process.WaitForExit();
-                    return process.ExitCode;
-                }
+                process.WaitForExit();
+                return process.ExitCode;
             }
-            return 0;
-        }
-        catch (Exception ex)
+    }
+
+    private static int RunPowerShellInProcess(string script)
+    {
+        using (PowerShell shell = PowerShell.Create())
         {
-            MessageBox.Show(ex.ToString(), "Magic World Launcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            return 1;
+            shell.AddCommand(script);
+            shell.Invoke();
+            if (shell.HadErrors)
+            {
+                StringBuilder errors = new StringBuilder();
+                foreach (ErrorRecord error in shell.Streams.Error)
+                {
+                    errors.AppendLine(error.ToString());
+                }
+                MessageBox.Show(errors.ToString(), "Magic World Launcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return 1;
+            }
         }
+        return 0;
     }
 
     private static int Uninstall(string installDir)
@@ -78,20 +100,21 @@ internal static class MagicWorldLauncherApp
 
         string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
         string dataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MagicWorldLauncher");
-        string script = Path.Combine(Path.GetTempPath(), "MagicWorldLauncherUninstall.cmd");
-        string content = "@echo off\r\n" +
-                         "timeout /t 1 /nobreak >nul\r\n" +
-                         "del /f /q " + Quote(Path.Combine(desktop, "Magic World Launcher.lnk")) + " >nul 2>nul\r\n" +
-                         "del /f /q " + Quote(Path.Combine(desktop, "Desinstalar Magic World Launcher.lnk")) + " >nul 2>nul\r\n" +
-                         "del /f /q " + Quote(Path.Combine(desktop, "Magic World Launcher.cmd")) + " >nul 2>nul\r\n" +
-                         "del /f /q " + Quote(Path.Combine(desktop, "Uninstall Magic World Launcher.cmd")) + " >nul 2>nul\r\n" +
-                         "rmdir /s /q " + Quote(dataDir) + " >nul 2>nul\r\n" +
-                         "rmdir /s /q " + Quote(installDir) + " >nul 2>nul\r\n" +
-                         "del /f /q \"%~f0\" >nul 2>nul\r\n";
+        string script = Path.Combine(Path.GetTempPath(), "MagicWorldLauncherUninstall.ps1");
+        string content = "$ErrorActionPreference = 'SilentlyContinue'\r\n" +
+                         "Start-Sleep -Milliseconds 900\r\n" +
+                         "Remove-Item -LiteralPath " + PsQuote(Path.Combine(desktop, "Magic World Launcher.lnk")) + " -Force\r\n" +
+                         "Remove-Item -LiteralPath " + PsQuote(Path.Combine(desktop, "Desinstalar Magic World Launcher.lnk")) + " -Force\r\n" +
+                         "Remove-Item -LiteralPath " + PsQuote(Path.Combine(desktop, "Magic World Launcher.cmd")) + " -Force\r\n" +
+                         "Remove-Item -LiteralPath " + PsQuote(Path.Combine(desktop, "Uninstall Magic World Launcher.cmd")) + " -Force\r\n" +
+                         "Remove-Item -LiteralPath " + PsQuote(dataDir) + " -Recurse -Force\r\n" +
+                         "Remove-Item -LiteralPath " + PsQuote(installDir) + " -Recurse -Force\r\n" +
+                         "Remove-Item -LiteralPath $PSCommandPath -Force\r\n";
         File.WriteAllText(script, content, Encoding.ASCII);
         Process.Start(new ProcessStartInfo
         {
-            FileName = script,
+            FileName = "powershell.exe",
+            Arguments = "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File " + Quote(script),
             UseShellExecute = false,
             CreateNoWindow = true,
             WindowStyle = ProcessWindowStyle.Hidden
@@ -102,5 +125,10 @@ internal static class MagicWorldLauncherApp
     private static string Quote(string value)
     {
         return "\"" + value.Replace("\"", "\\\"") + "\"";
+    }
+
+    private static string PsQuote(string value)
+    {
+        return "'" + value.Replace("'", "''") + "'";
     }
 }

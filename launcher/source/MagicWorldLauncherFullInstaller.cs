@@ -4,8 +4,10 @@ using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 
 internal static class MagicWorldLauncherFullInstaller
@@ -24,35 +26,35 @@ internal static class MagicWorldLauncherFullInstaller
         using (Button close = new Button())
         {
             form.Text = "Magic World Launcher FULL";
-            form.Width = 520;
-            form.Height = 220;
+            form.Width = 560;
+            form.Height = 240;
             form.StartPosition = FormStartPosition.CenterScreen;
             form.FormBorderStyle = FormBorderStyle.FixedDialog;
             form.MaximizeBox = false;
             form.BackColor = System.Drawing.Color.FromArgb(12, 18, 30);
             form.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
 
-            status.Left = 24;
+            status.Left = 26;
             status.Top = 24;
-            status.Width = 460;
-            status.Height = 72;
+            status.Width = 500;
+            status.Height = 82;
             status.ForeColor = System.Drawing.Color.White;
-            status.Font = new System.Drawing.Font("Segoe UI", 10);
-            status.Text = "Instalando Magic World Launcher FULL...";
+            status.Font = new System.Drawing.Font("Segoe UI", 10, FontStyle.Bold);
+            status.Text = "0% - Instalando Magic World Launcher FULL...";
             form.Controls.Add(status);
 
-            progress.Left = 24;
-            progress.Top = 105;
-            progress.Width = 460;
+            progress.Left = 26;
+            progress.Top = 112;
+            progress.Width = 500;
             progress.Height = 22;
             progress.Minimum = 0;
             progress.Maximum = 100;
             form.Controls.Add(progress);
 
-            close.Left = 334;
-            close.Top = 145;
+            close.Left = 376;
+            close.Top = 158;
             close.Width = 150;
-            close.Height = 30;
+            close.Height = 34;
             close.Text = "Fechar";
             close.Enabled = false;
             close.Click += delegate { form.Close(); };
@@ -67,32 +69,25 @@ internal static class MagicWorldLauncherFullInstaller
                         "MagicWorldLauncher"
                     );
 
-                    status.Text = "Extraindo launcher e pacote FULL...";
-                    progress.Value = 20;
-                    Application.DoEvents();
+                    SetProgress(status, progress, 12, "Preparando instalacao FULL...");
 
                     if (Directory.Exists(installDir))
                     {
                         Directory.Delete(installDir, true);
                     }
                     Directory.CreateDirectory(installDir);
+                    SetProgress(status, progress, 22, "Extraindo launcher e pacote FULL...");
                     ExtractPayloadZip(installDir);
                     ConfigureFolderIcon(installDir);
 
-                    status.Text = "Instalando Minecraft, Forge e pacote Magic World...";
-                    progress.Value = 55;
-                    Application.DoEvents();
+                    SetProgress(status, progress, 40, "Instalando Minecraft, Forge e pacote Magic World...");
+                    RunInternalInstall(installDir, status, progress);
 
-                    RunInternalInstall(installDir);
-
-                    status.Text = "Criando atalhos com icones...";
-                    progress.Value = 90;
-                    Application.DoEvents();
+                    SetProgress(status, progress, 94, "Criando atalhos com icones...");
 
                     CreateDesktopShortcuts(installDir);
 
-                    progress.Value = 100;
-                    status.Text = "Magic World Launcher instalado. Abra pelo atalho da area de trabalho e clique em Jogar Magic World.";
+                    SetProgress(status, progress, 100, "Magic World Launcher instalado. Abra pelo atalho da area de trabalho.");
                     close.Enabled = true;
 
                     string launcherExe = Path.Combine(installDir, "MagicWorldLauncher.exe");
@@ -177,44 +172,139 @@ internal static class MagicWorldLauncherFullInstaller
         }
     }
 
-    private static void RunInternalInstall(string installDir)
+    private static void SetProgress(Label status, ProgressBar progress, int percent, string text)
     {
-        string launcherExe = Path.Combine(installDir, "MagicWorldLauncher.exe");
+        percent = Math.Max(0, Math.Min(100, percent));
+        progress.Value = percent;
+        status.Text = percent + "% - " + text;
+        Application.DoEvents();
+    }
+
+    private static void RunInternalInstall(string installDir, Label status, ProgressBar progress)
+    {
         string script = Path.Combine(installDir, "MagicWorldLauncher.ps1");
-        ProcessStartInfo start;
-        if (File.Exists(launcherExe))
+        if (!File.Exists(script))
         {
-            start = new ProcessStartInfo
-            {
-                FileName = launcherExe,
-                Arguments = "--install-only",
-                WorkingDirectory = installDir,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden
-            };
+            throw new FileNotFoundException("Script do launcher nao encontrado.", script);
         }
-        else
+
+        ProcessStartInfo start = new ProcessStartInfo
         {
-            start = new ProcessStartInfo
-            {
-                FileName = "powershell.exe",
-                Arguments = "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File " + Quote(script) + " -InstallOnly",
-                WorkingDirectory = installDir,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden
-            };
-        }
+            FileName = "powershell.exe",
+            Arguments = "-NoProfile -Sta -ExecutionPolicy Bypass -WindowStyle Hidden -File " + Quote(script) + " -InstallOnly",
+            WorkingDirectory = installDir,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            WindowStyle = ProcessWindowStyle.Hidden,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
+
+        ConcurrentQueue<string> lines = new ConcurrentQueue<string>();
+        ConcurrentQueue<string> errors = new ConcurrentQueue<string>();
+        int percent = 40;
+        DateTime lastPulse = DateTime.UtcNow;
+        string lastError = "";
 
         using (Process process = Process.Start(start))
         {
-            process.WaitForExit();
+            process.OutputDataReceived += delegate(object sender, DataReceivedEventArgs e)
+            {
+                if (!string.IsNullOrWhiteSpace(e.Data))
+                {
+                    lines.Enqueue(e.Data);
+                }
+            };
+            process.ErrorDataReceived += delegate(object sender, DataReceivedEventArgs e)
+            {
+                if (!string.IsNullOrWhiteSpace(e.Data))
+                {
+                    errors.Enqueue(e.Data);
+                }
+            };
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            while (!process.HasExited || !lines.IsEmpty || !errors.IsEmpty)
+            {
+                string line;
+                while (lines.TryDequeue(out line))
+                {
+                    int parsedPercent;
+                    string parsedText = ParseProgressLine(line, out parsedPercent);
+                    if (parsedPercent >= 0)
+                    {
+                        percent = Math.Max(percent, Math.Min(92, parsedPercent));
+                    }
+                    else
+                    {
+                        percent = Math.Min(92, percent + 1);
+                    }
+                    SetProgress(status, progress, percent, parsedText);
+                    lastPulse = DateTime.UtcNow;
+                }
+
+                string errorLine;
+                while (errors.TryDequeue(out errorLine))
+                {
+                    lastError = errorLine;
+                    percent = Math.Min(92, percent + 1);
+                    SetProgress(status, progress, percent, TrimForStatus(errorLine));
+                    lastPulse = DateTime.UtcNow;
+                }
+
+                if (!process.HasExited && (DateTime.UtcNow - lastPulse).TotalMilliseconds >= 1200)
+                {
+                    percent = Math.Min(92, percent + 1);
+                    SetProgress(status, progress, percent, "Instalando Minecraft, Forge e pacote Magic World...");
+                    lastPulse = DateTime.UtcNow;
+                }
+
+                Application.DoEvents();
+                Thread.Sleep(120);
+            }
+
             if (process.ExitCode != 0)
             {
-                throw new InvalidOperationException("Falha ao instalar Minecraft/Forge pelo launcher interno. Codigo: " + process.ExitCode);
+                if (string.IsNullOrWhiteSpace(lastError))
+                {
+                    lastError = "Veja o log em %TEMP%\\magicworld-forge-installer.log";
+                }
+                throw new InvalidOperationException("Falha ao instalar Minecraft/Forge pelo launcher interno. Codigo: " + process.ExitCode + ". " + lastError);
             }
         }
+    }
+
+    private static string ParseProgressLine(string line, out int percent)
+    {
+        percent = -1;
+        if (line.StartsWith("PROGRESS:", StringComparison.OrdinalIgnoreCase))
+        {
+            string[] parts = line.Split(new char[] { ':' }, 3);
+            if (parts.Length >= 3 && int.TryParse(parts[1], out percent))
+            {
+                return TrimForStatus(parts[2]);
+            }
+        }
+        if (line.StartsWith("STATUS:", StringComparison.OrdinalIgnoreCase))
+        {
+            return TrimForStatus(line.Substring("STATUS:".Length));
+        }
+        return TrimForStatus(line);
+    }
+
+    private static string TrimForStatus(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return "Instalando Magic World...";
+        }
+        text = text.Trim();
+        if (text.Length > 130)
+        {
+            return text.Substring(0, 127) + "...";
+        }
+        return text;
     }
 
     private static void CreateDesktopShortcuts(string installDir)
@@ -222,6 +312,8 @@ internal static class MagicWorldLauncherFullInstaller
         string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
         string launcherExe = Path.Combine(installDir, "MagicWorldLauncher.exe");
         string icon = LauncherIconPath(installDir);
+        DeleteOldShortcut(Path.Combine(desktop, "Magic World Launcher.lnk"));
+        DeleteOldShortcut(Path.Combine(desktop, "Desinstalar Magic World Launcher.lnk"));
         CreateShortcut(
             Path.Combine(desktop, "Magic World Launcher.lnk"),
             launcherExe,
@@ -240,6 +332,14 @@ internal static class MagicWorldLauncherFullInstaller
         );
         DeleteOldCmdShortcut(desktop, "Magic World Launcher.cmd");
         DeleteOldCmdShortcut(desktop, "Uninstall Magic World Launcher.cmd");
+    }
+
+    private static void DeleteOldShortcut(string path)
+    {
+        if (File.Exists(path))
+        {
+            File.Delete(path);
+        }
     }
 
     private static void DeleteOldCmdShortcut(string desktop, string name)

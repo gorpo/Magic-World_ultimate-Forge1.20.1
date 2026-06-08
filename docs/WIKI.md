@@ -1345,3 +1345,20 @@ Validacao e processo:
 - Configura JourneyMap sem beacons/linhas/nomes 3D e cria `config/iris.properties` para selecionar o shader Magic World quando Oculus/Iris estiver instalado.
 - O modo leve antigo fica disponivel apenas com `scripts/build-magicworld-forge-installer.ps1 -NoFullPayload`.
 - Validacao: payload anexado ao EXE conferido com marcador `MAGICWORLD_FULL_PAYLOAD_V1`; entries principais presentes.
+
+## Registro 2026-06-08 - launcher FULL Stable V1.0.0.2
+- Launcher FULL usa pastas exclusivas: instalacao em `%LOCALAPPDATA%\MagicWorldLauncher` e Minecraft interno em `%APPDATA%\MagicWorldLauncher\.minecraft`.
+- Essa separacao permite instalar TLauncher, launcher oficial e outros launchers em paralelo sem misturar mods, assets, versoes ou saves do Magic World.
+- O instalador pode ser apagado depois da instalacao; o launcher instalado fica funcional sozinho com Forge, Minecraft, mods, resourcepacks, shaderpacks e runtime Java proprio.
+- Criados atalhos `.lnk` na area de trabalho para abrir e desinstalar, ambos com icone Magic World; atalhos `.cmd` antigos sao removidos.
+- A pasta instalada recebe `desktop.ini` e `MagicWorldLauncher.ico` para exibir icone proprio no Explorer.
+- Janela principal roda pelo `MagicWorldLauncher.exe`, com icone proprio na taskbar; rotinas internas usam PowerShell escondido em STA.
+- Instalador FULL mostra porcentagem textual e barra de progresso com pulso durante instalacao interna.
+- Tela principal do launcher segue fluxo tipo TLauncher: rodape com login, pasta `.minecraft`, configuracoes e botao `Jogar Magic World`; botoes `Instalar` e `Repositorio` sairam da tela inicial.
+- RAM e resolucao foram movidas para `Configuracoes`; RAM usa slider de 2 GB a 16 GB.
+- Ao iniciar o jogo, o launcher fica oculto enquanto o Minecraft roda e retorna quando o processo fecha.
+- Login TLauncher pede usuario/senha e tem caixa `Salvar senha`; online depende de `MAGICWORLD_TLAUNCHER_AUTH_API_URL`, e sem API o usuario e salvo em modo offline.
+- Conta offline entra apenas em servidores que aceitam offline/cracked; servidores premium `online-mode=true` exigem autenticacao valida e nao recebem bypass.
+- Botao `Servidores` cadastra IP/dominio:porta, salva `%APPDATA%\MagicWorldLauncher\servidores.json` e gera `servers.dat` na `.minecraft` exclusiva.
+- Exemplos documentados: mesmo PC `127.0.0.1:25565`, outro PC da rede `192.168.0.25:25565`, amigo por dominio/IP e porta informados.
+- Artefato local de release esperado: `launcher/dist/MagicWorldLauncherFullInstaller-Stable V1.0.0.2.exe`.

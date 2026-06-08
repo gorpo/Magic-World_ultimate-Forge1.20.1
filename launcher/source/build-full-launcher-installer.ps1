@@ -18,10 +18,18 @@ if (!(Test-Path -LiteralPath $icon)) {
     $icon = Join-Path $ProjectRoot "installer\MagicWorldInstaller.ico"
 }
 $csc = Join-Path $env:WINDIR "Microsoft.NET\Framework64\v4.0.30319\csc.exe"
+$powerShellAutomation = Join-Path $env:WINDIR "System32\WindowsPowerShell\v1.0\System.Management.Automation.dll"
+if (!(Test-Path -LiteralPath $powerShellAutomation)) {
+    $powerShellAutomation = Get-ChildItem -Path (Join-Path $env:WINDIR "Microsoft.NET\assembly") -Recurse -Filter "System.Management.Automation.dll" -ErrorAction SilentlyContinue |
+        Select-Object -First 1 -ExpandProperty FullName
+}
 $marker = [Text.Encoding]::ASCII.GetBytes("MAGICWORLD_LAUNCHER_PAYLOAD_V1")
 
 if (!(Test-Path -LiteralPath $csc)) {
     throw "csc.exe nao encontrado em $csc"
+}
+if ([string]::IsNullOrWhiteSpace($powerShellAutomation) -or !(Test-Path -LiteralPath $powerShellAutomation)) {
+    throw "System.Management.Automation.dll nao encontrado em $powerShellAutomation"
 }
 if (!(Test-Path -LiteralPath $launcherSource)) {
     throw "Pasta do launcher nao encontrada: $launcherSource"
@@ -69,6 +77,7 @@ $launcherArgs = @(
     "/target:winexe",
     "/out:$launcherExe",
     "/reference:System.Windows.Forms.dll",
+    "/reference:$powerShellAutomation",
     $launcherAppSource
 )
 if (Test-Path -LiteralPath $icon) {
