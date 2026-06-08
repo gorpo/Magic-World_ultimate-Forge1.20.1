@@ -130,7 +130,9 @@ public class StarterPortalEvents {
     private static final int SANCTUARY_WIDTH = 36;
     private static final int SANCTUARY_DEPTH = 17;
     private static final int SANCTUARY_HEIGHT = 10;
-    private static final BlockPos SANCTUARY_TARGET_CENTER = new BlockPos(234, 113, 12);
+    private static final int SANCTUARY_CASTLE_X_OFFSET = 62;
+    private static final int SANCTUARY_CASTLE_Y_OFFSET = 42;
+    private static final int SANCTUARY_CASTLE_Z_OFFSET = -78;
     private static final int GLOBAL_VILLAGER_WORK_RADIUS = 384;
     private static final int PORTAL_CHECK_INTERVAL_TICKS = 10;
     private static final int AMBIENT_EFFECT_INTERVAL_TICKS = 20 * 30;
@@ -735,7 +737,12 @@ public class StarterPortalEvents {
     }
 
     private static BlockPos roadEndMagicSanctuaryOrigin(BlockPos base) {
-        return SANCTUARY_TARGET_CENTER.offset(-SANCTUARY_WIDTH / 2, 0, -SANCTUARY_DEPTH / 2);
+        BlockPos targetCenter = castleCenter(base).offset(
+                SANCTUARY_CASTLE_X_OFFSET,
+                SANCTUARY_CASTLE_Y_OFFSET,
+                SANCTUARY_CASTLE_Z_OFFSET
+        );
+        return targetCenter.offset(-SANCTUARY_WIDTH / 2, 0, -SANCTUARY_DEPTH / 2);
     }
 
     private static void buildRoadEndMagicSanctuary(ServerLevel level, BlockPos base) {
