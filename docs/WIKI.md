@@ -1370,3 +1370,11 @@ Validacao e processo:
 - Cadastro de servidores fica no Multiplayer do proprio Minecraft, fora do launcher.
 - Configuracoes usam dropdown de resolucao, slider de RAM, atalhos para `%LOCALAPPDATA%\MagicWorldLauncher\.minecraft`, `%LOCALAPPDATA%\MagicWorldLauncher` e GitHub, e creditos `GuiPaluch - (Gorpo) - TCXS Project`.
 - Instalador registra `Magic World Launcher` em Apps e Recursos do Windows via HKCU e o desinstalador remove essa entrada.
+
+## Registro 2026-06-09 - hotfix launcher FULL V1.0.0.2
+- Instalador FULL corrigido para Windows PowerShell antigo: removida dependencia de `Get-Content -Raw` e `Get-Content -Tail`.
+- Progresso do instalador agora e escrito direto no stdout para nao entrar no pipeline de retorno das funcoes internas.
+- Instalador FULL tem cancelamento controlado e encerra a arvore do PowerShell interno em falha/cancelamento.
+- Launcher registra PowerShell/Java iniciados e encerra filhos ativos quando a janela fecha.
+- Fresh Animations/EMF/ETF nao entraram no pacote: EMF 3.2.4 causou erro de mixin em Forge userdev 1.20.1.
+- Artefato validado: `launcher/dist/MagicWorldLauncherFullInstaller-Stable V1.0.0.2.exe`, SHA256 `CBF291D56836FDA6D7739F763247EEF0805789F029CBFFD71A142EFAA2B393E2`.

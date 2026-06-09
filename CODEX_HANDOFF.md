@@ -2100,3 +2100,12 @@ Validacao:
 - `install-magicworld-forge.ps1` passou a usar `%LOCALAPPDATA%\MagicWorldLauncher\.minecraft` como destino padrao.
 - Configuracoes mostram apenas os botoes `Pasta do jogo`, `Pasta do launcher` e `GitHub`.
 - `build-full-launcher-installer.ps1` copia o payload Forge embutido como `MagicWorldPayload.bin`, nao como `MagicWorldInstaller.exe`, para evitar exposicao do instalador legado na pasta instalada.
+
+## Handoff 2026-06-09 - launcher FULL V1.0.0.2 hotfix
+- Corrigido erro em Windows PowerShell antigo onde `Get-Content -Raw` e `Get-Content -Tail` quebravam o instalador FULL com `NamedParameterNotFound`.
+- `MagicWorldLauncher.ps1` agora usa leitura via .NET para JSON/log tail e escreve progresso `PROGRESS:` direto em stdout, sem poluir retorno de funcoes que precisam devolver caminhos.
+- `MagicWorldLauncher.ps1` registra processos filhos iniciados pelo launcher/instalador interno e encerra a arvore via `taskkill /T /F` quando a janela fecha ou a instalacao e cancelada.
+- `MagicWorldLauncherFullInstaller.cs` trocou o botao `Aguarde` por `Cancelar`, rastreia o PowerShell interno e encerra a arvore de processos em cancelamento/falha.
+- Fresh Animations/EMF/ETF foram deixados fora do pacote porque EMF 3.2.4 falhou em userdev com `MixinModelPart`.
+- Validacoes executadas: `-SelfTest`, `-InstallOnly` do payload reconstruido com `EXIT_CODE=0`, `-LaunchDryRun` com `unresolvedArgumentCount=0`, compilacao do stub C# e rebuild do instalador FULL.
+- Artefato final local: `launcher/dist/MagicWorldLauncherFullInstaller-Stable V1.0.0.2.exe`, SHA256 `CBF291D56836FDA6D7739F763247EEF0805789F029CBFFD71A142EFAA2B393E2`.

@@ -14,6 +14,9 @@ using System.Windows.Forms;
 internal static class MagicWorldLauncherFullInstaller
 {
     private static readonly byte[] PayloadMarker = Encoding.ASCII.GetBytes("MAGICWORLD_LAUNCHER_PAYLOAD_V1");
+    private static readonly object ActiveInstallLock = new object();
+    private static Process ActiveInstallProcess;
+    private static volatile bool AbortRequested;
 
     [STAThread]
     private static int Main()
@@ -57,7 +60,7 @@ internal static class MagicWorldLauncherFullInstaller
             close.Top = 158;
             close.Width = 150;
             close.Height = 34;
-            close.Text = "Aguarde";
+            close.Text = "Cancelar";
             close.Enabled = true;
             close.ForeColor = System.Drawing.Color.White;
             close.BackColor = System.Drawing.Color.FromArgb(16, 24, 38);
@@ -69,13 +72,17 @@ internal static class MagicWorldLauncherFullInstaller
                 if (canClose)
                 {
                     form.Close();
+                    return;
                 }
+
+                RequestAbort(status, close);
             };
             form.Controls.Add(close);
             form.FormClosing += delegate(object sender, FormClosingEventArgs e)
             {
                 if (!canClose)
                 {
+                    RequestAbort(status, close);
                     e.Cancel = true;
                 }
             };
@@ -84,6 +91,7 @@ internal static class MagicWorldLauncherFullInstaller
             {
                 try
                 {
+                    AbortRequested = false;
                     string installDir = Path.Combine(
                         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                         "MagicWorldLauncher"
@@ -124,11 +132,20 @@ internal static class MagicWorldLauncherFullInstaller
                 }
                 catch (Exception ex)
                 {
+                    KillActiveInstallProcessTree();
                     progress.Value = 0;
-                    status.Text = "Erro: " + ex.Message;
                     canClose = true;
+                    close.Enabled = true;
                     close.Text = "Fechar";
-                    MessageBox.Show(form, ex.ToString(), "Erro no installer", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    if (ex is OperationCanceledException)
+                    {
+                        status.Text = ex.Message;
+                    }
+                    else
+                    {
+                        status.Text = "Erro: " + ex.Message;
+                        MessageBox.Show(form, ex.ToString(), "Erro no installer", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             };
 
@@ -263,70 +280,180 @@ internal static class MagicWorldLauncherFullInstaller
 
         using (Process process = Process.Start(start))
         {
-            process.OutputDataReceived += delegate(object sender, DataReceivedEventArgs e)
+            if (process == null)
             {
-                if (!string.IsNullOrWhiteSpace(e.Data))
-                {
-                    lines.Enqueue(e.Data);
-                }
-            };
-            process.ErrorDataReceived += delegate(object sender, DataReceivedEventArgs e)
-            {
-                if (!string.IsNullOrWhiteSpace(e.Data))
-                {
-                    errors.Enqueue(e.Data);
-                }
-            };
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
+                throw new InvalidOperationException("Nao foi possivel iniciar o instalador interno.");
+            }
 
-            while (!process.HasExited || !lines.IsEmpty || !errors.IsEmpty)
+            SetActiveInstallProcess(process);
+            try
             {
-                string line;
-                while (lines.TryDequeue(out line))
+                process.OutputDataReceived += delegate(object sender, DataReceivedEventArgs e)
                 {
-                    int parsedPercent;
-                    string parsedText = ParseProgressLine(line, out parsedPercent);
-                    if (parsedPercent >= 0)
+                    if (!string.IsNullOrWhiteSpace(e.Data))
                     {
-                        percent = Math.Max(percent, Math.Min(92, parsedPercent));
+                        lines.Enqueue(e.Data);
                     }
-                    else
+                };
+                process.ErrorDataReceived += delegate(object sender, DataReceivedEventArgs e)
+                {
+                    if (!string.IsNullOrWhiteSpace(e.Data))
+                    {
+                        errors.Enqueue(e.Data);
+                    }
+                };
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                while (!process.HasExited || !lines.IsEmpty || !errors.IsEmpty)
+                {
+                    if (AbortRequested && !process.HasExited)
+                    {
+                        KillProcessTree(process);
+                    }
+
+                    string line;
+                    while (lines.TryDequeue(out line))
+                    {
+                        int parsedPercent;
+                        string parsedText = ParseProgressLine(line, out parsedPercent);
+                        if (parsedPercent >= 0)
+                        {
+                            percent = Math.Max(percent, Math.Min(92, parsedPercent));
+                        }
+                        else
+                        {
+                            percent = Math.Min(92, percent + 1);
+                        }
+                        SetProgress(status, progress, percent, parsedText);
+                        lastPulse = DateTime.UtcNow;
+                    }
+
+                    string errorLine;
+                    while (errors.TryDequeue(out errorLine))
+                    {
+                        lastError = errorLine;
+                        percent = Math.Min(92, percent + 1);
+                        SetProgress(status, progress, percent, TrimForStatus(errorLine));
+                        lastPulse = DateTime.UtcNow;
+                    }
+
+                    if (!process.HasExited && (DateTime.UtcNow - lastPulse).TotalMilliseconds >= 1200)
                     {
                         percent = Math.Min(92, percent + 1);
+                        SetProgress(status, progress, percent, "Instalando Minecraft, Forge e pacote Magic World...");
+                        lastPulse = DateTime.UtcNow;
                     }
-                    SetProgress(status, progress, percent, parsedText);
-                    lastPulse = DateTime.UtcNow;
+
+                    Application.DoEvents();
+                    Thread.Sleep(120);
                 }
 
-                string errorLine;
-                while (errors.TryDequeue(out errorLine))
+                if (AbortRequested)
                 {
-                    lastError = errorLine;
-                    percent = Math.Min(92, percent + 1);
-                    SetProgress(status, progress, percent, TrimForStatus(errorLine));
-                    lastPulse = DateTime.UtcNow;
+                    throw new OperationCanceledException("Instalacao cancelada. Processos internos encerrados.");
                 }
 
-                if (!process.HasExited && (DateTime.UtcNow - lastPulse).TotalMilliseconds >= 1200)
+                if (process.ExitCode != 0)
                 {
-                    percent = Math.Min(92, percent + 1);
-                    SetProgress(status, progress, percent, "Instalando Minecraft, Forge e pacote Magic World...");
-                    lastPulse = DateTime.UtcNow;
+                    if (string.IsNullOrWhiteSpace(lastError))
+                    {
+                        lastError = "Veja o log em %TEMP%\\magicworld-forge-installer.log";
+                    }
+                    throw new InvalidOperationException("Falha ao instalar Minecraft/Forge pelo launcher interno. Codigo: " + process.ExitCode + ". " + lastError);
                 }
-
-                Application.DoEvents();
-                Thread.Sleep(120);
             }
-
-            if (process.ExitCode != 0)
+            finally
             {
-                if (string.IsNullOrWhiteSpace(lastError))
-                {
-                    lastError = "Veja o log em %TEMP%\\magicworld-forge-installer.log";
-                }
-                throw new InvalidOperationException("Falha ao instalar Minecraft/Forge pelo launcher interno. Codigo: " + process.ExitCode + ". " + lastError);
+                ClearActiveInstallProcess(process);
             }
+        }
+    }
+
+    private static void RequestAbort(Label status, Button close)
+    {
+        AbortRequested = true;
+        if (status != null)
+        {
+            status.Text = "Cancelando instalacao e encerrando processos internos...";
+        }
+        if (close != null)
+        {
+            close.Enabled = false;
+            close.Text = "Cancelando";
+        }
+        KillActiveInstallProcessTree();
+    }
+
+    private static void SetActiveInstallProcess(Process process)
+    {
+        lock (ActiveInstallLock)
+        {
+            ActiveInstallProcess = process;
+        }
+    }
+
+    private static void ClearActiveInstallProcess(Process process)
+    {
+        lock (ActiveInstallLock)
+        {
+            if (object.ReferenceEquals(ActiveInstallProcess, process))
+            {
+                ActiveInstallProcess = null;
+            }
+        }
+    }
+
+    private static void KillActiveInstallProcessTree()
+    {
+        Process process;
+        lock (ActiveInstallLock)
+        {
+            process = ActiveInstallProcess;
+        }
+        KillProcessTree(process);
+    }
+
+    private static void KillProcessTree(Process process)
+    {
+        if (process == null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (process.HasExited)
+            {
+                return;
+            }
+
+            string taskkill = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "taskkill.exe");
+            if (File.Exists(taskkill))
+            {
+                using (Process killer = Process.Start(new ProcessStartInfo
+                {
+                    FileName = taskkill,
+                    Arguments = "/PID " + process.Id + " /T /F",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
+                }))
+                {
+                    if (killer != null)
+                    {
+                        killer.WaitForExit(8000);
+                    }
+                }
+            }
+
+            if (!process.HasExited)
+            {
+                process.Kill();
+            }
+        }
+        catch
+        {
         }
     }
 

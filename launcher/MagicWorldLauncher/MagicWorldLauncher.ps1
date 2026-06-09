@@ -42,6 +42,92 @@ if (!(Test-Path -LiteralPath $BundledInstallerPath)) {
     }
 }
 
+$script:MagicWorldChildProcesses = @{}
+$script:MagicWorldMinecraftProcess = $null
+$script:MagicWorldShutdownRequested = $false
+
+function Read-MagicTextFile {
+    param([string]$Path)
+    return [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8)
+}
+
+function Read-MagicJsonFile {
+    param([string]$Path)
+    return (Read-MagicTextFile -Path $Path | ConvertFrom-Json)
+}
+
+function Get-MagicFileTail {
+    param(
+        [string]$Path,
+        [int]$Count = 20
+    )
+
+    if (!(Test-Path -LiteralPath $Path)) {
+        return @()
+    }
+
+    $lines = [System.IO.File]::ReadAllLines($Path, [System.Text.Encoding]::UTF8)
+    if ($lines.Length -le $Count) {
+        return $lines
+    }
+    return $lines[($lines.Length - $Count)..($lines.Length - 1)]
+}
+
+function Register-MagicChildProcess {
+    param([System.Diagnostics.Process]$Process)
+
+    if ($Process -and !$Process.HasExited) {
+        $script:MagicWorldChildProcesses[[string]$Process.Id] = $Process
+    }
+    return $Process
+}
+
+function Unregister-MagicChildProcess {
+    param([System.Diagnostics.Process]$Process)
+
+    if ($Process) {
+        $script:MagicWorldChildProcesses.Remove([string]$Process.Id)
+    }
+}
+
+function Stop-MagicProcessTree {
+    param([System.Diagnostics.Process]$Process)
+
+    if (!$Process) {
+        return
+    }
+
+    try {
+        if ($Process.HasExited) {
+            return
+        }
+
+        $processId = $Process.Id
+        $taskkill = Join-Path $env:WINDIR "System32\taskkill.exe"
+        if (Test-Path -LiteralPath $taskkill) {
+            & $taskkill /PID $processId /T /F | Out-Null
+        } else {
+            $Process.Kill()
+        }
+    } catch {
+        try {
+            if ($Process -and !$Process.HasExited) {
+                $Process.Kill()
+            }
+        } catch {
+        }
+    }
+}
+
+function Stop-MagicChildProcesses {
+    $script:MagicWorldShutdownRequested = $true
+    foreach ($process in @($script:MagicWorldChildProcesses.Values)) {
+        Stop-MagicProcessTree -Process $process
+    }
+    $script:MagicWorldChildProcesses.Clear()
+    $script:MagicWorldMinecraftProcess = $null
+}
+
 function Get-MagicWorldAccountName {
     $account = Get-MagicWorldAccount
     return $account.username
@@ -62,7 +148,7 @@ function Get-MagicWorldSettings {
     }
 
     try {
-        $json = Get-Content -LiteralPath $SettingsPath -Raw | ConvertFrom-Json
+        $json = Read-MagicJsonFile -Path $SettingsPath
         foreach ($key in @($defaults.Keys)) {
             if ($json.PSObject.Properties.Name -notcontains $key) {
                 $json | Add-Member -NotePropertyName $key -NotePropertyValue $defaults[$key]
@@ -138,7 +224,7 @@ function Get-MagicWorldAccount {
     }
 
     try {
-        $json = Get-Content -LiteralPath $AccountsPath -Raw | ConvertFrom-Json
+        $json = Read-MagicJsonFile -Path $AccountsPath
         if ($json.username -and ![string]::IsNullOrWhiteSpace([string]$json.username)) {
             return [pscustomobject]@{
                 username = [string]$json.username
@@ -226,9 +312,9 @@ function Update-Status {
     }
     if ($InstallOnly -or $LaunchOnly) {
         if ($boundedPercent -ge 0) {
-            Write-Output ("PROGRESS:{0}:{1}" -f $boundedPercent, $Text)
+            [Console]::Out.WriteLine(("PROGRESS:{0}:{1}" -f $boundedPercent, $Text))
         } else {
-            Write-Output ("STATUS:{0}" -f $Text)
+            [Console]::Out.WriteLine(("STATUS:{0}" -f $Text))
         }
     }
 }
@@ -411,7 +497,7 @@ function Add-MagicMember {
 function Get-MagicWorldVersionJson {
     param([string]$VersionJsonPath)
 
-    $child = Get-Content -LiteralPath $VersionJsonPath -Raw | ConvertFrom-Json
+    $child = Read-MagicJsonFile -Path $VersionJsonPath
     if (!$child.inheritsFrom) {
         Add-MagicMember -Object $child -Name "magicVersionJsonPath" -Value $VersionJsonPath
         Add-MagicMember -Object $child -Name "magicClientVersionId" -Value $child.id
@@ -420,7 +506,7 @@ function Get-MagicWorldVersionJson {
     }
 
     $parentPath = Get-MagicVanillaVersionJsonPath -VersionId $child.inheritsFrom
-    $parent = Get-Content -LiteralPath $parentPath -Raw | ConvertFrom-Json
+    $parent = Read-MagicJsonFile -Path $parentPath
 
     $merged = [pscustomobject]@{
         id = $child.id
@@ -594,7 +680,7 @@ function Ensure-MagicWorldRuntimeFiles {
         Update-Status "Verificando assets do Minecraft..." 45
         $assetIndexPath = Join-Path $MinecraftDir ("assets\indexes\" + $VersionJson.assetIndex.id + ".json")
         Invoke-MagicDownload -Url $VersionJson.assetIndex.url -Destination $assetIndexPath
-        $assetIndex = Get-Content -LiteralPath $assetIndexPath -Raw | ConvertFrom-Json
+        $assetIndex = Read-MagicJsonFile -Path $assetIndexPath
         $objectsRoot = Join-Path $MinecraftDir "assets\objects"
         $checked = 0
         foreach ($property in $assetIndex.objects.PSObject.Properties) {
@@ -790,11 +876,15 @@ function Start-MagicWorldMinecraft {
         -RedirectStandardOutput $LaunchOutLogPath `
         -RedirectStandardError $LaunchErrLogPath `
         -PassThru
+    Register-MagicChildProcess -Process $process | Out-Null
+    $script:MagicWorldMinecraftProcess = $process
     Start-Sleep -Seconds 5
     if ($process.HasExited -and $process.ExitCode -ne 0) {
+        Unregister-MagicChildProcess -Process $process
+        $script:MagicWorldMinecraftProcess = $null
         $errorText = ""
         if (Test-Path -LiteralPath $LaunchErrLogPath) {
-            $errorText = (Get-Content -LiteralPath $LaunchErrLogPath -Tail 20 -ErrorAction SilentlyContinue) -join "`n"
+            $errorText = (Get-MagicFileTail -Path $LaunchErrLogPath -Count 20) -join "`n"
         }
         if ([string]::IsNullOrWhiteSpace($errorText)) {
             $errorText = "Processo Java encerrou com codigo $($process.ExitCode). Veja $LaunchErrLogPath."
@@ -879,12 +969,27 @@ function Invoke-MagicWorldInstaller {
         "-PackageMinecraftDir", $packageMinecraftDir,
         "-ForgeInstallerPath", $forgeInstallerPath
     )
+    $process = $null
     try {
-        $process = Start-Process -FilePath "powershell.exe" -ArgumentList $installArgs -WorkingDirectory $LauncherRoot -WindowStyle Hidden -Wait -PassThru
+        $process = Start-Process -FilePath "powershell.exe" -ArgumentList $installArgs -WorkingDirectory $LauncherRoot -WindowStyle Hidden -PassThru
+        Register-MagicChildProcess -Process $process | Out-Null
+        while (!$process.HasExited) {
+            if ($script:MagicWorldShutdownRequested) {
+                Stop-MagicProcessTree -Process $process
+                throw "Instalacao cancelada."
+            }
+            if ($script:StatusText) {
+                [System.Windows.Forms.Application]::DoEvents()
+            }
+            Start-Sleep -Milliseconds 200
+        }
         if ($process.ExitCode -ne 0) {
             throw "Instalacao retornou codigo $($process.ExitCode). Log: $env:TEMP\magicworld-forge-installer.log"
         }
     } finally {
+        if ($process) {
+            Unregister-MagicChildProcess -Process $process
+        }
         $env:JAVA_HOME = $oldJavaHome
     }
 
@@ -1298,6 +1403,9 @@ $window.ResizeMode = "CanMinimize"
 if (Test-Path -LiteralPath $WindowIconPath) {
     $window.Icon = [System.Windows.Media.Imaging.BitmapImage]::new([Uri]$WindowIconPath)
 }
+$window.Add_Closing({
+    Stop-MagicChildProcesses
+})
 
 $grid = New-Object System.Windows.Controls.Grid
 $window.Content = $grid
@@ -1492,6 +1600,8 @@ $playButton.Add_Click({
                 [System.Windows.Forms.Application]::DoEvents()
                 Start-Sleep -Milliseconds 500
             }
+            Unregister-MagicChildProcess -Process $process
+            $script:MagicWorldMinecraftProcess = $null
             if (!$window.IsVisible) {
                 $window.Show()
             }
@@ -1508,6 +1618,10 @@ $playButton.Add_Click({
         Update-Status "Erro: $($_.Exception.Message)" 0
         [System.Windows.MessageBox]::Show($_.Exception.Message, "Magic World Launcher", "OK", "Error") | Out-Null
     } finally {
+        if ($script:MagicWorldMinecraftProcess -and $script:MagicWorldMinecraftProcess.HasExited) {
+            Unregister-MagicChildProcess -Process $script:MagicWorldMinecraftProcess
+            $script:MagicWorldMinecraftProcess = $null
+        }
         $playButton.IsEnabled = $true
     }
 })
