@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "minecraft:block/torch"
+    "layer0": "magicworldlight:item/magic_world_light"
   }
 }

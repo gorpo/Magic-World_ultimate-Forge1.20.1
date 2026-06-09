@@ -3,6 +3,8 @@ package com.magicworldlight;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -33,8 +35,10 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerDestroyItemEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -450,7 +454,7 @@ public class MagicWorldLight {
 
     private static class PremiumTorchBlock extends TorchBlock {
         private PremiumTorchBlock(BlockBehaviour.Properties properties) {
-            super(properties, ParticleTypes.FLAME);
+            super(properties, ParticleTypes.WITCH);
         }
 
         @Override
@@ -472,7 +476,7 @@ public class MagicWorldLight {
 
     private static class PremiumWallTorchBlock extends WallTorchBlock {
         private PremiumWallTorchBlock(BlockBehaviour.Properties properties) {
-            super(properties, ParticleTypes.FLAME);
+            super(properties, ParticleTypes.WITCH);
         }
 
         @Override
@@ -513,6 +517,17 @@ public class MagicWorldLight {
             }
 
             return result;
+        }
+    }
+
+    @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    public static class ClientSetup {
+        @SubscribeEvent
+        public static void onClientSetup(FMLClientSetupEvent event) {
+            event.enqueueWork(() -> {
+                ItemBlockRenderTypes.setRenderLayer(MAGIC_WORLD_LIGHT_BLOCK.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(MAGIC_WORLD_LIGHT_WALL_BLOCK.get(), RenderType.cutout());
+            });
         }
     }
 
