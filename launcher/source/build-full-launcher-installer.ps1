@@ -78,6 +78,7 @@ if ($LASTEXITCODE -ne 0) {
 
 Copy-Item -Path (Join-Path $launcherSource "*") -Destination $staging -Recurse -Force
 Get-ChildItem -LiteralPath $staging -Filter "*.cmd" -File -ErrorAction SilentlyContinue | Remove-Item -Force
+Remove-Item -LiteralPath (Join-Path $staging "MagicWorldInstaller.exe") -Force -ErrorAction SilentlyContinue
 if (Test-Path -LiteralPath $icon) {
     Copy-Item -LiteralPath $icon -Destination (Join-Path $staging "MagicWorldLauncher.ico") -Force
 }
@@ -97,7 +98,7 @@ if (Test-Path -LiteralPath $icon) {
 if ($LASTEXITCODE -ne 0) {
     throw "Falha ao compilar MagicWorldLauncher.exe."
 }
-Copy-Item -LiteralPath $BundledInstallerPath -Destination (Join-Path $staging "MagicWorldInstaller.exe") -Force
+Copy-Item -LiteralPath $BundledInstallerPath -Destination (Join-Path $staging "MagicWorldPayload.bin") -Force
 Compress-Archive -Path (Join-Path $staging "*") -DestinationPath $payloadZip -CompressionLevel Optimal
 
 Copy-Item -LiteralPath $stub -Destination $out -Force

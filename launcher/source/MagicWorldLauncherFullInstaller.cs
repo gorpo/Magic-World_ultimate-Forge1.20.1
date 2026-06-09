@@ -91,11 +91,7 @@ internal static class MagicWorldLauncherFullInstaller
 
                     SetProgress(status, progress, 12, "Preparando instalacao FULL...");
 
-                    if (Directory.Exists(installDir))
-                    {
-                        Directory.Delete(installDir, true);
-                    }
-                    Directory.CreateDirectory(installDir);
+                    PrepareInstallDirectory(installDir);
                     SetProgress(status, progress, 22, "Extraindo launcher e pacote FULL...");
                     ExtractPayloadZip(installDir);
                     ConfigureFolderIcon(installDir);
@@ -178,6 +174,41 @@ internal static class MagicWorldLauncherFullInstaller
         }
 
         ZipFile.ExtractToDirectory(tempZip, installDir);
+    }
+
+    private static void PrepareInstallDirectory(string installDir)
+    {
+        Directory.CreateDirectory(installDir);
+
+        string[] filesToReplace = new string[]
+        {
+            "MagicWorldLauncher.exe",
+            "MagicWorldLauncher.ps1",
+            "MagicWorldInstaller.exe",
+            "MagicWorldPayload.bin",
+            "install-magicworld-forge.ps1",
+            "README.txt",
+            "MagicWorldLauncher.ico",
+            "desktop.ini",
+            "Abrir Magic World Launcher.cmd",
+            "Uninstall Magic World Launcher.cmd"
+        };
+
+        foreach (string file in filesToReplace)
+        {
+            string path = Path.Combine(installDir, file);
+            if (File.Exists(path))
+            {
+                File.SetAttributes(path, FileAttributes.Normal);
+                File.Delete(path);
+            }
+        }
+
+        string assets = Path.Combine(installDir, "assets");
+        if (Directory.Exists(assets))
+        {
+            Directory.Delete(assets, true);
+        }
     }
 
     private static void CopyBytes(Stream input, Stream output, long bytes)

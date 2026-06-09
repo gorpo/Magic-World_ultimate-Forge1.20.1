@@ -18,25 +18,29 @@ if (!(Test-Path -LiteralPath $WindowIconPath)) {
     $WindowIconPath = Join-Path $LauncherRoot "MagicWorldLauncher.ico"
 }
 $InstallerScriptPath = Join-Path $LauncherRoot "install-magicworld-forge.ps1"
-$MagicWorldDataRoot = Join-Path $env:APPDATA "MagicWorldLauncher"
+$MagicWorldDataRoot = Join-Path $env:LOCALAPPDATA "MagicWorldLauncher"
+$LegacyMagicWorldDataRoot = Join-Path $env:APPDATA "MagicWorldLauncher"
 $MinecraftDir = Join-Path $MagicWorldDataRoot ".minecraft"
 $MagicJavaRoot = Join-Path $MagicWorldDataRoot "runtime\java17"
 $AccountsPath = Join-Path $MagicWorldDataRoot "accounts.json"
 $SettingsPath = Join-Path $MagicWorldDataRoot "settings.json"
-$ServerFavoritesPath = Join-Path $MagicWorldDataRoot "servidores.json"
-$ServerHelpPath = Join-Path $MagicWorldDataRoot "servidores-magicworld.txt"
-$MinecraftServerListPath = Join-Path $MinecraftDir "servers.dat"
-$SavedPasswordPath = Join-Path $MagicWorldDataRoot "tlauncher-password.xml"
 $LaunchLogPath = Join-Path $MagicWorldDataRoot "magicworld-launcher-last-launch.log"
 $LaunchOutLogPath = Join-Path $MagicWorldDataRoot "magicworld-launcher-last-stdout.log"
 $LaunchErrLogPath = Join-Path $MagicWorldDataRoot "magicworld-launcher-last-stderr.log"
-$TLauncherAuthApiUrl = $env:MAGICWORLD_TLAUNCHER_AUTH_API_URL
 $RepoUrl = "https://github.com/gorpo/Magic-World_ultimate-Forge1.20.1"
 $ReleaseUrl = "https://github.com/gorpo/Magic-World_ultimate-Forge1.20.1/releases/tag/installer-upload-manual-forge-1.20.1-v1.0.0.1-main"
 $ReleaseApi = "https://api.github.com/repos/gorpo/Magic-World_ultimate-Forge1.20.1/releases/tags/installer-upload-manual-forge-1.20.1-v1.0.0.1-main"
 $FallbackInstallerUrl = "https://github.com/gorpo/Magic-World_ultimate-Forge1.20.1/releases/download/installer-upload-manual-forge-1.20.1-v1.0.0.1-main/MagicWorldInstaller.exe"
-$InstallerSha256 = "dfed9ff0a8b6c316ad5c133b1389b612a707947b5586befa1f61ca1dd6a1468e"
-$BundledInstallerPath = Join-Path $LauncherRoot "MagicWorldInstaller.exe"
+$InstallerSha256 = "d300e8aa79c12bf69e054137c9d64a277d6f3d738042fb638d678986e9ad9835"
+$BundledInstallerPath = Join-Path $LauncherRoot "MagicWorldPayload.bin"
+if (!(Test-Path -LiteralPath $BundledInstallerPath)) {
+    $devInstallerPath = Join-Path $LauncherRoot "..\..\installer\MagicWorldInstaller.exe"
+    if (Test-Path -LiteralPath $devInstallerPath) {
+        $BundledInstallerPath = [System.IO.Path]::GetFullPath($devInstallerPath)
+    } else {
+        $BundledInstallerPath = Join-Path $LauncherRoot "MagicWorldInstaller.exe"
+    }
+}
 
 function Get-MagicWorldAccountName {
     $account = Get-MagicWorldAccount
@@ -97,6 +101,31 @@ function Save-MagicWorldSettings {
     return [pscustomobject]$settings
 }
 
+function Move-MagicWorldLegacyData {
+    if ([string]::IsNullOrWhiteSpace($LegacyMagicWorldDataRoot) -or !(Test-Path -LiteralPath $LegacyMagicWorldDataRoot)) {
+        return
+    }
+
+    $legacyFull = [System.IO.Path]::GetFullPath($LegacyMagicWorldDataRoot)
+    $currentFull = [System.IO.Path]::GetFullPath($MagicWorldDataRoot)
+    $separator = [System.IO.Path]::DirectorySeparatorChar
+    if ([string]::Equals($legacyFull.TrimEnd($separator), $currentFull.TrimEnd($separator), [System.StringComparison]::OrdinalIgnoreCase)) {
+        return
+    }
+
+    New-Item -ItemType Directory -Force -Path $MagicWorldDataRoot | Out-Null
+    foreach ($item in Get-ChildItem -LiteralPath $LegacyMagicWorldDataRoot -Force -ErrorAction SilentlyContinue) {
+        $target = Join-Path $MagicWorldDataRoot $item.Name
+        if (!(Test-Path -LiteralPath $target)) {
+            Move-Item -LiteralPath $item.FullName -Destination $target -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    if (@(Get-ChildItem -LiteralPath $LegacyMagicWorldDataRoot -Force -ErrorAction SilentlyContinue).Count -eq 0) {
+        Remove-Item -LiteralPath $LegacyMagicWorldDataRoot -Force -ErrorAction SilentlyContinue
+    }
+}
+
 function Get-MagicWorldAccount {
     if (!(Test-Path -LiteralPath $AccountsPath)) {
         return [pscustomobject]@{
@@ -105,8 +134,6 @@ function Get-MagicWorldAccount {
             accessToken = "0"
             userType = "legacy"
             loginProvider = "offline"
-            authApiUrl = $TLauncherAuthApiUrl
-            savedPassword = $false
         }
     }
 
@@ -119,8 +146,6 @@ function Get-MagicWorldAccount {
                 accessToken = $(if ($json.accessToken) { [string]$json.accessToken } else { "0" })
                 userType = $(if ($json.userType) { [string]$json.userType } else { "legacy" })
                 loginProvider = $(if ($json.loginProvider) { [string]$json.loginProvider } else { "offline" })
-                authApiUrl = $(if ($json.authApiUrl) { [string]$json.authApiUrl } else { $TLauncherAuthApiUrl })
-                savedPassword = Test-Path -LiteralPath $SavedPasswordPath
             }
         }
     } catch {
@@ -131,8 +156,6 @@ function Get-MagicWorldAccount {
         accessToken = "0"
         userType = "legacy"
         loginProvider = "offline"
-        authApiUrl = $TLauncherAuthApiUrl
-        savedPassword = $false
     }
 }
 
@@ -142,8 +165,7 @@ function Save-MagicWorldAccount {
         [string]$Uuid = "",
         [string]$AccessToken = "0",
         [string]$UserType = "legacy",
-        [string]$LoginProvider = "TLauncher API",
-        [string]$AuthApiUrl = ""
+        [string]$LoginProvider = "offline"
     )
 
     $clean = ([string]$Username).Trim()
@@ -161,74 +183,10 @@ function Save-MagicWorldAccount {
         accessToken = $AccessToken
         userType = $UserType
         loginProvider = $LoginProvider
-        authApiUrl = $AuthApiUrl
         updatedAt = (Get-Date).ToString("o")
     }
     $data | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath $AccountsPath -Encoding UTF8
     return $clean
-}
-
-function Save-TLauncherPassword {
-    param([string]$Password)
-
-    New-Item -ItemType Directory -Force -Path $MagicWorldDataRoot | Out-Null
-    ConvertTo-SecureString -String $Password -AsPlainText -Force |
-        Export-Clixml -LiteralPath $SavedPasswordPath
-}
-
-function Get-SavedTLauncherPassword {
-    if (!(Test-Path -LiteralPath $SavedPasswordPath)) {
-        return ""
-    }
-
-    try {
-        $secure = Import-Clixml -LiteralPath $SavedPasswordPath
-        $credential = New-Object System.Management.Automation.PSCredential("tlauncher", $secure)
-        return $credential.GetNetworkCredential().Password
-    } catch {
-        return ""
-    }
-}
-
-function Remove-SavedTLauncherPassword {
-    Remove-Item -LiteralPath $SavedPasswordPath -Force -ErrorAction SilentlyContinue
-}
-
-function Invoke-TLauncherApiLogin {
-    param(
-        [string]$Username,
-        [string]$Password,
-        [string]$ApiUrl
-    )
-
-    if ([string]::IsNullOrWhiteSpace($ApiUrl)) {
-        $ApiUrl = (Get-MagicWorldAccount).authApiUrl
-    }
-    if ([string]::IsNullOrWhiteSpace($ApiUrl)) {
-        throw "Informe a URL oficial da API de login do TLauncher."
-    }
-    if ([string]::IsNullOrWhiteSpace($Username) -or [string]::IsNullOrWhiteSpace($Password)) {
-        throw "Informe login e senha."
-    }
-
-    $body = @{
-        username = $Username
-        password = $Password
-        launcher = "MagicWorldLauncher"
-        game = "Minecraft"
-    } | ConvertTo-Json -Depth 4
-
-    $response = Invoke-RestMethod -Uri $ApiUrl -Method Post -Body $body -ContentType "application/json" -Headers @{ "User-Agent" = "MagicWorldLauncher/1.0" }
-    $token = $(if ($response.accessToken) { $response.accessToken } elseif ($response.token) { $response.token } else { "" })
-    $displayName = $(if ($response.displayName) { $response.displayName } elseif ($response.username) { $response.username } elseif ($response.login) { $response.login } elseif ($response.profile -and $response.profile.name) { $response.profile.name } else { $Username })
-    $uuid = $(if ($response.uuid) { $response.uuid } elseif ($response.id) { $response.id } elseif ($response.profile -and $response.profile.id) { $response.profile.id } else { "" })
-
-    if ([string]::IsNullOrWhiteSpace([string]$token)) {
-        throw "A API de login respondeu sem accessToken/token. Verifique o endpoint oficial configurado."
-    }
-
-    Save-MagicWorldAccount -Username $displayName -Uuid $uuid -AccessToken $token -UserType "tlauncher" -LoginProvider "TLauncher API" -AuthApiUrl $ApiUrl | Out-Null
-    return Get-MagicWorldAccount
 }
 
 function Get-InstallerUrl {
@@ -819,7 +777,7 @@ function Start-MagicWorldMinecraft {
             classpathEntries = $classpathItems.Count
             argumentCount = $allArgs.Count
             unresolvedArgumentCount = $unresolvedArguments.Count
-            opensTLauncher = $false
+            usesExternalLauncher = $false
         }
     }
 
@@ -938,7 +896,6 @@ function Invoke-MagicWorldInstaller {
     Ensure-MagicWorldClientInstall -VersionJsonPath $versionJsonPath | Out-Null
     Set-MagicWorldFolderIcon -Path $MagicWorldDataRoot
     Set-MagicWorldFolderIcon -Path $MinecraftDir
-    Ensure-MagicWorldServerFiles
 
     Update-Status "Instalacao concluida. Pronto para jogar." 100
 }
@@ -1036,159 +993,7 @@ function Set-MagicWorldFolderIcon {
     }
 }
 
-function Write-MagicNbtShort {
-    param(
-        [System.IO.BinaryWriter]$Writer,
-        [int]$Value
-    )
-    $Writer.Write([byte](($Value -shr 8) -band 0xff))
-    $Writer.Write([byte]($Value -band 0xff))
-}
-
-function Write-MagicNbtInt {
-    param(
-        [System.IO.BinaryWriter]$Writer,
-        [int]$Value
-    )
-    $Writer.Write([byte](($Value -shr 24) -band 0xff))
-    $Writer.Write([byte](($Value -shr 16) -band 0xff))
-    $Writer.Write([byte](($Value -shr 8) -band 0xff))
-    $Writer.Write([byte]($Value -band 0xff))
-}
-
-function Write-MagicNbtStringPayload {
-    param(
-        [System.IO.BinaryWriter]$Writer,
-        [string]$Value
-    )
-    $bytes = [System.Text.Encoding]::UTF8.GetBytes([string]$Value)
-    Write-MagicNbtShort -Writer $Writer -Value $bytes.Length
-    $Writer.Write($bytes)
-}
-
-function Write-MagicNbtNamedString {
-    param(
-        [System.IO.BinaryWriter]$Writer,
-        [string]$Name,
-        [string]$Value
-    )
-    $Writer.Write([byte]8)
-    Write-MagicNbtStringPayload -Writer $Writer -Value $Name
-    Write-MagicNbtStringPayload -Writer $Writer -Value $Value
-}
-
-function Save-MagicWorldServersDat {
-    param($Servers)
-
-    New-Item -ItemType Directory -Force -Path $MinecraftDir | Out-Null
-    $stream = [System.IO.File]::Create($MinecraftServerListPath)
-    try {
-        $writer = New-Object System.IO.BinaryWriter($stream)
-        try {
-            $serverItems = @($Servers | Where-Object { $_.name -and $_.ip })
-            $writer.Write([byte]10)
-            Write-MagicNbtStringPayload -Writer $writer -Value ""
-            $writer.Write([byte]9)
-            Write-MagicNbtStringPayload -Writer $writer -Value "servers"
-            $writer.Write([byte]10)
-            Write-MagicNbtInt -Writer $writer -Value $serverItems.Count
-            foreach ($server in $serverItems) {
-                Write-MagicNbtNamedString -Writer $writer -Name "name" -Value ([string]$server.name)
-                Write-MagicNbtNamedString -Writer $writer -Name "ip" -Value ([string]$server.ip)
-                $writer.Write([byte]0)
-            }
-            $writer.Write([byte]0)
-        } finally {
-            $writer.Dispose()
-        }
-    } finally {
-        $stream.Dispose()
-    }
-}
-
-function Get-MagicWorldServerFavorites {
-    if (!(Test-Path -LiteralPath $ServerFavoritesPath)) {
-        return @()
-    }
-
-    try {
-        $json = Get-Content -LiteralPath $ServerFavoritesPath -Raw | ConvertFrom-Json
-        return @($json | Where-Object { $_.name -and $_.ip })
-    } catch {
-        return @()
-    }
-}
-
-function Save-MagicWorldServerFavorites {
-    param($Servers)
-
-    New-Item -ItemType Directory -Force -Path $MagicWorldDataRoot | Out-Null
-    $clean = @($Servers | Where-Object { $_.name -and $_.ip } | ForEach-Object {
-        [pscustomobject]@{
-            name = ([string]$_.name).Trim()
-            ip = ([string]$_.ip).Trim()
-        }
-    })
-    $clean | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $ServerFavoritesPath -Encoding UTF8
-    Save-MagicWorldServersDat -Servers $clean
-    Save-MagicWorldServerHelp
-}
-
-function Add-MagicWorldServerFavorite {
-    param(
-        [string]$Name,
-        [string]$Address
-    )
-
-    $cleanName = ([string]$Name).Trim()
-    $cleanAddress = ([string]$Address).Trim()
-    if ([string]::IsNullOrWhiteSpace($cleanName)) {
-        $cleanName = "Servidor Magic World"
-    }
-    if ([string]::IsNullOrWhiteSpace($cleanAddress)) {
-        throw "Informe o endereco do servidor, por exemplo 192.168.0.25:25565."
-    }
-    if ($cleanAddress -notmatch '^[A-Za-z0-9_\.\-:]+$') {
-        throw "Endereco invalido. Use IP/dominio e porta, por exemplo 192.168.0.25:25565."
-    }
-
-    $servers = New-Object System.Collections.ArrayList
-    foreach ($server in Get-MagicWorldServerFavorites) {
-        if ([string]$server.ip -ne $cleanAddress) {
-            [void]$servers.Add($server)
-        }
-    }
-    [void]$servers.Add([pscustomobject]@{ name = $cleanName; ip = $cleanAddress })
-    Save-MagicWorldServerFavorites -Servers $servers
-}
-
-function Save-MagicWorldServerHelp {
-    New-Item -ItemType Directory -Force -Path $MagicWorldDataRoot | Out-Null
-    $content = @(
-        "Servidores Magic World",
-        "",
-        "Pasta exclusiva do jogo: $MinecraftDir",
-        "Lista lida pelo Minecraft: $MinecraftServerListPath",
-        "",
-        "Servidor local no mesmo PC: 127.0.0.1:25565",
-        "Servidor em outro computador da rede: IP_DA_MAQUINA:25565, por exemplo 192.168.0.25:25565",
-        "Servidor de amigo: dominio-ou-ip:porta",
-        "",
-        "Conta offline entra apenas em servidores que aceitam offline/cracked.",
-        "Servidor premium com online-mode=true exige autenticacao Microsoft/TLauncher valida."
-    )
-    Set-Content -LiteralPath $ServerHelpPath -Value $content -Encoding UTF8
-}
-
-function Ensure-MagicWorldServerFiles {
-    Save-MagicWorldServerHelp
-    $servers = Get-MagicWorldServerFavorites
-    if ($servers.Count -gt 0) {
-        Save-MagicWorldServersDat -Servers $servers
-    }
-}
-
-function Show-TLauncherApiLoginDialog {
+function Show-MagicWorldProfileDialog {
     $dialog = New-Object System.Windows.Window
     $dialog.Title = "Perfil Magic World"
     $dialog.Width = 420
@@ -1244,7 +1049,6 @@ function Show-TLauncherApiLoginDialog {
     $ok.Add_Click({
         try {
             Save-MagicWorldAccount -Username $username.Text -LoginProvider "offline" | Out-Null
-            Remove-SavedTLauncherPassword
             $dialog.DialogResult = $true
         } catch {
             [System.Windows.MessageBox]::Show($_.Exception.Message, "Perfil Magic World", "OK", "Error") | Out-Null
@@ -1429,121 +1233,7 @@ function Show-MagicWorldSettingsDialog {
     return $dialog.ShowDialog()
 }
 
-function Show-MagicWorldServersDialog {
-    Ensure-MagicWorldServerFiles
-
-    $dialog = New-Object System.Windows.Window
-    $dialog.Title = "Servidores Magic World"
-    $dialog.Width = 600
-    $dialog.Height = 450
-    $dialog.WindowStartupLocation = "CenterOwner"
-    $dialog.ResizeMode = "NoResize"
-    $dialog.Background = "#101820"
-    $dialog.Owner = $window
-    if (Test-Path -LiteralPath $WindowIconPath) {
-        $dialog.Icon = [System.Windows.Media.Imaging.BitmapImage]::new([Uri]$WindowIconPath)
-    }
-
-    $panel = New-Object System.Windows.Controls.StackPanel
-    $panel.Margin = "26"
-    $dialog.Content = $panel
-
-    $title = New-Object System.Windows.Controls.TextBlock
-    $title.Text = "Servidores"
-    $title.FontSize = 24
-    $title.FontWeight = "Bold"
-    $title.Foreground = "White"
-    $title.Margin = "0,0,0,10"
-    $panel.Children.Add($title) | Out-Null
-
-    $hint = New-Object System.Windows.Controls.TextBlock
-    $hint.Text = "Use IP:porta. Local no mesmo PC: 127.0.0.1:25565. Outro PC da rede: IP_DA_MAQUINA:25565."
-    $hint.Foreground = "#D0D8E8"
-    $hint.TextWrapping = "Wrap"
-    $hint.Margin = "0,0,0,14"
-    $panel.Children.Add($hint) | Out-Null
-
-    $list = New-Object System.Windows.Controls.ListBox
-    $list.Height = 120
-    $list.Margin = "0,0,0,16"
-    $panel.Children.Add($list) | Out-Null
-
-    function Refresh-ServerListBox {
-        $list.Items.Clear()
-        foreach ($server in Get-MagicWorldServerFavorites) {
-            $list.Items.Add("$($server.name) - $($server.ip)") | Out-Null
-        }
-        if ($list.Items.Count -eq 0) {
-            $list.Items.Add("Nenhum servidor salvo ainda.") | Out-Null
-        }
-    }
-
-    $nameLabel = New-Object System.Windows.Controls.TextBlock
-    $nameLabel.Text = "Nome"
-    $nameLabel.Foreground = "#FFDAA520"
-    $nameLabel.Margin = "0,0,0,4"
-    $panel.Children.Add($nameLabel) | Out-Null
-
-    $nameBox = New-Object System.Windows.Controls.TextBox
-    $nameBox.Text = "Servidor Magic World"
-    $nameBox.Height = 30
-    $nameBox.Margin = "0,0,0,10"
-    $panel.Children.Add($nameBox) | Out-Null
-
-    $addressLabel = New-Object System.Windows.Controls.TextBlock
-    $addressLabel.Text = "Endereco"
-    $addressLabel.Foreground = "#FFDAA520"
-    $addressLabel.Margin = "0,0,0,4"
-    $panel.Children.Add($addressLabel) | Out-Null
-
-    $addressBox = New-Object System.Windows.Controls.TextBox
-    $addressBox.Text = "192.168.0.25:25565"
-    $addressBox.Height = 30
-    $addressBox.Margin = "0,0,0,16"
-    $panel.Children.Add($addressBox) | Out-Null
-
-    $buttons = New-Object System.Windows.Controls.StackPanel
-    $buttons.Orientation = "Horizontal"
-    $buttons.HorizontalAlignment = "Right"
-    $panel.Children.Add($buttons) | Out-Null
-
-    $openFolder = New-Object System.Windows.Controls.Button
-    $openFolder.Content = "Abrir pasta"
-    $openFolder.Width = 105
-    $openFolder.Height = 34
-    $openFolder.Margin = "0,0,8,0"
-    $openFolder.Add_Click({
-        Ensure-MagicWorldServerFiles
-        Open-MagicWorldMinecraftFolder
-    })
-    $buttons.Children.Add($openFolder) | Out-Null
-
-    $add = New-Object System.Windows.Controls.Button
-    $add.Content = "Adicionar"
-    $add.Width = 105
-    $add.Height = 34
-    $add.Margin = "0,0,8,0"
-    $add.Add_Click({
-        try {
-            Add-MagicWorldServerFavorite -Name $nameBox.Text -Address $addressBox.Text
-            Refresh-ServerListBox
-            Update-Status "Servidor salvo em servers.dat da pasta exclusiva." 0
-        } catch {
-            [System.Windows.MessageBox]::Show($_.Exception.Message, "Servidores Magic World", "OK", "Error") | Out-Null
-        }
-    })
-    $buttons.Children.Add($add) | Out-Null
-
-    $close = New-Object System.Windows.Controls.Button
-    $close.Content = "Fechar"
-    $close.Width = 95
-    $close.Height = 34
-    $close.Add_Click({ $dialog.DialogResult = $true })
-    $buttons.Children.Add($close) | Out-Null
-
-    Refresh-ServerListBox
-    return $dialog.ShowDialog()
-}
+Move-MagicWorldLegacyData
 
 if ($SelfTest) {
     $javaPath = ""
@@ -1561,11 +1251,8 @@ if ($SelfTest) {
         bundledInstallerExists = Test-Path -LiteralPath $BundledInstallerPath
         magicWorldDataRoot = $MagicWorldDataRoot
         minecraftDir = $MinecraftDir
-        serverFavorites = $ServerFavoritesPath
-        minecraftServerList = $MinecraftServerListPath
         accountName = Get-MagicWorldAccountName
         accountProvider = (Get-MagicWorldAccount).loginProvider
-        tLauncherAuthApiConfigured = ![string]::IsNullOrWhiteSpace($TLauncherAuthApiUrl)
         versionJson = Get-MagicWorldVersionJsonPath
         java = $javaPath
         installerUrl = Get-InstallerUrl
@@ -1708,7 +1395,7 @@ function New-MagicIconButton {
     return $button
 }
 
-$folderButton = New-MagicIconButton ([string][char]0xE8B7) "Abrir .minecraft do Magic World"
+$folderButton = New-MagicIconButton ([string][char]0xE8B7) "Abrir pasta do jogo do Magic World"
 $settingsButton = New-MagicIconButton ([string][char]0xE713) "Configuracoes"
 $loginButton = New-MagicIconButton ([string][char]0xE77B) "Perfil"
 
@@ -1783,7 +1470,7 @@ $settingsButton.Add_Click({
 })
 $loginButton.Add_Click({
     try {
-        if (Show-TLauncherApiLoginDialog) {
+        if (Show-MagicWorldProfileDialog) {
             Update-MagicAccountFooter
             Update-Status "Conta salva. Pronto para jogar." 0
         }

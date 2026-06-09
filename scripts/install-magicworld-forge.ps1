@@ -34,8 +34,8 @@ function Find-MinecraftDir {
     }
 
     $candidates = @(
-        (Join-Path $env:APPDATA "MagicWorldLauncher\.minecraft"),
-        (Join-Path $env:USERPROFILE "AppData\Roaming\MagicWorldLauncher\.minecraft")
+        (Join-Path $env:LOCALAPPDATA "MagicWorldLauncher\.minecraft"),
+        (Join-Path $env:USERPROFILE "AppData\Local\MagicWorldLauncher\.minecraft")
     ) | Select-Object -Unique
 
     foreach ($candidate in $candidates) {
@@ -44,7 +44,7 @@ function Find-MinecraftDir {
         }
     }
 
-    return [System.IO.Path]::GetFullPath((Join-Path $env:APPDATA "MagicWorldLauncher\.minecraft"))
+    return [System.IO.Path]::GetFullPath((Join-Path $env:LOCALAPPDATA "MagicWorldLauncher\.minecraft"))
 }
 
 function Find-PackageMinecraftDir {
@@ -188,7 +188,7 @@ function Ensure-OculusShaderConfig {
     Write-Log "Oculus/Iris configurado para shader: $($shader.Name)"
 }
 
-function Ensure-MinecraftLauncherProfile {
+function Ensure-MinecraftProfileMetadata {
     param([string]$TargetMinecraftDir)
 
     New-Item -ItemType Directory -Path $TargetMinecraftDir -Force | Out-Null
@@ -286,7 +286,7 @@ Copy-DirectoryContents -Source (Join-Path $packageMinecraft "defaultconfigs") -D
 Copy-FileIfExists -Source (Join-Path $packageMinecraft "options.txt") -Destination (Join-Path $targetMinecraft "options.txt")
 Ensure-JourneyMap3DWaypointsHidden -TargetMinecraftDir $targetMinecraft
 Ensure-OculusShaderConfig -TargetMinecraftDir $targetMinecraft
-Ensure-MinecraftLauncherProfile -TargetMinecraftDir $targetMinecraft
+Ensure-MinecraftProfileMetadata -TargetMinecraftDir $targetMinecraft
 
 $modJar = Join-Path $targetMinecraft ("mods\" + $ModJarName)
 if (-not (Test-Path -LiteralPath $modJar)) {

@@ -117,7 +117,7 @@ internal static class MagicWorldLauncherApp
         }
 
         string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-        string dataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MagicWorldLauncher");
+        string legacyDataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MagicWorldLauncher");
         string script = Path.Combine(Path.GetTempPath(), "MagicWorldLauncherUninstall.ps1");
         string content = "$ErrorActionPreference = 'SilentlyContinue'\r\n" +
                          "Start-Sleep -Milliseconds 900\r\n" +
@@ -126,8 +126,8 @@ internal static class MagicWorldLauncherApp
                          "Remove-Item -LiteralPath " + PsQuote(Path.Combine(desktop, "Magic World Launcher.cmd")) + " -Force\r\n" +
                          "Remove-Item -LiteralPath " + PsQuote(Path.Combine(desktop, "Uninstall Magic World Launcher.cmd")) + " -Force\r\n" +
                          "Remove-Item -LiteralPath 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MagicWorldLauncher' -Recurse -Force\r\n" +
-                         "Remove-Item -LiteralPath " + PsQuote(dataDir) + " -Recurse -Force\r\n" +
                          "Remove-Item -LiteralPath " + PsQuote(installDir) + " -Recurse -Force\r\n" +
+                         "Remove-Item -LiteralPath " + PsQuote(legacyDataDir) + " -Recurse -Force\r\n" +
                          "Remove-Item -LiteralPath $PSCommandPath -Force\r\n";
         File.WriteAllText(script, content, Encoding.ASCII);
         Process.Start(new ProcessStartInfo

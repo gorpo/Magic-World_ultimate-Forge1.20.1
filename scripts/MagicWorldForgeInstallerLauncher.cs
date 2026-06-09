@@ -59,7 +59,7 @@ internal static class MagicWorldForgeInstallerLauncher
         label.Width = 690;
         label.Height = 54;
         label.Font = new Font("Segoe UI", 10);
-        label.Text = "Instalador FULL Magic World Ultimate Forge 1.20.1: instala/atualiza Forge 47.4.10 e distribui mods, resourcepacks, shaderpacks e configuracoes embutidos para a .minecraft usada pelo TLauncher.";
+        label.Text = "Instalador simples Magic World Ultimate Forge 1.20.1: instala/atualiza Forge 47.4.10 e copia mods, resourcepacks e shaderpacks para a .minecraft escolhida.";
         form.Controls.Add(label);
 
         TextBox pathBox = new TextBox();
@@ -74,7 +74,7 @@ internal static class MagicWorldForgeInstallerLauncher
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
             {
-                dialog.Description = "Escolha a pasta .minecraft usada pelo TLauncher";
+                dialog.Description = "Escolha a pasta .minecraft usada pelo seu launcher";
                 if (dialog.ShowDialog(form) == DialogResult.OK)
                 {
                     pathBox.Text = dialog.SelectedPath;
@@ -116,7 +116,7 @@ internal static class MagicWorldForgeInstallerLauncher
                     AppendOutput(output, "Processo finalizado com codigo: " + code + "\r\n");
                     form.BeginInvoke((MethodInvoker)delegate
                     {
-                        MessageBox.Show(form, "Magic World Forge instalado. No TLauncher, selecione Forge 1.20.1-47.4.10.", "Magic World Forge Installer");
+                        MessageBox.Show(form, "Magic World Forge instalado. No seu launcher, selecione Forge 1.20.1-47.4.10.", "Magic World Forge Installer");
                         install.Enabled = true;
                         browse.Enabled = true;
                     });
@@ -275,8 +275,6 @@ internal static class MagicWorldForgeInstallerLauncher
         string[] candidates =
         {
             Path.Combine(appData, ".minecraft"),
-            Path.Combine(appData, "TLauncher", ".minecraft"),
-            Path.Combine(appData, ".tlauncher", ".minecraft"),
             Path.Combine(userProfile, "AppData", "Roaming", ".minecraft")
         };
 
@@ -302,7 +300,7 @@ internal static class MagicWorldForgeInstallerLauncher
                 + "- Resource Packs e Shader Packs do pacote distribuivel.\r\n"
                 + "- JourneyMap configurado sem beacons/linhas 3D visiveis.\r\n\r\n"
                 + "Modo FULL: o pacote .minecraft vai embutido dentro deste EXE.\r\n"
-                + "Remove apenas Magic World antigo e conflitos conhecidos: TL Cape, Controllable, EMF/ETF, Fusion, CIT, ModernFix e FerriteCore.\r\n";
+                + "Remove apenas Magic World antigo e conflitos conhecidos ja mapeados.\r\n";
     }
 
     private static string ExtractEmbeddedInstaller()
@@ -321,12 +319,10 @@ internal static class MagicWorldForgeInstallerLauncher
         );
 
         Directory.CreateDirectory(extractionRoot);
-        Directory.CreateDirectory(Path.Combine(extractionRoot, "screenshots"));
         Directory.CreateDirectory(Path.Combine(extractionRoot, "payload", "forge"));
 
         ExtractResource(assembly, ScriptName, Path.Combine(extractionRoot, ScriptName));
-        ExtractResourceIfPresent(assembly, "banner_installer.png", Path.Combine(extractionRoot, "screenshots", "banner_installer.png"));
-        ExtractResourceIfPresent(assembly, "forge-installer.jar", Path.Combine(extractionRoot, "payload", "forge", ForgeInstallerName));
+            ExtractResourceIfPresent(assembly, "forge-installer.jar", Path.Combine(extractionRoot, "payload", "forge", ForgeInstallerName));
         ExtractAppendedPayloadIfPresent(extractionRoot);
         return Path.Combine(extractionRoot, ScriptName);
     }

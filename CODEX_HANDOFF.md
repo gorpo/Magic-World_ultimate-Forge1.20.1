@@ -1901,7 +1901,7 @@ Validacao:
 - O script `pacote_distribuivel/atualizar_apenas_mod_all_in_one.ps1` procura o novo JAR e remove o JAR antigo da pasta de mods durante a transicao.
 
 ## Handoff 2026-06-07 - hotfix criacao de mundo no launcher local
-- Problemas no TLauncher: tela vanilla de criacao nao mostrava personalizacao suficiente e o botao do painel Magic World ficava parado ao tentar criar o mundo.
+- Problemas no cliente local: tela vanilla de criacao nao mostrava personalizacao suficiente e o botao do painel Magic World ficava parado ao tentar criar o mundo.
 - Causa provavel: `createWorldFromMagicTab` chamava `CreateWorldScreen.onCreate()` por reflexao, caminho fragil em cliente real/remapeado.
 - Correcao: `createWorldFromMagicTab` agora sincroniza as opcoes e chama o botao vanilla real `Criar novo mundo` salvo em `vanillaWidgets`.
 - Foi adicionada faixa visual `MAGIC WORLD` em `ScreenEvent.Render.Post` quando a tela vanilla de criacao esta aberta e o painel Magic World nao esta visivel.
@@ -2042,10 +2042,10 @@ Validacao:
 - Validado com `./gradlew.bat build`.
 
 ## Handoff 2026-06-07 - instalador Forge
-- Adicionados `scripts/install-magicworld-forge-tlauncher.ps1`, `scripts/MagicWorldForgeInstallerLauncher.cs` e `scripts/build-magicworld-forge-installer.ps1`.
+- Adicionados `scripts/install-magicworld-forge.ps1`, `scripts/MagicWorldForgeInstallerLauncher.cs` e `scripts/build-magicworld-forge-installer.ps1`.
 - Instalador local gerado em `installer/MagicWorldInstaller.exe`; `installer/` segue ignorado pelo Git.
 - Estado anterior: o EXE embutia script e Forge installer, mas nao o pacote completo.
-- Validacao executada: `install-magicworld-forge-tlauncher.ps1 -SkipForgeInstall` copiou 18 mods, resources, shaderpacks e JourneyMap para `tmp/installer-test/.minecraft`; build do EXE passou.
+- Validacao executada: `install-magicworld-forge.ps1 -SkipForgeInstall` copiou 18 mods, resources, shaderpacks e JourneyMap para `tmp/installer-test/.minecraft`; build do EXE passou.
 
 ## Handoff 2026-06-07 - menu central fechado antes dos releases
 - Usuario pediu parar releases e fechar mod/installer antes.
@@ -2055,36 +2055,48 @@ Validacao:
 - Build passou, JAR distribuivel atualizado e installer local recompilado.
 
 ## Handoff 2026-06-07 - installer FULL standalone
-- Pedido atualizado: installer deve ser um EXE grande com tudo dentro para instalar facil em TLauncher com Minecraft 1.20.1 ja aberto uma vez.
+- Pedido atualizado: installer deve ser um EXE grande com tudo dentro para instalar facil o Magic World Forge 1.20.1.
 - `MagicWorldForgeInstallerLauncher.cs` agora detecta payload ZIP anexado ao fim do proprio EXE via marcador `MAGICWORLD_FULL_PAYLOAD_V1`.
 - `build-magicworld-forge-installer.ps1` gera FULL por padrao: cria ZIP interno com `payload/.minecraft` e `payload/forge/forge-1.20.1-47.4.10-installer.jar`, depois anexa ao EXE.
-- `install-magicworld-forge-tlauncher.ps1` copia mods, resourcepacks, shaderpacks, JourneyMap, config/defaultconfigs/options opcionais, remove conflitos conhecidos e aplica config JourneyMap/Oculus.
+- `install-magicworld-forge.ps1` copia mods, resourcepacks, shaderpacks, JourneyMap, config/defaultconfigs/options opcionais, remove conflitos conhecidos e aplica config JourneyMap/Oculus.
 - `-NoFullPayload` ainda gera a versao leve antiga se necessario.
 - EXE local FULL gerado em `installer/MagicWorldInstaller.exe`; tamanho aproximado 1.78 GiB / 1.91 GB.
 - Validacao: marcador do payload OK, entries do JAR principal, shader e Forge installer presentes no ZIP interno.
 
 ## Handoff 2026-06-08 - launcher FULL Stable V1.0.0.2
 - Pedido do usuario: deixar launcher premium, sem terminal cmd/PowerShell visivel, com icones em atalhos/pastas/janelas, progresso real em porcentagem, configuracoes separadas, RAM em slider ate 16 GB, launcher oculto durante o Minecraft e release local `Stable V1.0.0.2`.
-- Pastas exclusivas confirmadas e documentadas: instalacao em `%LOCALAPPDATA%\MagicWorldLauncher`; Minecraft interno em `%APPDATA%\MagicWorldLauncher\.minecraft`; contas/configuracoes em `%APPDATA%\MagicWorldLauncher`.
-- Isso permite instalar TLauncher e outros launchers em paralelo sem misturar mods, assets, versoes ou saves do Magic World.
-- `MagicWorldLauncher.ps1`: tela principal remodelada com rodape tipo launcher, sem botoes `Instalar`/`Repositorio`; adicionados botoes `Login`, `.minecraft`, `Configuracoes` e `Jogar Magic World`.
+- Pastas exclusivas confirmadas e documentadas: raiz unica em `%LOCALAPPDATA%\MagicWorldLauncher`; Minecraft interno em `%LOCALAPPDATA%\MagicWorldLauncher\.minecraft`.
+- Isso permite instalar outros launchers em paralelo sem misturar mods, assets, versoes ou saves do Magic World com a `.minecraft` global.
+- `MagicWorldLauncher.ps1`: tela principal remodelada, sem botoes `Instalar`/`Repositorio`; adicionados icones de perfil, pasta do jogo, configuracoes e botao `Jogar`.
 - `MagicWorldLauncher.ps1`: RAM/resolucao foram movidas para janela `Configuracoes`; RAM usa slider 2-16 GB; opcao de ocultar launcher durante o jogo fica nessa tela.
 - `MagicWorldLauncher.ps1`: `Start-MagicWorldMinecraft` retorna o processo Java; botao `Jogar` oculta a janela enquanto o processo roda e mostra novamente quando fechar.
 - `MagicWorldLauncher.ps1`: `Update-Status` escreve `PROGRESS:<percent>:<texto>` em modo `-InstallOnly` para o instalador FULL acompanhar porcentagem.
-- `MagicWorldLauncher.ps1`: botao `Servidores` cria/edita favoritos em `%APPDATA%\MagicWorldLauncher\servidores.json` e gera `servers.dat` na `.minecraft` exclusiva via NBT simples.
-- Login TLauncher: tela pede usuario/senha e caixa `Salvar senha`; online depende de `MAGICWORLD_TLAUNCHER_AUTH_API_URL`. Sem API oficial configurada, salva usuario offline para manter o jogo funcional.
+- `MagicWorldLauncher.ps1`: servidores ficam somente na tela Multiplayer do Minecraft; launcher nao cria favoritos nem gera `servers.dat`.
+- Perfil Magic World: tela pede apenas usuario local offline; sem senha, sem API externa e sem armazenamento de credenciais.
 - `MagicWorldLauncherFullInstaller.cs`: instalador mostra porcentagem textual, barra de progresso e pulso durante instalacao interna; chama PowerShell escondido com `-Sta`; recria atalhos `.lnk` apagando antigos antes.
 - `MagicWorldLauncherApp.cs`: janela principal roda dentro do `MagicWorldLauncher.exe` via `System.Management.Automation` para melhorar icone da taskbar; modos `--install-only`, `--launch-only` e `--uninstall` usam PowerShell escondido.
 - Atalhos esperados na area de trabalho: `Magic World Launcher.lnk` e `Desinstalar Magic World Launcher.lnk`, ambos apontando para `MagicWorldLauncher.exe` com `MagicWorldLauncher.ico`.
-- O instalador pode ser apagado apos instalar; o desinstalador remove `%LOCALAPPDATA%\MagicWorldLauncher`, `%APPDATA%\MagicWorldLauncher` e atalhos Magic World, sem tocar em TLauncher nem na `.minecraft` global.
-- Servidores: conta offline so entra em servidor offline/cracked; servidor premium `online-mode=true` exige autenticacao valida e nao recebe bypass. Local no mesmo PC: `127.0.0.1:25565`; outro PC da LAN: IP da maquina servidora, exemplo `192.168.0.25:25565`; amigo: dominio/IP e porta informados por ele.
+- O instalador pode ser apagado apos instalar; o desinstalador remove `%LOCALAPPDATA%\MagicWorldLauncher`, atalhos Magic World e residuos legados, sem tocar na `.minecraft` global.
+- Multiplayer/servidores ficam sob responsabilidade da tela Multiplayer do proprio Minecraft.
 - Docs atualizados: `README.md`, `docs/WIKI.md`, `CODEX_HANDOFF.md` e `launcher/MagicWorldLauncher/README.txt`.
 - Validacoes executadas antes do build final: parse do PowerShell, `-SelfTest`, compilacao C# do installer e compilacao C# do wrapper.
 
 ## Handoff 2026-06-08 - layout final do launcher V1.0.0.2
-- Pedido: remover textos abaixo da logo, mover login/.minecraft/configuracoes para icones no topo direito, perfil sem senha, remover botao servidores, botao principal apenas `Jogar`, configuracoes com resolucao em dropdown, atalhos para pastas proprias e GitHub, creditos e registro no desinstalador do Windows.
+- Pedido: remover textos abaixo da logo, mover perfil/pasta/configuracoes para icones no topo direito, perfil sem senha, deixar multiplayer fora do launcher, botao principal apenas `Jogar`, configuracoes com resolucao em dropdown, atalhos para pastas proprias e GitHub, creditos e registro no desinstalador do Windows.
 - `MagicWorldLauncher.ps1`: janela agora tem titulo `Magic World Launcher V1.0.0.2`; topo direito usa icones de pasta, engrenagem e perfil; hero mantem logo e fundo; loading abaixo da logo; botao `Jogar` abaixo do loading.
 - `MagicWorldLauncher.ps1`: perfil salva apenas usuario local offline e remove campo de senha/API; servidores ficam no Multiplayer do Minecraft, sem botao no launcher.
-- `MagicWorldLauncher.ps1`: configuracoes usam dropdown de resolucao, slider de RAM, atalho para `%APPDATA%\MagicWorldLauncher\.minecraft`, atalho para pasta instalada do launcher, GitHub e creditos `GuiPaluch - (Gorpo) - TCXS Project`.
+- `MagicWorldLauncher.ps1`: configuracoes usam dropdown de resolucao, slider de RAM, atalho para `%LOCALAPPDATA%\MagicWorldLauncher\.minecraft`, atalho para `%LOCALAPPDATA%\MagicWorldLauncher`, GitHub e creditos `GuiPaluch - (Gorpo) - TCXS Project`.
 - `MagicWorldLauncherFullInstaller.cs`: registra `Magic World Launcher` em `HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\MagicWorldLauncher` para aparecer em Apps e Recursos; atalhos usam o proprio `MagicWorldLauncher.exe` como icone.
 - `MagicWorldLauncherApp.cs`: desinstalador remove a chave HKCU de Apps e Recursos.
+
+## Handoff 2026-06-08 - raiz unica local do launcher
+- Pedido: o Magic World deve ocupar um unico lugar proprio e nao mostrar/sugerir a `.minecraft` global.
+- Nova raiz ativa: `%LOCALAPPDATA%\MagicWorldLauncher`.
+- Minecraft interno: `%LOCALAPPDATA%\MagicWorldLauncher\.minecraft`.
+- Launcher, Java, contas, configuracoes e logs ficam na mesma raiz local.
+- `MagicWorldLauncher.ps1` removeu restos de senha/API externa e rotinas de favoritos/`servers.dat`; perfil salva apenas usuario local.
+- `MagicWorldLauncher.ps1` migra itens legados da pasta antiga para a raiz local quando o destino ainda nao existe.
+- `MagicWorldLauncherFullInstaller.cs` deixou de apagar a raiz inteira ao atualizar; agora substitui apenas arquivos do app e preserva `.minecraft`, runtime, contas, configs e logs.
+- `install-magicworld-forge.ps1` passou a usar `%LOCALAPPDATA%\MagicWorldLauncher\.minecraft` como destino padrao.
+- Configuracoes mostram apenas os botoes `Pasta do jogo`, `Pasta do launcher` e `GitHub`.
+- `build-full-launcher-installer.ps1` copia o payload Forge embutido como `MagicWorldPayload.bin`, nao como `MagicWorldInstaller.exe`, para evitar exposicao do instalador legado na pasta instalada.

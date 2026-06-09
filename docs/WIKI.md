@@ -1197,7 +1197,7 @@ Validacao e processo:
 
 ## Registro 2026-06-07 - hotfix criacao de mundo no launcher local
 - O botao `Criar Mundo` do painel Magic World nao usa mais reflexao para chamar metodo privado da tela vanilla.
-- Agora ele sincroniza as opcoes Magic World e aciona o botao vanilla real `Criar novo mundo`, que funciona melhor no cliente real/TLauncher.
+- Agora ele sincroniza as opcoes Magic World e aciona o botao vanilla real `Criar novo mundo`, que funciona melhor no cliente real/local.
 - A tela vanilla de criacao ganhou uma faixa visual `MAGIC WORLD` mesmo antes de abrir o painel Magic World, para confirmar que a personalizacao carregou.
 - Validacao: `./gradlew.bat compileJava --stacktrace`, `./gradlew.bat build --stacktrace` e `git diff --check` passaram.
 - A pasta `pacote_distribuivel/.minecraft/mods` foi atualizada apenas com o novo JAR.
@@ -1270,7 +1270,7 @@ Validacao e processo:
 - Regra fixa: nao criar scripts ou rotinas que carreguem/varram saves antigos para personalizacao ou migracao, salvo pedido explicito do usuario.
 - Proximo caminho: personalizar MineColonies por lotes pequenos a partir de prints/texto do usuario, testando cada tela antes de ampliar.
 
-## Registro 2026-06-07 - hotfix crash EMF no TLauncher
+## Registro 2026-06-07 - hotfix crash EMF no cliente local
 - Crash reportado: `entity_model_features.mixins.json:MixinModelPart` falhou durante APPLY.
 - Causa operacional: `entity_model_features`/EMF estava carregavel em `.minecraft/mods`.
 - Desativados da pasta `mods` carregavel do pacote e do Minecraft local: EMF, ETF, Fusion, CIT Resewn, ModernFix e FerriteCore.
@@ -1347,20 +1347,19 @@ Validacao e processo:
 - Validacao: payload anexado ao EXE conferido com marcador `MAGICWORLD_FULL_PAYLOAD_V1`; entries principais presentes.
 
 ## Registro 2026-06-08 - launcher FULL Stable V1.0.0.2
-- Launcher FULL usa pastas exclusivas: instalacao em `%LOCALAPPDATA%\MagicWorldLauncher` e Minecraft interno em `%APPDATA%\MagicWorldLauncher\.minecraft`.
-- Essa separacao permite instalar TLauncher, launcher oficial e outros launchers em paralelo sem misturar mods, assets, versoes ou saves do Magic World.
+- Launcher FULL usa raiz unica propria: `%LOCALAPPDATA%\MagicWorldLauncher`.
+- Minecraft interno, launcher, Java, contas, configuracoes e logs ficam sob essa raiz; o jogo usa `%LOCALAPPDATA%\MagicWorldLauncher\.minecraft`.
+- Essa separacao permite instalar outros launchers em paralelo sem misturar mods, assets, versoes ou saves do Magic World com a `.minecraft` global.
 - O instalador pode ser apagado depois da instalacao; o launcher instalado fica funcional sozinho com Forge, Minecraft, mods, resourcepacks, shaderpacks e runtime Java proprio.
 - Criados atalhos `.lnk` na area de trabalho para abrir e desinstalar, ambos com icone Magic World; atalhos `.cmd` antigos sao removidos.
 - A pasta instalada recebe `desktop.ini` e `MagicWorldLauncher.ico` para exibir icone proprio no Explorer.
 - Janela principal roda pelo `MagicWorldLauncher.exe`, com icone proprio na taskbar; rotinas internas usam PowerShell escondido em STA.
 - Instalador FULL mostra porcentagem textual e barra de progresso com pulso durante instalacao interna.
-- Tela principal do launcher segue fluxo tipo TLauncher: rodape com login, pasta `.minecraft`, configuracoes e botao `Jogar Magic World`; botoes `Instalar` e `Repositorio` sairam da tela inicial.
+- Tela principal do launcher usa topo direito com icones de pasta do jogo, configuracoes e perfil; botoes `Instalar` e `Repositorio` sairam da tela inicial.
 - RAM e resolucao foram movidas para `Configuracoes`; RAM usa slider de 2 GB a 16 GB.
 - Ao iniciar o jogo, o launcher fica oculto enquanto o Minecraft roda e retorna quando o processo fecha.
-- Login TLauncher pede usuario/senha e tem caixa `Salvar senha`; online depende de `MAGICWORLD_TLAUNCHER_AUTH_API_URL`, e sem API o usuario e salvo em modo offline.
-- Conta offline entra apenas em servidores que aceitam offline/cracked; servidores premium `online-mode=true` exigem autenticacao valida e nao recebem bypass.
-- Botao `Servidores` cadastra IP/dominio:porta, salva `%APPDATA%\MagicWorldLauncher\servidores.json` e gera `servers.dat` na `.minecraft` exclusiva.
-- Exemplos documentados: mesmo PC `127.0.0.1:25565`, outro PC da rede `192.168.0.25:25565`, amigo por dominio/IP e porta informados.
+- Perfil pede somente usuario local; nao existe campo de senha, armazenamento de credenciais nem API externa.
+- Servidores ficam somente na tela Multiplayer do proprio Minecraft; o launcher nao cria favoritos nem gera `servers.dat`.
 - Artefato local de release esperado: `launcher/dist/MagicWorldLauncherFullInstaller-Stable V1.0.0.2.exe`.
 
 ## Registro 2026-06-08 - layout final launcher V1.0.0.2
@@ -1368,6 +1367,6 @@ Validacao e processo:
 - Tela principal mantem fundo/logo, remove textos abaixo da logo, sobe o loading e deixa apenas o botao `Jogar`.
 - Acoes de pasta, configuracoes e perfil foram movidas para icones no topo direito.
 - Perfil agora pede somente usuario local; sem senha e sem API na tela.
-- Botao `Servidores` saiu da tela; servidores devem ser cadastrados no Multiplayer do proprio Minecraft.
-- Configuracoes usam dropdown de resolucao, slider de RAM, atalhos para pasta do jogo, pasta do launcher e GitHub, e creditos `GuiPaluch - (Gorpo) - TCXS Project`.
+- Cadastro de servidores fica no Multiplayer do proprio Minecraft, fora do launcher.
+- Configuracoes usam dropdown de resolucao, slider de RAM, atalhos para `%LOCALAPPDATA%\MagicWorldLauncher\.minecraft`, `%LOCALAPPDATA%\MagicWorldLauncher` e GitHub, e creditos `GuiPaluch - (Gorpo) - TCXS Project`.
 - Instalador registra `Magic World Launcher` em Apps e Recursos do Windows via HKCU e o desinstalador remove essa entrada.

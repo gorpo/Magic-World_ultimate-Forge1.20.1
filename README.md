@@ -57,6 +57,74 @@
   </table>
 </details>
 
+## Instalacao Recomendada: Magic World Launcher FULL
+
+Use este instalador se voce quer a forma mais simples: ele instala o launcher proprio, prepara o Minecraft Forge 1.20.1, baixa/prepara o cliente quando necessario e deixa o Magic World pronto para jogar.
+
+[**Baixar Magic World Launcher FULL V1.0.0.2**](https://github.com/gorpo/Magic-World_ultimate-Forge1.20.1/releases/download/launcher-full-v1.0.0.2/MagicWorldLauncherFullInstaller-Stable%20V1.0.0.2.exe)
+
+Release: [launcher-full-v1.0.0.2](https://github.com/gorpo/Magic-World_ultimate-Forge1.20.1/releases/tag/launcher-full-v1.0.0.2)
+
+<div align="center">
+  <img src="./screenshots/installer-usuario.png" alt="Instalador Magic World para usuario" width="32%">
+  <img src="./screenshots/instalando.png" alt="Instalacao do Magic World em andamento" width="32%">
+  <img src="./screenshots/launcher_inicial.png" alt="Tela inicial do Magic World Launcher" width="32%">
+</div>
+
+### Como instalar
+
+1. Baixe e execute `MagicWorldLauncherFullInstaller-Stable V1.0.0.2.exe`.
+2. Aguarde a instalacao terminar.
+3. Abra **Magic World Launcher** pelo atalho criado na area de trabalho.
+4. Clique em **Jogar**.
+5. Depois de instalado, o arquivo do instalador pode ser apagado; o jogo continua funcionando pelo launcher instalado.
+
+### Onde os arquivos ficam
+
+- Raiz unica do Magic World: `%LOCALAPPDATA%\MagicWorldLauncher`.
+- Pasta do jogo: `%LOCALAPPDATA%\MagicWorldLauncher\.minecraft`.
+- Mods: `%LOCALAPPDATA%\MagicWorldLauncher\.minecraft\mods`.
+- Resource packs: `%LOCALAPPDATA%\MagicWorldLauncher\.minecraft\resourcepacks`.
+- Shaders: `%LOCALAPPDATA%\MagicWorldLauncher\.minecraft\shaderpacks`.
+- Contas locais, configuracoes, Java e logs ficam na mesma raiz `%LOCALAPPDATA%\MagicWorldLauncher`.
+
+### Como usar o launcher
+
+- **Jogar**: verifica o que falta e abre o Minecraft com o Magic World.
+- **Perfil**: define apenas o nome de usuario local usado dentro do jogo.
+- **Configuracoes**: ajusta RAM, resolucao e se o launcher deve ficar oculto enquanto o jogo roda.
+- **Pasta do jogo**: abre a `.minecraft` exclusiva do Magic World.
+- **Pasta do launcher**: abre a raiz instalada do launcher.
+- **GitHub**: abre a pagina do projeto.
+
+### Mods, servidores e ajustes
+
+- Para adicionar outros mods compatíveis com Forge 1.20.1, coloque os `.jar` em `%LOCALAPPDATA%\MagicWorldLauncher\.minecraft\mods`.
+- Para adicionar resource packs, coloque os `.zip` em `%LOCALAPPDATA%\MagicWorldLauncher\.minecraft\resourcepacks`.
+- Para adicionar shaders, coloque os arquivos em `%LOCALAPPDATA%\MagicWorldLauncher\.minecraft\shaderpacks`.
+- Servidores devem ser adicionados dentro do proprio Minecraft, na tela **Multiplayer**.
+- O launcher nao usa a `.minecraft` global do Windows.
+
+## Opcao Avancada: Instalador Simples para Launcher Ja Instalado
+
+Use esta opcao somente se voce ja tem um launcher compativel com Minecraft Forge 1.20.1 e prefere continuar usando essa instalacao. Este instalador nao cria o Magic World Launcher completo; ele apenas copia o pacote Magic World para uma pasta `.minecraft` escolhida.
+
+Arquivo:
+
+```text
+installer/MagicWorldInstaller.exe
+```
+
+Como usar:
+
+1. Abra `MagicWorldInstaller.exe`.
+2. Escolha a pasta `.minecraft` usada pelo seu launcher.
+3. Clique em **Instalar / Atualizar**.
+4. No seu launcher, selecione o perfil Forge 1.20.1.
+5. Inicie o jogo e ative os resource packs/shaders se necessario.
+
+Este modo instala mods, resource packs, shader packs, configuracoes e Forge 1.20.1-47.4.10 na pasta escolhida. Ele e util para quem nao quer usar o launcher completo do Magic World.
+
 ## Descricao Curta
 
 **Magic World Ultimate** e um projeto para **Minecraft Forge 1.20.1** que une tres camadas em uma unica experiencia:
@@ -112,9 +180,9 @@ E assim, quando o jogador instala o **Mod**, ativa o **Resource Pack** e escolhe
   <img src="./screenshots/printdojogo6a.png" alt="Print do jogo 6" width="32%">
 </div>
 
-## Expansao Exclusiva do Port Forge 1.20.1
+## Expansao Exclusiva Forge 1.20.1
 
-Esta edicao nao e apenas uma recompilacao. O projeto original foi portado para **Minecraft Forge 1.20.1** e depois ampliado com uma propriedade inicial viva, novas construcoes, narrativa propria, reparos automaticos e rotinas de desempenho adequadas ao mapa expandido.
+Esta edicao foi preparada para **Minecraft Forge 1.20.1** e ampliada com uma propriedade inicial viva, novas construcoes, narrativa propria, reparos automaticos e rotinas de desempenho adequadas ao mapa expandido.
 
 ### Comeco da jornada: A Casa do Ultimo Farol
 
@@ -184,8 +252,8 @@ A propriedade inicial desta versao Forge e uma regiao conectada, nao um conjunto
 | **Santuario Violeta do Horizonte Partido** | Centro arcano, preparacao e investigacao dos portais. |
 | **Refugio das Tres Guardias** | Aliadas bruxas, alquimia e protecao da mata. |
 | **Rancho do Cofre Dourado** | Arquivo de itens, arsenal, forja e tesouro subterraneo. |
-| **Casa principal importada** | Centro comunitario amplo, moradores, armazenamento e conexoes. |
-| **Castelo importado** | Conselho, guardioes, galerias e presenca militar. |
+| **Casa principal da aventura** | Centro comunitario amplo, moradores, armazenamento e conexoes. |
+| **Castelo da aventura** | Conselho, guardioes, galerias e presenca militar. |
 | **Praca de portais** | Acesso funcional ao Nether, End e gateway. |
 | **Mina do Tesouro** | Casa de pedra, entrada reparada e galerias subterraneas. |
 | **Praca Verde** | Jardim, moradores, casas e vida comunitaria. |
@@ -221,18 +289,18 @@ A expansao foi acompanhada por otimizacoes para evitar que a vida da propriedade
 - efeitos de sobrevivencia usam intervalos controlados;
 - geracao inicial e dividida em etapas com tela de progresso.
 
-### Diferencas principais em relacao ao projeto de origem
+### Diferencas principais desta edicao
 
-| Area | Projeto de origem | Port Forge 1.20.1 expandido |
+| Area | Magic World Forge 1.20.1 | Resultado |
 | --- | --- | --- |
-| Plataforma | NeoForge moderno | Minecraft Forge 47.4.10 para Minecraft 1.20.1 |
-| Inicio | Propriedade inicial original | Spawn ao lado da cama na Casa do Ultimo Farol |
+| Plataforma | Minecraft Forge 1.20.1 | Forge 47.4.10 para Minecraft 1.20.1 |
+| Inicio | Propriedade inicial | Spawn ao lado da cama na Casa do Ultimo Farol |
 | Historia | Fantasia geral Magic World | Campanha do Horizonte Partido e locais nomeados |
-| Bruxas | Sem o refugio atual | Refugio amigavel com tres bruxas moveis |
+| Bruxas | Sistema basico | Refugio amigavel com tres bruxas moveis |
 | Fim da rua | Casa e area de passagem | Residencia do personagem + Santuario Violeta |
 | Rancho | Deposito amplo | Casarao medieval, arquivo total e cofre dourado |
-| Desempenho | Rotinas da versao de origem | Ticks, portais, aura e residentes otimizados |
-| Compatibilidade | Ecossistema NeoForge | Ecossistema Forge 1.20.1 e mods opcionais adequados |
+| Desempenho | Rotinas otimizadas | Ticks, portais, aura e residentes otimizados |
+| Compatibilidade | Pacote Magic World | Forge 1.20.1 e complementos opcionais adequados |
 
 
 ## O Que e o Magic World
@@ -260,7 +328,7 @@ O personagem termina a geracao **dentro da Casa do Ultimo Farol, ao lado da cama
 - Casa do Ultimo Farol, residencia inicial do personagem;
 - Santuario Violeta do Horizonte Partido, grande salao arcano no fim da rua;
 - casa principal importada e seus ambientes internos;
-- castelo importado, conselho, guardioes e moradores;
+- castelo da aventura, conselho, guardioes e moradores;
 - portal premium e praca compacta de portais funcionais;
 - plantacoes maduras, casas de agricultores e Rancho do Cofre Dourado;
 - Arquivo Medieval da Praca Verde, com catalogo completo de itens e cofre subterraneo;
@@ -509,7 +577,7 @@ Os menus foram alinhados ao template visual `screenshots/referencia_menus.png`:
 - fundo Magic World aplicado nas telas vanilla que usam o fundo padrao de menu, sem reaproveitar a imagem de referencia como panorama;
 - menu principal do mod e telas de detalhes com moldura dourada, brilho azul/ciano e painel escuro;
 - submenus do Sistema reaproveitam o mesmo tema, mantendo navegacao por cards/lista;
-- menu grafico integrado continua no padrao Magic World para Embeddium, Oculus e Distant Horizons.
+- menu grafico integrado continua no padrao Magic World para configuracoes visuais opcionais.
 
 ### Visao geral da interface
 
@@ -606,8 +674,8 @@ inicial ao redor do jogador. O jogador nasce sempre ao lado da propria cama dent
 
 A propriedade inicial inclui:
 
-- casa principal importada do mapa de referencia do projeto, com baus, cama, iluminacao e decoracoes extras;
-- castelo importado do mapa de referencia do projeto, colocado depois do portal estar completo;
+- casa principal da aventura, com baus, cama, iluminacao e decoracoes extras;
+- castelo da aventura, colocado depois do portal estar completo;
 - bau(s) ao lado da cama com armaduras, armas, ferramentas, itens especiais e suporte inicial;
 - terreno com margem de respiro de 8 blocos ao redor das construcoes principais;
 - limpeza de blocos acima da casa, castelo e portal para evitar montanhas/overhangs atravessando as estruturas;
@@ -628,11 +696,11 @@ O portal inicial fica mais a frente da casa, no gramado entre as estruturas, e f
 Para evitar travamentos, o mod nao cria tudo de uma vez. A geracao e dividida em etapas curtas depois que a casa e o
 terreno aparecem:
 
-1. casa principal importada, spawn ao lado da cama, baus e aliados iniciais;
+1. casa principal da aventura, spawn ao lado da cama, baus e aliados iniciais;
 2. decoracao e complementos da casa;
 3. jardim, fazendas, fontes, currais e areas de apoio;
 4. portal real, carregado com atraso maior; antes dele fica uma placa avisando `se eu nao estiver aqui espere!`;
-5. castelo importado, se `Castelos e Estradas` estiver `ON`;
+5. castelo da aventura, se `Castelos e Estradas` estiver `ON`;
 6. limpeza/desligamento temporario do dragao pacifico;
 7. vida extra, personagens e detalhes finais;
 8. mensagem final `Finalizando estruturas do Magic World` por alguns segundos antes do botao `CONFIRMAR`.
@@ -644,7 +712,7 @@ jogador conseguir explorar sem travar. O jardim, o portal, os castelos e os pers
 em partes separadas. O dragao fica desligado por enquanto porque pesava o mapa. Spawnar tudo no mesmo tick poderia congelar o mundo por alguns segundos ou impedir
 partes da construcao de aparecerem corretamente.
 
-O castelo atual e importado do mapa de referencia do projeto e recebe complementos Magic World depois de colocado:
+O castelo atual faz parte da aventura Magic World e recebe complementos depois de colocado:
 
 - suporte de terreno e limpeza ao redor para evitar blocos atravessando a estrutura;
 - baus com equipamentos e itens especiais;
@@ -652,7 +720,7 @@ O castelo atual e importado do mapa de referencia do projeto e recebe complement
 - distancia preservada em relacao a casa mesmo quando o portal e reposicionado.
 
 Desempenho da criacao inicial: a geracao da propriedade suspende efeitos ambientes enquanto ainda esta carregando e evita
-varreduras caras de limpeza final por padrao. A limpeza vertical antes de colar casa/castelo importados continua indo
+varreduras caras de limpeza final por padrao. A limpeza vertical antes de colar casa/castelo continua indo
 ate o topo do mundo para remover sobras e estruturas acima do spawn Magic World.
 
 O dragao pacifico esta desligado temporariamente para reduzir peso inicial e FPS baixo em mundos novos/antigos. O codigo dele permanece em `PeacefulDragon.java`, e a criacao/limpeza fica isolada em `StarterDragonManager.java`. Antes de fechar o projeto, ele deve ser reativado com cuidado, voltando a voar baixo pelo perimetro da casa, portal e castelo.
@@ -1045,7 +1113,7 @@ Os icones abaixo tambem foram usados para gerar os `pack.png` transparentes dos 
 ### Varinhas
 
 <div align="center">
-  <img src="./screenshots/varinha_magica.png" alt="Varinha magica original" width="100">
+  <img src="./screenshots/varinha_magica.png" alt="Varinha magica" width="100">
   <img src="./screenshots/mod_item_varinha_magica.png" alt="Varinha magica extraida" width="100">
   <img src="./screenshots/mod_item_varinha_normal.png" alt="Varinha normal" width="180">
   <img src="./screenshots/mod_item_varinha_magica_n.png" alt="Mapa normal da varinha magica" width="100">
@@ -1184,67 +1252,20 @@ O resource pack de modelos inclui artefatos 3D saindo de minerios e blocos de re
 
 ## Instalacao Detalhada
 
-### Instalacao Facil com Magic World Installer
+### Instalacao Facil com Magic World Launcher FULL
 
-<div align="center">
-  <img src="./screenshots/banner_installer.png" alt="Magic World Installer" width="100%">
-</div>
+A instalacao recomendada esta no topo deste README. Use o `MagicWorldLauncherFullInstaller-Stable V1.0.0.2.exe` para ter launcher, jogo, mods, resource packs, shaders e configuracoes preparados automaticamente.
 
-Este projeto tambem possui um instalador local proprio para preparar o Magic World em uma pasta `.minecraft` usada pelo **TLauncher**. O instalador nao altera o executavel do TLauncher, nao mexe em login e nao redistribui o Minecraft pronto; ele apenas prepara os arquivos do Magic World na pasta correta.
-
-> Observacao: aqui o TLauncher e tratado como launcher compativel/alvo de instalacao do pacote Magic World. Ele nao e o launcher oficial da Microsoft/Mojang.
-
-1. Instale o TLauncher pelo site dele:
-   - Pagina Windows: https://tlauncher.org/en/install-on-windows.html
-   - Link direto usado pelo site para baixar o launcher: https://tlauncher.org/exe
-2. Baixe o **MagicWorldInstaller.exe** nos Releases deste projeto.
-3. Execute o instalador.
-4. Confirme a pasta `.minecraft` detectada.
-5. Clique em **Instalar / Atualizar**.
-6. O instalador coloca:
-   - o mod Magic World em `mods`;
-   - Embeddium, Oculus e Distant Horizons opcionais em `mods`;
-   - os Resource Packs em `resourcepacks`;
-   - o Shader Pack em `shaderpacks`;
-   - instala o Forge em modo cliente automaticamente usando o instalador incluso no `.exe`.
-7. Abra o TLauncher e selecione/crie o perfil **Forge 1.20.1**.
-
-O `MagicWorldInstaller.exe` tambem tenta ajustar automaticamente os argumentos JVM do perfil Forge 1.20.1 no TLauncher para evitar warnings nativos do Java novo. Ele procura a `.minecraft`, edita `launcher_profiles.json` quando encontra o perfil Forge e tambem tenta aplicar os argumentos nos JSONs de versao em `.minecraft/versions`.
-
-Argumentos JVM que o instalador tenta aplicar:
-
-```text
---enable-native-access=sodium
---enable-native-access=distanthorizons
-```
-
-Use esses mesmos argumentos manualmente se o TLauncher recriar o perfil ou se o launcher iniciar o jogo mostrando avisos como:
-
-- Embeddium (modulo interno `sodium`): `MemorySegment::reinterpret`, `restricted method` ou `native access`.
-- Distant Horizons: `java.lang.System::load`, `restricted method` ou `native access`.
-
-Esses avisos vêm do Java novo bloqueando/avisando acesso nativo usado por esses mods. Os argumentos liberam esse acesso para os modulos `sodium` e `distanthorizons`.
-
-<div align="center">
-  <img src="./screenshots/banner_installer.png" alt="Magic World Installer" width="100%">
-</div>
-
-Instalador `.exe` unico gerado localmente:
-
-```text
-installer/MagicWorldInstaller.exe
-```
-
-O `.exe` disponivel neste port e um binario legado. Antes de distribui-lo, valide se os arquivos que ele instala correspondem ao JAR Forge atual e aos mods opcionais separados.
+O instalador simples fica documentado abaixo apenas como opcao para quem ja possui uma instalacao Forge 1.20.1 e quer copiar o pacote Magic World para uma `.minecraft` escolhida.
 
 ### Requisitos
 
 - Minecraft compativel com **Forge 1.20.1**.
-- Forge 1.20.1 instalado manualmente ou instalado pelo **MagicWorldInstaller.exe**.
+- Forge 1.20.1 instalado manualmente ou preparado automaticamente pelo **Magic World Launcher FULL**.
 - Pasta `mods`.
 - Pasta `resourcepacks`.
 - Pasta `shaderpacks`.
-- Mod Magic World Forge 1.20.1; Embeddium, Oculus e Distant Horizons sao instalados separadamente quando desejados.
+- Mod Magic World Forge 1.20.1; complementos visuais opcionais podem ser adicionados separadamente quando desejado.
 
 ### Instalacao do Mod
 
@@ -1300,30 +1321,30 @@ O `.exe` disponivel neste port e um binario legado. Antes de distribui-lo, valid
 
 ## Releases
 
-Os binarios publicados devem corresponder a este port **Minecraft Forge 1.20.1 / Forge 47.4.10**. O artefato gerado atualmente pelo projeto e:
+Os binarios publicados devem corresponder a **Minecraft Forge 1.20.1 / Forge 47.4.10**. O artefato gerado atualmente pelo projeto e:
 
 ```text
 build/libs/Magic_World_Mod_1.20.1-1.0.0.1.jar
 ```
 
-O mod principal nao embute automaticamente os mods opcionais de renderizacao. Para a experiencia visual completa, instale separadamente versoes Forge 1.20.1 compativeis de **Embeddium**, **Oculus** e **Distant Horizons**, alem do Resource Pack e Shader Pack Magic World.
+O instalador FULL entrega a experiencia recomendada pronta. Na instalacao manual, use somente arquivos compativeis com Forge 1.20.1 e adicione complementos visuais opcionais por conta propria.
 
 | Pacote | Estado esperado |
 | --- | --- |
 | Mod Magic World Forge | JAR produzido por `.\gradlew.bat build` em `build/libs/`. |
-| Embeddium, Oculus e Distant Horizons | Mods opcionais instalados separadamente pelo jogador. |
+| Complementos visuais opcionais | Instalados separadamente pelo jogador quando desejar. |
 | Resource Pack | ZIP instalado em `.minecraft/resourcepacks`. |
-| Shader Pack | ZIP instalado em `.minecraft/shaderpacks` e ativado pelo Oculus. |
+| Shader Pack | ZIP instalado em `.minecraft/shaderpacks` e ativado dentro do jogo quando houver suporte grafico compativel. |
 | Instalador Windows | Opcional; deve instalar Forge 1.20.1 e os arquivos publicados corretos. |
 
 ### Como Baixar e Instalar
 
 1. Instale Minecraft Forge `1.20.1-47.4.10`.
 2. Coloque o JAR do Magic World em `.minecraft/mods`.
-3. Instale separadamente Embeddium, Oculus e Distant Horizons para usar os recursos graficos opcionais.
+3. Instale complementos visuais opcionais compativeis com Forge 1.20.1 se quiser usar recursos graficos extras.
 4. Coloque o Resource Pack em `.minecraft/resourcepacks`.
 5. Coloque o Shader Pack em `.minecraft/shaderpacks`.
-6. Inicie o jogo, ative o Resource Pack e selecione o shader pelo Oculus.
+6. Inicie o jogo, ative o Resource Pack e selecione o shader dentro das configuracoes graficas quando disponivel.
 ## Compatibilidade
 
 | Item | Estado |
@@ -1335,7 +1356,7 @@ O mod principal nao embute automaticamente os mods opcionais de renderizacao. Pa
 | Shader Pack | Adaptado para uso com o sistema grafico integrado do Magic World |
 | Sistema de menu | Client-side, aberto pela tecla `H` |
 | Menus por comando | Podem exigir cheats/permissao |
-| Binarios em releases | Instalador, mod, mods opcionais, Resource Packs e Shader Pack devem ser anexados manualmente antes de divulgar links finais |
+| Binarios em releases | Instalador FULL, mod, Resource Pack e Shader Pack devem ser anexados manualmente antes de divulgar links finais |
 
 ### Mods de construcao
 
@@ -1358,8 +1379,8 @@ Nenhuma dependencia externa de construcao foi adicionada automaticamente.
 
 Ordem recomendada:
 
-1. Usar `installer/MagicWorldInstaller.exe` no Windows/TLauncher ou instalar manualmente o Forge 1.20.1.
-2. Manter o **Mod Magic World Forge** e os mods graficos opcionais em `mods`.
+1. Usar o [Magic World Launcher FULL V1.0.0.2](https://github.com/gorpo/Magic-World_ultimate-Forge1.20.1/releases/download/launcher-full-v1.0.0.2/MagicWorldLauncherFullInstaller-Stable%20V1.0.0.2.exe) no Windows ou instalar manualmente o Forge 1.20.1.
+2. Manter o **Mod Magic World Forge** e complementos opcionais em `mods`.
 3. Iniciar o jogo uma vez para validar carregamento.
 4. Colocar o **Resource Pack** em `resourcepacks`.
 5. Ativar o Resource Pack no jogo.
@@ -1372,13 +1393,6 @@ Para a experiencia completa, use sempre os tres:
 
 ```text
 Mod + Resource Pack + Shader Pack = Magic World Ultimate completo
-```
-
-Caso o launcher externo mostre aviso do Embeddium ou Distant Horizons sobre `restricted method`, `MemorySegment::reinterpret`, `java.lang.System::load` ou `native access`, coloque estes argumentos JVM no perfil:
-
-```text
---enable-native-access=sodium
---enable-native-access=distanthorizons
 ```
 
 ## Performance
@@ -1433,7 +1447,7 @@ Esta secao foi reservada para preenchimento manual pelo responsavel do projeto.
 
 - Este projeto e focado em fantasia magica medieval.
 - O pacote completo depende da combinacao **Mod + Resource Pack + Shader Pack**.
-- O Mod e o Shader Pack podem ficar publicados na aba **Releases**.
+- Os arquivos oficiais podem ficar publicados na aba **Releases**.
 - O Resource Pack deve ser enviado manualmente pelo dono do repositorio.
 - Nao subir novos binarios automaticamente sem decisao do dono.
 - Nao anexar novos `.jar`, `.zip` ou shader pack automaticamente sem decisao do dono.
@@ -1475,7 +1489,7 @@ Estes mods nao devem ficar em nenhuma pasta carregavel (`.minecraft/mods`, `paco
 
 Motivo: EMF causou crash de mixin (`MixinModelPart`). Os JARs podem ficar em `mods_desativados_magicworld`, mas nao carregaveis.
 
-Alerta do pacote atual: este estado abriu no TLauncher apos remover EMF/ETF e correlatos, mas ainda e um pacote experimental. O commit pode nao funcionar em outra instalacao sem repetir a mesma limpeza das pastas carregaveis.
+Alerta do pacote atual: este estado abriu no cliente local apos remover EMF/ETF e correlatos, mas ainda e um pacote experimental. O commit pode nao funcionar em outra instalacao sem repetir a mesma limpeza das pastas carregaveis.
 ### Executar cliente de desenvolvimento
 
 ```powershell
@@ -1518,7 +1532,7 @@ Regras do script:
 | Mod | Documentado com base no codigo atual. |
 | Resource Pack | Documentado com base nos arquivos e imagens extraidas. |
 | Shader Pack | Documentado com base em `shaders.properties` e `shaders.settings`. |
-| Releases | Mod e Shader Pack publicados; Resource Pack aguardando upload manual. |
+| Releases | Instalador FULL e arquivos oficiais devem ser anexados manualmente antes da divulgacao. |
 
 ## Rodape
 
@@ -1576,31 +1590,44 @@ Portais:
 - os portais da praca e o portal visual premium nao ativam mais apenas por proximidade;
 - o gatilho agora exige passar pelo centro do portal.
 
-## Instalador Forge Local
+## Instalador Simples para Quem Ja Tem Launcher
 
-Arquivos:
+Este instalador e uma alternativa ao Magic World Launcher FULL. Use somente se voce ja tem uma instalacao compatível com Minecraft Forge 1.20.1 e quer manter seu launcher atual.
 
-- `installer/MagicWorldInstaller.exe`: instalador Forge FULL com interface e payload embutido.
-- `scripts/install-magicworld-forge-tlauncher.ps1`: instalacao via PowerShell.
-- `scripts/build-magicworld-forge-installer.ps1`: recompila o EXE FULL.
+Arquivo:
 
-Regra atual: o instalador FULL embute `pacote_distribuivel/.minecraft` dentro do proprio EXE. O arquivo fica grande, mas pode ser enviado sozinho.
+```text
+installer/MagicWorldInstaller.exe
+```
 
-Ele instala/atualiza Forge `1.20.1-47.4.10`, extrai e copia `mods`, `resourcepacks`, `shaderpacks`, `journeymap`, configs opcionais, remove conflitos conhecidos, configura JourneyMap sem waypoints 3D e tenta selecionar o shader Magic World no Oculus/Iris.
+O que ele faz:
 
-Para gerar uma versao leve antiga, use `scripts/build-magicworld-forge-installer.ps1 -NoFullPayload`.
+- instala/atualiza Forge 1.20.1-47.4.10 na pasta escolhida;
+- copia o mod Magic World para `mods`;
+- copia resource packs para `resourcepacks`;
+- copia shaders para `shaderpacks`;
+- aplica configuracoes do pacote Magic World quando disponiveis.
 
+Como usar:
+
+1. Execute `MagicWorldInstaller.exe`.
+2. Escolha a pasta `.minecraft` usada pela sua instalacao atual.
+3. Clique em **Instalar / Atualizar**.
+4. Abra seu launcher e selecione Forge 1.20.1.
+5. Entre no jogo e use a tela de resource packs/shaders para ativar o visual desejado.
+
+Se voce quer a experiencia mais simples, use o instalador FULL do topo do README.
 ## Launcher FULL Stable V1.0.0.2
 
-O launcher FULL instala um ambiente proprio do Magic World, separado de TLauncher, launcher oficial e qualquer outro Minecraft instalado no Windows.
+O launcher FULL instala um ambiente proprio do Magic World, isolado de qualquer outra instalacao de Minecraft no Windows.
 
 Pastas usadas:
 
-- Instalacao do launcher: `%LOCALAPPDATA%\MagicWorldLauncher`
-- Minecraft interno do Magic World: `%APPDATA%\MagicWorldLauncher\.minecraft`
-- Contas/configuracoes: `%APPDATA%\MagicWorldLauncher`
+- Raiz unica do Magic World: `%LOCALAPPDATA%\MagicWorldLauncher`
+- Minecraft interno do Magic World: `%LOCALAPPDATA%\MagicWorldLauncher\.minecraft`
+- Launcher, Java, contas, configuracoes e logs: `%LOCALAPPDATA%\MagicWorldLauncher`
 
-Com isso, TLauncher e outros launchers podem ficar instalados em paralelo sem misturar mods, versoes, assets ou saves do Magic World com a `.minecraft` global.
+Com isso, os arquivos do Magic World ficam separados da `.minecraft` global do Windows, sem misturar mods, versoes, assets ou saves.
 
 Comportamento do instalador/launcher:
 
@@ -1615,30 +1642,20 @@ Comportamento do instalador/launcher:
 - `Jogar Magic World` verifica/instala o que faltar e inicia o Minecraft;
 - enquanto o Minecraft roda, o launcher fica oculto e volta quando o jogo fecha;
 - RAM e resolucao ficam em `Configuracoes`, com slider de RAM de 2 GB ate 16 GB;
-- o botao `.minecraft` abre a pasta interna exclusiva do Magic World;
-- o botao `Servidores` cadastra favoritos e gera `servers.dat` na `.minecraft` exclusiva.
+- o botao de pasta abre `%LOCALAPPDATA%\MagicWorldLauncher\.minecraft`;
+- `Configuracoes` mostra apenas os atalhos `Pasta do jogo`, `Pasta do launcher` e `GitHub`.
 
-Login:
+Perfil:
 
-- a tela de login pede usuario, senha e possui caixa `Salvar senha`;
-- a senha salva usa armazenamento local do Windows em `%APPDATA%\MagicWorldLauncher\tlauncher-password.xml`;
-- login online TLauncher depende de endpoint oficial configurado em `MAGICWORLD_TLAUNCHER_AUTH_API_URL`;
-- se a API oficial nao estiver configurada, o launcher salva o usuario em modo offline para manter o jogo funcional.
+- a tela de perfil pede apenas usuario local;
+- nao existe campo de senha nem armazenamento de credenciais;
+- servidores devem ser cadastrados pela tela Multiplayer do proprio Minecraft.
 
-Servidores:
+Link do release para download:
 
-- conta offline consegue entrar apenas em servidores que aceitam modo offline/cracked;
-- servidores premium com `online-mode=true` exigem autenticacao Microsoft/TLauncher valida;
-- o launcher nao implementa bypass de autenticacao premium.
-- servidor local no mesmo PC usa `127.0.0.1:25565`;
-- servidor em outro computador da rede usa o IP desse computador, por exemplo `192.168.0.25:25565`;
-- servidor de amigo usa o dominio/IP e a porta que ele informar.
+[**Baixar Magic World Launcher FULL V1.0.0.2**](https://github.com/gorpo/Magic-World_ultimate-Forge1.20.1/releases/download/launcher-full-v1.0.0.2/MagicWorldLauncherFullInstaller-Stable%20V1.0.0.2.exe)
 
-Release local esperado:
-
-```text
-launcher/dist/MagicWorldLauncherFullInstaller-Stable V1.0.0.2.exe
-```
+Release: [launcher-full-v1.0.0.2](https://github.com/gorpo/Magic-World_ultimate-Forge1.20.1/releases/tag/launcher-full-v1.0.0.2)
 
 Atualizacao de layout V1.0.0.2:
 
