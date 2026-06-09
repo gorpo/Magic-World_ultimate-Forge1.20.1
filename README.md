@@ -592,18 +592,6 @@ Os menus foram alinhados ao template visual `screenshots/referencia_menus.png`:
 | Botao Fechar | Fecha a interface. |
 | Botao Voltar | Aparece em submenus do Sistema para voltar ao centro de controle. |
 
-### Atualizacao visual e tecnica de 2026-05-24
-
-Esta rodada deixou o pacote preparado para a proxima validacao visual pelo Run do IntelliJ:
-
-- menu `Sistema` corrigido para nao mostrar nomes internos de classe como `MobSpawnerMenu` e `GraphicsProfilesMenu`;
-- icone de `Perfis graficos` trocado para item vanilla seguro, evitando textura magenta/quebrada;
-- panorama da tela inicial regerado a partir de `screenshots/panorama_para_ediçao.png`, sem logo embutido;
-- rotacao do panorama da tela inicial ajustada para ficar mais perceptivel;
-- `MagicWorldResource_1.20.1-models.zip` recebeu modelos extras com cristais/artefatos 3D para minerios e blocos de recurso;
-- scripts de reproducao adicionados em `scripts/generate-title-panorama.py` e `scripts/add-resourcepack-artifacts.ps1`.
-
-Observacao: `panorama_para_ediçao.png` e uma arte plana/banner, nao uma fonte 360 real. A geracao atual reduz a aparencia de cubo e melhora a continuidade, mas o teste final do movimento precisa ser feito dentro do cliente pelo Run do IntelliJ.
 
 ### Perfis graficos
 
@@ -1439,9 +1427,7 @@ resource pack, efeitos visuais e configuracoes mais profundas de performance.
 - Use nuvens volumetricas com maior qualidade.
 - Use POM/normal maps se as texturas ficarem estaveis.
 
-## Creditos
 
-Esta secao foi reservada para preenchimento manual pelo responsavel do projeto.
 
 ## Avisos Importantes
 
