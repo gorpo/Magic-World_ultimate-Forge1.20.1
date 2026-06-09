@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "magicworldlight:block/magic_world_light_wall",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "magicworldlight:block/magic_world_light_wall"
+    },
+    "facing=south": {
+      "model": "magicworldlight:block/magic_world_light_wall",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "magicworldlight:block/magic_world_light_wall",
+      "y": 270
+    }
+  }
+}
